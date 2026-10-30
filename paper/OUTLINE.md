@@ -38,17 +38,25 @@ that reveal structure. The opening figure shows the contribution at once: the sh
 **Appendix.** The Lean package (the theorems the paper states, 0 sorry), the certificate format, and how to reproduce
 every number (the scripts in `research/`, the Modal app, the Hugging Face runs).
 
-## Theorems: candidates, for Neo to choose
+## Theorems (Neo chose these on 30 Oct 2026)
 
-From polyformer's post-audit record (`research/meta/META_REPORT.md`, "What survives"): the Lean package holds, with no
-`sorry`, Theorem P (iff), the no-finite-test theorem, composition, pointer, cache policy, adder correctness and the
-decoder's discrete core. For this paper the natural set is Theorem P in sheet form, no-finite-test, composition (a
-procedure built from certified steps stays exact) and cache policy (when a certificate measured on one device carries
-to another). The decoder class theorem is the one item the audits still rated new; whether it belongs in this paper
-is open.
+Four theorems, all in the polyformer Lean package with no `sorry`:
 
-## Open questions
+- **Theorem P in sheet form.** Exact on every run of every length if and only if exact on the finite set of views,
+  under the pinned-sheet policy.
+- **No-finite-test.** It is necessary: no finite test suffices once state leaves the sheet.
+- **Composition.** A procedure built from certified steps stays exact.
+- **Cache policy.** When a certificate measured on one device carries to another.
 
-- The paper's light or dark page: the site is dark like the demo; the figures are white.
+The decoder class theorem stays out of this paper.
+
+## Decisions (Neo, 30 Oct 2026)
+
+- **Light.** The paper, the demo and the figures share one light design: "go light, make everything look beautiful
+  together". White backgrounds, Cobalt and Rose.
+- **One source.** The web text is the source, and the arXiv LaTeX is generated from it, so the two never drift.
+- **License.** Apache 2.0.
+
+## Open
+
 - Author line and affiliation.
-- arXiv source: LaTeX written alongside the web text, or generated from it.
