@@ -1,0 +1,8 @@
+# Package Managers
+pnpm-lock.yaml
+
+# Miscellaneous
+/static/
+
+# Agent tooling
+/.claude/
