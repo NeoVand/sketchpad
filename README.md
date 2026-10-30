@@ -20,4 +20,4 @@ pnpm dev
 Layout: `src/routes/+page.svelte` is the paper, `src/routes/demo/` the demo, `paper/` the writing plan, `research/`
 the scripts that reproduce the paper's numbers.
 
-All rights reserved. The weights on Hugging Face carry their own license.
+Code and text are licensed under the Apache License 2.0 (`LICENSE`). The weights on Hugging Face carry their own license.
