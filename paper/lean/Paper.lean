@@ -34,29 +34,29 @@ alias theorem2_counterexample := Polyformer.Pinned.theorem8a_counterexample
 /-- Theorem 2, remark: testing every input up to a given length does not suffice either. -/
 alias theorem2_no_finite_check := Polyformer.Pinned.no_finite_check
 
-/-! ### Theorem 3 (Composition) -/
+/-! ### Theorem 3 (Robustness to perturbation) -/
 
-/-- Theorem 3a: a wrong answer needs a wrong executor, table, transcription or combining program. -/
-alias theorem3a := Polyformer.Pinned.error_decomposition
-/-- Theorem 3b, sheet form: the measure bound for calls executed by certified sheet procedures. -/
-alias theorem3b_sheet := Sketchpad.sheet_error_bound
-/-- Theorem 3b, sheet form: the hypothesis `E_i(x_i) = T_i(x_i)` from Theorem 1. -/
-alias theorem3b_sheet_exact := Sketchpad.sheet_compose_exact
-/-- Theorem 3b, token form: the measure bound. -/
-alias theorem3b_token := Polyformer.Pinned.error_bound
-/-- Theorem 3b, token form: the hypothesis `E_i(x_i) = T_i(x_i)`. -/
-alias theorem3b_token_exact := Polyformer.Pinned.compose_exact
+/-- Theorem 3, first statement: a margin `> 2τ` and logits within `τ` fix the argmax. -/
+alias theorem3_argmax := Polyformer.Pinned.sel_eq_of_close
+/-- Theorem 3, sheet form: an execution path within `τ` of the certified logits runs exactly. -/
+alias theorem3_sheet := Sketchpad.sheet_exact_of_close
+/-- Theorem 3, token form. -/
+alias theorem3_token := Polyformer.Pinned.regeneration_of_close
+/-- Theorem 3 for unpinned decoding (the converse remark after Theorem 2). -/
+alias theorem3_unpinned := Polyformer.Pinned.unpinned_exact_of_close
 
-/-! ### Theorem 4 (Robustness to perturbation) -/
+/-! ### Theorem 4 (Composition) -/
 
-/-- Theorem 4, first statement: a margin `> 2τ` and logits within `τ` fix the argmax. -/
-alias theorem4_argmax := Polyformer.Pinned.sel_eq_of_close
-/-- Theorem 4, sheet form: an execution path within `τ` of the certified logits runs exactly. -/
-alias theorem4_sheet := Sketchpad.sheet_exact_of_close
-/-- Theorem 4, token form. -/
-alias theorem4_token := Polyformer.Pinned.regeneration_of_close
-/-- Theorem 4 for unpinned decoding (the converse remark after Theorem 2). -/
-alias theorem4_unpinned := Polyformer.Pinned.unpinned_exact_of_close
+/-- Theorem 4a: a wrong answer needs a wrong executor, table, transcription or combining program. -/
+alias theorem4a := Polyformer.Pinned.error_decomposition
+/-- Theorem 4b, sheet form: the measure bound for calls executed by certified sheet procedures. -/
+alias theorem4b_sheet := Sketchpad.sheet_error_bound
+/-- Theorem 4b, sheet form: the hypothesis `E_i(x_i) = T_i(x_i)` from Theorem 1. -/
+alias theorem4b_sheet_exact := Sketchpad.sheet_compose_exact
+/-- Theorem 4b, token form: the measure bound. -/
+alias theorem4b_token := Polyformer.Pinned.error_bound
+/-- Theorem 4b, token form: the hypothesis `E_i(x_i) = T_i(x_i)`. -/
+alias theorem4b_token_exact := Polyformer.Pinned.compose_exact
 
 /-! ### Lemmas 1–4 -/
 
@@ -91,15 +91,15 @@ end Sketchpad.Paper
 #print axioms Sketchpad.Paper.theorem2_no_finite_test
 #print axioms Sketchpad.Paper.theorem2_counterexample
 #print axioms Sketchpad.Paper.theorem2_no_finite_check
-#print axioms Sketchpad.Paper.theorem3a
-#print axioms Sketchpad.Paper.theorem3b_sheet
-#print axioms Sketchpad.Paper.theorem3b_sheet_exact
-#print axioms Sketchpad.Paper.theorem3b_token
-#print axioms Sketchpad.Paper.theorem3b_token_exact
-#print axioms Sketchpad.Paper.theorem4_argmax
-#print axioms Sketchpad.Paper.theorem4_sheet
-#print axioms Sketchpad.Paper.theorem4_token
-#print axioms Sketchpad.Paper.theorem4_unpinned
+#print axioms Sketchpad.Paper.theorem3_argmax
+#print axioms Sketchpad.Paper.theorem3_sheet
+#print axioms Sketchpad.Paper.theorem3_token
+#print axioms Sketchpad.Paper.theorem3_unpinned
+#print axioms Sketchpad.Paper.theorem4a
+#print axioms Sketchpad.Paper.theorem4b_sheet
+#print axioms Sketchpad.Paper.theorem4b_sheet_exact
+#print axioms Sketchpad.Paper.theorem4b_token
+#print axioms Sketchpad.Paper.theorem4b_token_exact
 #print axioms Sketchpad.Paper.lemma1
 #print axioms Sketchpad.Paper.lemma1_strict
 #print axioms Sketchpad.Paper.lemma2

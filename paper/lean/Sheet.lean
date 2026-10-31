@@ -7,8 +7,8 @@ import Polyformer.Compose
 The polyformer files in `Polyformer/` (copied unchanged from the polyformer Lean package) prove Theorem P for a
 pinned step on (state, event) pairs: `Polyformer.Pinned.regeneration_trace_iff` and `pinned_regeneration_iff`.
 Here it is instantiated for a sheet machine, whose state is unbounded (the whole sheet) while the model only ever
-reads a view of it. The same instance gives the sheet forms of composition (Theorem 3b, `sheet_compose_exact`,
-`sheet_error_bound`) and of robustness to perturbation (Theorem 4, `sheet_exact_of_close`).
+reads a view of it. The same instance gives the sheet forms of composition (Theorem 4b, `sheet_compose_exact`,
+`sheet_error_bound`) and of robustness to perturbation (Theorem 3, `sheet_exact_of_close`).
 
 **The machine.** Configurations `C` hold the sheet, the window's place and the procedure's control. At a
 configuration the runtime either halts (`query c = none`) or shows the model one view (`query c = some v`, a
@@ -105,7 +105,7 @@ theorem trace_getLast? (query : C → Option V) (paint : C → A → C) (g : V �
     (trace query paint g c₀ n).getLast? = some (runAt query paint g c₀ n) :=
   List.getLast?_scanl
 
-/-! ## Theorem 4, sheet form: robustness to perturbation
+/-! ## Theorem 3, sheet form: robustness to perturbation
 
 The model writes, at each output position `k` of a view, one token of a vocabulary `O`, so an answer is a tuple
 `K → Tok` and the table is `T : V → K → Tok`. The certificate records the model's logits `z v k` at each view;
@@ -136,7 +136,7 @@ def pathTrace (query : C → Option V) (paint : C → (K → Tok) → C) (sel : 
     (zt : ℕ → V → K → Tok → ℝ) (c₀ : C) (n : ℕ) : List C :=
   (List.range (n + 1)).map (pathRun query paint sel zt c₀)
 
-/-- **Theorem 4, sheet form.** Let every view a reference run meets lie in `W`, let every view of `W` have
+/-- **Theorem 3, sheet form.** Let every view a reference run meets lie in `W`, let every view of `W` have
 margin `> 2τ` at every output position (the paper's `m(v) > 2τ`, unfolded: the table's token is in `O` and leads
 every other token of `O` by more than `2τ`), and let the execution path's logits be within `τ` of the certified
 ones at every step, view of `W`, position and token. Then the execution path's run from every start in `I` is
@@ -169,9 +169,9 @@ theorem sheet_exact_of_close {query : C → Option V} {paint : C → (K → Tok)
 
 end Transfer
 
-/-! ## Theorem 3b, sheet form: composition of certified procedures
+/-! ## Theorem 4b, sheet form: composition of certified procedures
 
-`Polyformer.Pinned.error_decomposition` (Theorem 3a) holds for any executors `E_i`; Theorem 3b assumes
+`Polyformer.Pinned.error_decomposition` (Theorem 4a) holds for any executors `E_i`; Theorem 4b assumes
 `E_i(x_i) = T_i(x_i)` for every call. Here each call is executed by a sheet procedure, and the hypothesis is
 Theorem 1 applied to that call's run, whatever the length of its input and the order of the calls. -/
 
@@ -210,10 +210,10 @@ theorem Procedure.result_eq_of_certified {P : Procedure C V A X β} {f T : V →
   simp only [trace_getLast?, Option.some.injEq] at h
   rw [Procedure.result, Procedure.result, h]
 
-/-- **Theorem 3b, sheet form, exact calls.** If call `i` is executed by procedure `P i` with the model `f`, and
+/-- **Theorem 4b, sheet form, exact calls.** If call `i` is executed by procedure `P i` with the model `f`, and
 `f` agrees with the table `T i` on a set `W i` of views containing every view the reference runs of `P i` from
 `I i` meet, and call `i`'s start is in `I i`, then every call's result is its table's result on the input it
-received (the hypothesis `E_i(x_i) = T_i(x_i)` of Theorem 3), at any length and in any order of calls. -/
+received (the hypothesis `E_i(x_i) = T_i(x_i)` of Theorem 4), at any length and in any order of calls. -/
 theorem sheet_compose_exact {K : ℕ} {f : V → A} {P : ℕ → Procedure C V A X β} {T : ℕ → V → A}
     {I : ℕ → Set C} {W : ℕ → Set V}
     (hW : ∀ i < K, reachedViews (P i).query (P i).paint (T i) (I i) ⊆ W i)
@@ -223,7 +223,7 @@ theorem sheet_compose_exact {K : ℕ} {f : V → A} {P : ℕ → Procedure C V A
     ∀ i < K, v i = (P i).result (T i) (q i v) := fun i hi =>
   (hv i hi).trans (Procedure.result_eq_of_certified (hW i hi) (hcert i hi) (hqI i hi))
 
-/-- **Theorem 3b, sheet form, the decomposition.** With every call certified, the executor term of
+/-- **Theorem 4b, sheet form, the decomposition.** With every call certified, the executor term of
 `error_decomposition` is empty: a wrong answer means a wrong table, a wrong transcription or a wrong combining
 program. -/
 theorem sheet_error_decomposition_certified {K : ℕ} {f : V → A} {P : ℕ → Procedure C V A X β}
@@ -245,7 +245,7 @@ theorem sheet_error_decomposition_certified {K : ℕ} {f : V → A} {P : ℕ →
     exact hne (Procedure.result_eq_of_certified (hW i hi) (hcert i hi) (hqI i hi))
   · exact h
 
-/-- **Theorem 3b, sheet form, as a bound on probabilities.** Over any measure on transcripts `ω` (no
+/-- **Theorem 4b, sheet form, as a bound on probabilities.** Over any measure on transcripts `ω` (no
 measurability needed), if every call of every transcript is executed by a certified sheet procedure:
 μ(answer wrong) ≤ μ(some table wrong) + μ(some transcription wrong) + μ(combining program wrong). -/
 theorem sheet_error_bound {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) {K : ℕ} {f : V → A}

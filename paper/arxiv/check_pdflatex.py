@@ -4,7 +4,7 @@ Compile the arXiv tarball with pdfLaTeX from TeX Live on Modal, as arXiv would, 
     node paper/build-tex.ts --arxiv
     uvx --with modal modal run paper/arxiv/check_pdflatex.py
 
-Runs pdflatex twice on the unpacked paper/arxiv/sketchpad-arxiv.tar.gz in a Debian trixie image (TeX Live 2024),
+Runs pdflatex three times on the unpacked paper/arxiv/sketchpad-arxiv.tar.gz in a Debian trixie image (TeX Live 2024),
 writes paper/arxiv/verify/main.pdf and main.log, and prints errors, undefined references or citations and overfull
 boxes. A CPU-only job of well under a minute once the image is built.
 """
@@ -39,7 +39,7 @@ def compile_tarball(tgz: bytes) -> dict:
         names = t.getnames()
         t.extractall(work, filter="data")
     codes = []
-    for _ in range(2):
+    for _ in range(3):  # arXiv reruns while labels change
         p = subprocess.run(
             ["pdflatex", "-interaction=nonstopmode", "-halt-on-error", "main.tex"],
             cwd=work,
