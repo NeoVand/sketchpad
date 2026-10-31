@@ -511,7 +511,7 @@ async function addForward(cells: string[]) {
 		const out = await slottedForward(inp);
 		return { row: logitsAt(out.logits, answerAt(out.logits, 'ADD-FAST', 0)), strip };
 	}
-	const out = await model!(await processor!(promptFor('ADD-FAST'), [image]));
+	const out = await forward(await processor!(promptFor('ADD-FAST'), [image]));
 	const S = out.logits.dims[1];
 	return { row: logitsAt(out.logits, S - 1), strip };
 }
@@ -562,10 +562,26 @@ async function slotted(op: BatchOp, image: unknown) {
 async function slottedForward(inp: Inputs) {
 	keepLogits = 1 + slots() + Math.max(...MUL_OPS.map((o) => padFor(o)));
 	try {
-		return await model!(inp);
+		return await forward(inp);
 	} finally {
 		keepLogits = 0;
 	}
+}
+
+/**
+ * One forward of the decoder, for its logits. A forward also returns the decoder's cache (`present…`: the attention
+ * layers' keys and values and the DeltaNet layers' conv and recurrent states), on the GPU; nothing here reads it, and
+ * a GPU tensor is only freed when it is disposed, so it is let go at once. Kept, they took the GPU process from
+ * 3.3 GB to 22 GB in a dozen runs.
+ */
+async function forward(inp: Inputs) {
+	const out = (await model!(inp)) as unknown as Record<
+		string,
+		TTensor & { location?: string; dispose(): void }
+	>;
+	for (const [name, t] of Object.entries(out))
+		if (name !== 'logits' && t?.location === 'gpu-buffer') t.dispose();
+	return { logits: out.logits as TTensor };
 }
 
 /** where an op's j-th answer sits in a slotted row's logits, counted from the row's end (kept or not) */
@@ -592,7 +608,7 @@ async function mulScore(op: SlotOp, v: string[]) {
 		inp = await processor!(promptFor(op), [image]);
 		L = appendTokens(inp, ids);
 	}
-	const out = slots() ? await slottedForward(inp) : await model!(inp);
+	const out = slots() ? await slottedForward(inp) : await forward(inp);
 	let worst = Infinity;
 	let got = '';
 	ids.forEach((t, j) => {
