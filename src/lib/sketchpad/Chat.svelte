@@ -120,9 +120,11 @@
 			<!-- one line under the reply: the caret while it writes, then its times (the same height, so nothing moves) -->
 			<p class="meta num">
 				{#if t.busy}<span class="caret" class:stock={t.gate === 0} aria-hidden="true"
-					></span>{:else if t.ms !== null}{(t.ms / 1000).toFixed(1)} s{#each t.blocks as b, k (k)}{#if b.seconds !== null}
-							· sheet {t.blocks.length > 1 ? `${k + 1} ` : ''}{b.seconds.toFixed(1)} s{/if}{/each}
-					· {t.gate === 1 ? 'with its sheet' : 'stock Qwen'}{:else}&nbsp;{/if}
+					></span>{:else if t.ms !== null}<span>{(t.ms / 1000).toFixed(1)} s</span
+					>{#each t.blocks as b, k (k)}{#if b.seconds !== null}<span
+								>sheet {t.blocks.length > 1 ? `${k + 1} ` : ''}{b.seconds.toFixed(1)} s</span
+							>{/if}{/each}<span>{t.gate === 1 ? 'with its sheet' : 'stock Qwen'}</span
+					>{:else}&nbsp;{/if}
 			</p>
 		</div>
 	{/each}
@@ -275,6 +277,9 @@
 	}
 	.err {
 		color: var(--color-ink-soft);
+	}
+	.meta span:not(.caret) + span::before {
+		content: ' · ';
 	}
 	.meta {
 		margin-top: 4px;
