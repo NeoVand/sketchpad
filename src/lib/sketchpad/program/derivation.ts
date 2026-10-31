@@ -29,6 +29,7 @@ export interface NumberSpan {
 	value: string;
 	displayed: string;
 	signFlipped: boolean;
+	decimalPlaces: number;
 }
 export interface DerivationLine {
 	tex: string;
@@ -42,6 +43,9 @@ export interface DerivationLine {
 	roots?: { equation: Equation; point: Record<string, Rational> }[];
 	bounds?: { equation: Equation; lower: Rational; upper: Rational }[];
 	given?: Expr | Equation[];
+	candidates?: { constant: Expr; leading: Expr; values: Rational[] };
+	approximation?: { expression: Expr; value: Rational; places?: number };
+	conditions?: { expression: Expr; relation: 'zero' | 'nonzero' | 'negative' }[];
 }
 export interface Derivation {
 	lines: DerivationLine[];
@@ -95,14 +99,30 @@ class CapturedCalc implements Calc {
 export class DerivationBuilder {
 	readonly derivation: Derivation;
 	private sources = new WeakMap<Expr, NumberSource>();
+	private scales = new WeakMap<Expr, number>();
 	constructor(
 		readonly trace: TraceCalc,
 		readonly mode: CheckMode,
 		readonly env: Environment = new Map(),
 		readonly prefix = 'd0',
-		path: 'textbook' | 'evaluation' = 'textbook'
+		path: 'textbook' | 'evaluation' = 'textbook',
+		readonly known: Quantity[] = []
 	) {
 		this.derivation = { lines: [], path, traceOffset: trace.calls.length };
+	}
+	inputs(e: Expr): Quantity[] {
+		const found: Quantity[] = [];
+		const walk = (v: Expr) => {
+			const source = this.sources.get(v);
+			if (source) found.push({ value: integer(source.value), n: source });
+			if (v.kind === 'unary') walk(v.value);
+			else if (v.kind === 'binary' || v.kind === 'gcd') {
+				walk(v.left);
+				walk(v.right);
+			}
+		};
+		walk(e);
+		return found;
 	}
 	from(value: Rational, indices: number[] = [], inputs: Quantity[] = []): Quantity {
 		const source = (v: bigint): NumberSource | undefined => {
@@ -120,7 +140,7 @@ export class DerivationBuilder {
 	): Promise<Quantity> {
 		const c = new CapturedCalc(this.trace),
 			value = await work(new Arithmetic(c, this.mode));
-		return this.from(value, c.indices, inputs);
+		return this.from(value, c.indices, [...inputs, ...this.known]);
 	}
 	async int(work: (c: Calc) => Promise<bigint>, inputs: Quantity[] = []): Promise<Quantity> {
 		return this.compute(async (a) => integer(await work(a.calc)), inputs);
@@ -144,11 +164,23 @@ export class DerivationBuilder {
 		if (q.d) this.sources.set(d, q.d);
 		return binary('/', n, d);
 	}
+	decimalExpr(q: Quantity, places: number): Expr {
+		const digits = magnitude(q.value.n)
+			.toString()
+			.padStart(places + 1, '0');
+		const e = num(
+			(q.value.n < 0n ? '-' : '') + digits.slice(0, -places) + '.' + digits.slice(-places)
+		);
+		if (q.n) this.sources.set(e, q.n);
+		this.scales.set(e, places);
+		return e;
+	}
 	private render(e: Expr, spans: NumberSpan[], line: number, parent = 0): string {
 		const render = (x: Expr, p = 0) => this.render(x, spans, line, p);
 		if (e.kind === 'number') {
 			const source = this.sources.get(e);
-			if (!source) return e.text;
+			if (!source)
+				return e.text.startsWith('-') && parent >= 2 ? `\\left(${e.text}\\right)` : e.text;
 			const id = `${this.prefix}-l${line}-n${source.call}-${source.field}-${spans.length}`;
 			spans.push({
 				id,
@@ -156,9 +188,11 @@ export class DerivationBuilder {
 				field: source.field,
 				value: String(source.value),
 				displayed: e.text,
-				signFlipped: BigInt(e.text) !== source.value
+				signFlipped: BigInt(e.text.replace('.', '')) !== source.value,
+				decimalPlaces: this.scales.get(e) ?? 0
 			});
-			return `\\htmlId{${id}}{${e.text}}`;
+			const text = `\\htmlId{${id}}{${e.text}}`;
+			return e.text.startsWith('-') && parent >= 2 ? `\\left(${text}\\right)` : text;
 		}
 		if (e.kind === 'name')
 			return ['x', 'y', 'z'].includes(e.name)
@@ -176,6 +210,10 @@ export class DerivationBuilder {
 		const precedence = e.op === '*' ? 2 : 1;
 		let right = e.right,
 			op: string = e.op;
+		if ((op === '+' || op === '-') && right.kind === 'unary' && right.op === '-') {
+			right = right.value;
+			op = op === '+' ? '-' : '+';
+		}
 		if ((op === '+' || op === '-') && right.kind === 'number' && right.text.startsWith('-')) {
 			const positive = num(right.text.slice(1));
 			const source = this.sources.get(right);
@@ -187,7 +225,10 @@ export class DerivationBuilder {
 		if (op === '*') {
 			const implicit =
 				right.kind === 'name' ||
-				(right.kind === 'binary' && (right.op === '^' || right.op === '+' || right.op === '-'));
+				(right.kind === 'binary' &&
+					((right.op === '^' && right.left.kind === 'name') ||
+						right.op === '+' ||
+						right.op === '-'));
 			text = `${render(e.left, 2)}${implicit ? '' : '\\cdot '}${render(right, 2)}`;
 		} else
 			text = `${render(e.left, precedence)} ${op} ${render(right, op === '-' ? 2 : precedence)}`;
