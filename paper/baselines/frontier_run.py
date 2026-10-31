@@ -2,6 +2,7 @@
 
   python frontier_run.py pilot  <gpt|claude|gemini> ...    # ids 80 (+ 1,000) and 200 (× 20)
   python frontier_run.py full   <gpt|claude|gemini> ...    # all 220, or --per-cell 10 for the registered cut
+  python frontier_run.py full   ollama                    # the five open models (frontier_ollama.MODELS)
   python frontier_run.py cost                             # spend so far, from the usage fields
 
 Keys come from the environment (source ~/.polyformer_keys in the same command); nothing here prints or writes one.
@@ -33,7 +34,13 @@ def problems():
 
 
 def raw_path(key):
-    return RAW / f"{key}.jsonl"
+    return RAW / (key.replace("/", "_").replace(":", "_") + ".jsonl")
+
+
+def module(key):
+    if key.startswith("ollama/"):
+        return importlib.import_module("frontier_ollama").make(key.split("/", 1)[1])
+    return importlib.import_module(MODULES[key])
 
 
 def done_ids(key):
@@ -70,13 +77,13 @@ def ask(mod, key, p):
 
 
 def run(key, ids):
-    mod = importlib.import_module(MODULES[key])
+    mod = module(key)
     RAW.mkdir(parents=True, exist_ok=True)
     have = done_ids(key)
     todo = [p for p in problems() if p["id"] in ids and p["id"] not in have]
     print(f"{key}: {len(todo)} to ask ({len(have)} already done)", flush=True)
     spent = 0.0
-    with cf.ThreadPoolExecutor(WORKERS) as ex:
+    with cf.ThreadPoolExecutor(getattr(mod, "WORKERS", WORKERS)) as ex:
         for fut in cf.as_completed([ex.submit(ask, mod, key, p) for p in todo]):
             rec = fut.result()
             if rec is None:
@@ -91,10 +98,8 @@ def run(key, ids):
 
 def cost():
     total = 0.0
-    for key in MODULES:
-        p = raw_path(key)
-        if not p.exists():
-            continue
+    for p in sorted(RAW.glob("*.jsonl")):
+        key = p.stem
         recs = [json.loads(line) for line in p.read_text().splitlines() if line.strip()]
         c = sum(r.get("cost") or 0 for r in recs)
         total += c
@@ -105,7 +110,9 @@ def cost():
 
 
 if __name__ == "__main__":
-    cmd, keys = sys.argv[1], [k for k in sys.argv[2:] if k in MODULES]
+    cmd, keys = sys.argv[1], [k for k in sys.argv[2:] if k in MODULES or k.startswith("ollama/")]
+    if "ollama" in sys.argv[2:]:
+        keys += ["ollama/" + m for m in importlib.import_module("frontier_ollama").MODELS]
     if cmd == "cost":
         cost()
         sys.exit()
@@ -114,9 +121,8 @@ if __name__ == "__main__":
     else:
         per = int(sys.argv[sys.argv.index("--per-cell") + 1]) if "--per-cell" in sys.argv else 20
         ids = {p["id"] for p in problems() if p["k"] < per}
-    for k in MODULES:  # spend already on record counts toward the stop
-        if raw_path(k).exists():
-            spent_total[0] += sum(json.loads(x).get("cost") or 0 for x in raw_path(k).read_text().splitlines() if x.strip())
+    for f in RAW.glob("*.jsonl"):  # spend already on record counts toward the stop
+        spent_total[0] += sum(json.loads(x).get("cost") or 0 for x in f.read_text().splitlines() if x.strip())
     print(f"spent so far ${spent_total[0]:.2f}; no new request past ${STOP_AT:.0f}", flush=True)
     with cf.ThreadPoolExecutor(len(keys)) as ex:
         list(ex.map(lambda k: run(k, ids), keys))

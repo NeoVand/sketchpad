@@ -1,0 +1,1 @@
+{"id": 0, "model_key": "ollama/gemma4:31b", "mode": "frontier", "error": "ResponseError: Add usage credits or subscribe and save up to 66%: https://ollama.com/plans (ref: 2bf04ef4-7e9b-4bde-8781-47408fc7f7e7) (status code: 402)", "elapsed": 0.1, "attempts": 1}

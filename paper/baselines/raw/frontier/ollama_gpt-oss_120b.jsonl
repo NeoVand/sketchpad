@@ -1,0 +1,1 @@
+{"id": 0, "model_key": "ollama/gpt-oss:120b", "mode": "frontier", "error": "ResponseError: Add usage credits or subscribe and save up to 66%: https://ollama.com/plans (ref: f458241e-47be-45c2-b89a-3ff346cfa5c8) (status code: 402)", "elapsed": 0.1, "attempts": 1}

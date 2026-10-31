@@ -70,3 +70,19 @@ From the paper's writer, 31 Oct 2026. Each item says what the draft does today, 
     Gemini keys work. Claude Opus 5.5 is registered (`BASELINES.md`, "Frontier") but cannot run until the key is
     replaced; `frontier_run.py full claude` then runs it with nothing else to change. Until then the paper says
     "not run" for it.
+
+14. **The Ollama key cannot generate.** `https://ollama.com/api/tags` and `/api/show` return 200, but every
+    `/api/chat` call returns **402 "Add usage credits or subscribe"** (one smoke request per model on problem 0, all
+    five models, 31 Oct; the errors are in `paper/baselines/raw/frontier/ollama_*.jsonl`, not scored). The open tier is
+    registered (`BASELINES.md`, "Ten comparison models") and the runner is ready (`frontier_run.py full ollama`).
+    Options, by what each breaks:
+    - **Add Ollama credits** (Neo's account; a purchase only Neo can make). Breaks nothing; cost unknown until the
+      plan page is read; 5 × 220 replies of up to 32,768 tokens.
+    - **Run the open weights on Modal with vLLM**, as for Qwen3.5-27B. `gpt-oss:120b` (117 B, MXFP4) and `gemma4:31b`
+      (33 B) fit one H100, about $5–8 for both. `glm-5.3` (753 B, FP8) needs 8 GPUs, roughly $30–60;
+      `deepseek-v4-pro` (1.65 T) and `kimi-k3` (2.8 T) need more than one 8-GPU node, which is expensive and slow to
+      set up. Breaks the "free" premise; keeps the same weights.
+    - **The labs' own APIs** (DeepSeek, Moonshot, Z.ai) with new keys. Cheap per token; breaks "one access route for
+      the open tier" and needs keys Neo does not have here.
+    - **Report the comparison with five models** (three frontier, two Qwen) until one of the above lands. The text
+      and Extended Data Table 5 are written that way today, with the open tier marked as registered and not run.

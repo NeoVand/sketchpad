@@ -1,0 +1,1 @@
+{"id": 0, "model_key": "ollama/kimi-k3", "mode": "frontier", "error": "ResponseError: Add usage credits or subscribe and save up to 66%: https://ollama.com/plans (ref: 5a1f3a40-c0cd-4221-86d3-21cd8df61a88) (status code: 402)", "elapsed": 0.1, "attempts": 1}

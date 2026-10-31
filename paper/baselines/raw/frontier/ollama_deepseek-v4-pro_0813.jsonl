@@ -1,0 +1,1 @@
+{"id": 0, "model_key": "ollama/deepseek-v4-pro:0813", "mode": "frontier", "error": "ResponseError: Add usage credits or subscribe and save up to 66%: https://ollama.com/plans (ref: 0a17e739-c8db-4338-bcfb-d8654dab7716) (status code: 402)", "elapsed": 0.1, "attempts": 1}
