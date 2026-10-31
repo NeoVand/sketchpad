@@ -4,23 +4,38 @@
 @import 'katex/dist/katex.min.css';
 
 /*
- * Sketchpad design tokens — a monochrome instrument (ported from polyformer, see PORTED.md).
- * Every neutral has equal RGB channels.
+ * Sketchpad's one design system, light only: the paper palette Cobalt and Rose (polyformer
+ * research/figstyle/palette.json at 3185c95b) for the paper, the demo and the figures alike. The canvases read the
+ * same colours from src/lib/sketchpad/theme.svelte.ts.
+ *
+ * Roles: rose is ours (the model's writing on the sheet, certified); cobalt the alternative or stock Qwen; violet
+ * references and theory only. Everything else is ink on white, with the tint for quiet fills and the mist for hairlines.
  */
 @theme {
-	--color-void: #080808;
-	--color-well: #0e0e0e;
-	--color-panel: #151515;
-	--color-lift: #1c1c1c;
-	--color-control: #262626;
-	--color-edge: #2e2e2e;
-	--color-rule: #555555;
-	--color-ink-3: #8a8a8a;
-	--color-ink-2: #a6a6a6;
-	--color-ink: #f5f5f5;
+	--color-paper: #ffffff;
+	--color-tint: #f2f5fb;
+	--color-ink: #1f2a44;
+	--color-ink-soft: #4c5b78;
+	--color-blue-grey: #7d8ba8;
+	--color-mist: #bac5d9;
+	--color-rose: #d6336c;
+	--color-rose-light: #f1a3bc;
+	--color-cobalt: #2557a7;
+	--color-cobalt-light: #9db8e0;
+	--color-violet: #7a5ba8;
+
+	/* the roles the ported panels read, on the palette */
+	--color-void: var(--color-paper);
+	--color-panel: var(--color-tint);
+	--color-lift: #e6ebf4;
+	--color-edge: #dde3ee;
+	--color-rule: var(--color-mist);
+	--color-ink-2: var(--color-ink-soft);
+	--color-ink-3: var(--color-blue-grey);
 
 	--font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+	--font-serif: 'KaTeX_Main', 'Latin Modern Roman', 'Times New Roman', serif;
 	--font-math: 'KaTeX_Math', 'Times New Roman', serif;
 
 	--radius-ui: 4px;
@@ -29,20 +44,26 @@
 	--text-sm: 13px;
 	--text-ui: 14px;
 	--text-lg: 16px;
-	--text-head: 24px;
+	--text-head: 28px;
 }
 
 :root {
-	color-scheme: dark;
-	--bar-h: 46px;
-	--rail-w: 76px;
-	--glow: 0 0 0 1px rgb(255 255 255 / 0.9), 0 0 14px 2px rgb(255 255 255 / 0.28);
-	--focus: 0 0 0 1px rgb(255 255 255 / 0.5);
+	color-scheme: light;
+	--bar-h: 48px;
+	/* fields and tracks: tone, never outlines */
+	--field: var(--color-tint);
+	--field-hover: #e9eef7;
+	--track: #e3e8f1;
+	--track-on: var(--color-blue-grey);
+	/* one eased motion between states, a quick one for hover */
+	--ease: cubic-bezier(0.65, 0, 0.35, 1);
+	--move: 850ms;
+	--hover: 250ms;
 }
 
 html,
 body {
-	background: var(--color-void);
+	background: var(--color-paper);
 	color: var(--color-ink);
 	font-family: var(--font-sans);
 	font-size: var(--text-ui);
@@ -51,38 +72,19 @@ body {
 	font-feature-settings: 'ss01', 'cv11';
 }
 
-/* Readouts: tabular figures so digits don't dance while training. */
+/* Readouts: tabular figures so digits don't dance while a run goes. */
 .num {
 	font-variant-numeric: tabular-nums;
 	font-feature-settings: 'tnum';
 }
 
+/* quiet focus: a thin ink ring for the keyboard only */
 :focus-visible {
-	outline: 1px solid rgb(255 255 255 / 0.5);
+	outline: 1px solid var(--color-blue-grey);
 	outline-offset: 2px;
 }
-/* pointer focus on a select or slider is not worth a ring */
-select:focus-visible,
 input[type='range']:focus-visible {
 	outline: none;
-}
-
-select {
-	appearance: none;
-	height: 28px;
-	padding: 0 26px 0 10px;
-	border: 0;
-	border-radius: 6px;
-	background: #1a1a1a
-		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a6a6a6' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-		no-repeat right 9px center;
-	color: var(--color-ink);
-	font: inherit;
-	font-size: var(--text-sm);
-	cursor: pointer;
-}
-select:hover {
-	background-color: #222;
 }
 
 input[type='checkbox'],
@@ -91,13 +93,23 @@ input[type='range'] {
 }
 
 ::selection {
-	background: #f5f5f5;
-	color: #080808;
+	background: var(--color-cobalt-light);
+	color: var(--color-ink);
 }
 
 .katex {
 	font-size: 1.08em;
 	color: var(--color-ink);
+}
+
+a {
+	color: inherit;
+	text-decoration-color: var(--color-mist);
+	text-underline-offset: 3px;
+	transition: text-decoration-color var(--hover) ease;
+}
+a:hover {
+	text-decoration-color: currentColor;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -109,128 +121,60 @@ input[type='range'] {
 	}
 }
 
-/* thin scrollbars that match the panels */
 * {
 	scrollbar-width: thin;
-	scrollbar-color: #3a3a3a transparent;
+	scrollbar-color: var(--color-mist) transparent;
 }
 
-/* ── shared controls ─────────────────────────────────────────────────────── */
+/* ── shared pieces ──────────────────────────────────────────────────────── */
 @layer components {
-	.btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-		height: 28px;
-		padding: 0 10px;
-		border: 1px solid var(--color-edge);
+	/* the one strong action: ink on white, no outline */
+	.primary {
+		height: 30px;
+		padding: 0 16px;
+		border: 0;
 		border-radius: var(--radius-ui);
-		background: var(--color-control);
-		color: var(--color-ink);
+		background: var(--color-ink);
+		color: var(--color-paper);
 		font: inherit;
 		font-size: var(--text-sm);
+		font-weight: 500;
 		white-space: nowrap;
 		cursor: pointer;
 		transition:
-			background 120ms ease,
-			border-color 120ms ease;
+			background var(--hover) ease,
+			color var(--hover) ease;
 	}
-	.btn:hover:not(:disabled) {
-		background: #303030;
-		border-color: var(--color-rule);
+	.primary:hover:not(:disabled) {
+		background: #111827;
 	}
-	.btn:disabled {
-		color: var(--color-ink-3);
+	.primary:disabled {
+		background: var(--color-lift);
+		color: var(--color-blue-grey);
 		cursor: default;
 	}
-	.btn.primary {
-		background: var(--color-ink);
-		border-color: var(--color-ink);
-		color: var(--color-void);
-		font-weight: 500;
-	}
-	.btn.primary:hover:not(:disabled) {
-		background: #ffffff;
-	}
-	.btn.primary:disabled {
-		background: var(--color-control);
-		border-color: var(--color-edge);
-		color: var(--color-ink-3);
-	}
-	.btn.icon-only {
-		width: 28px;
-		padding: 0;
-	}
-	.btn.ghost {
-		background: transparent;
-	}
-
-	/* segmented control */
-	.seg {
-		display: inline-flex;
-		padding: 2px;
-		gap: 2px;
-		border-radius: 7px;
-		background: #161616;
-	}
-	.seg button {
-		height: 24px;
-		padding: 0 10px;
+	/* text buttons: tone and weight, never a box */
+	.plain {
 		border: 0;
-		border-radius: 5px;
-		background: transparent;
-		color: var(--color-ink-2);
+		padding: 0;
+		background: none;
+		color: var(--color-blue-grey);
 		font: inherit;
-		font-size: var(--text-xs);
 		cursor: pointer;
+		transition: color var(--hover) ease;
 	}
-	.seg button:hover {
+	.plain:hover:not(:disabled) {
 		color: var(--color-ink);
 	}
-	.seg button[aria-pressed='true'] {
-		background: #2c2c2c;
+	.plain[aria-pressed='true'] {
 		color: var(--color-ink);
 	}
-
-	.panel {
-		background: var(--color-panel);
-		border: 1px solid var(--color-edge);
-		border-radius: var(--radius-ui);
-	}
-	.panel-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		min-height: 40px;
-		padding: 8px 14px;
-		border-bottom: 1px solid #222;
-	}
-	.panel-title {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: var(--text-ui);
-		font-weight: 500;
-		color: var(--color-ink);
-	}
-	.panel-title svg {
-		color: var(--color-ink-2);
+	.plain:disabled {
+		cursor: default;
+		color: var(--color-mist);
 	}
 	.hint {
 		font-size: var(--text-xs);
-		color: var(--color-ink-3);
-	}
-	.page-title {
-		font-size: var(--text-head);
-		font-weight: 500;
-		letter-spacing: -0.02em;
-		line-height: 1.15;
-	}
-	.lede {
-		margin-top: 4px;
-		color: var(--color-ink-2);
-		max-width: 68ch;
+		color: var(--color-blue-grey);
 	}
 }

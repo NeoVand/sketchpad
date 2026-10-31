@@ -47,13 +47,14 @@
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
-		padding: 0 16px 0 22px;
-		background: var(--color-void);
+		padding: 0 16px 0 32px;
+		background: rgb(255 255 255 / 0.92);
+		backdrop-filter: blur(8px);
 		border-bottom: 1px solid var(--color-edge);
 	}
 	.wordmark {
 		font-size: 17px;
-		font-weight: 450;
+		font-weight: 500;
 		letter-spacing: -0.015em;
 		color: var(--color-ink);
 		text-decoration: none;
@@ -69,10 +70,10 @@
 		align-items: center;
 		gap: 7px;
 		padding: 0 14px;
-		color: var(--color-ink-3);
+		color: var(--color-blue-grey);
 		text-decoration: none;
 		font-size: var(--text-ui);
-		transition: color 120ms ease;
+		transition: color var(--hover) ease;
 	}
 	nav a:hover,
 	nav a.active {
@@ -100,19 +101,22 @@
 		width: 30px;
 		height: 30px;
 		border-radius: var(--radius-ui);
-		color: var(--color-ink-3);
+		color: var(--color-blue-grey);
 		transition:
-			color 120ms ease,
-			background 120ms ease;
+			color var(--hover) ease,
+			background var(--hover) ease;
 	}
 	.gh:hover {
 		color: var(--color-ink);
-		background: var(--color-panel);
+		background: var(--color-tint);
 	}
 	@media (max-width: 560px) {
 		.bar {
 			grid-template-columns: auto 1fr auto;
 			padding: 0 8px 0 16px;
+		}
+		nav {
+			justify-content: center;
 		}
 		nav a {
 			padding: 0 10px;

@@ -5,7 +5,7 @@ reads a rendered sheet three cells at a time and writes every digit itself, one 
 its only memory. Every view it can meet is certified, and the page re-checks the weakest of them on your GPU.
 
 - **Paper and demo:** <https://neovand.github.io/sketchpad/> (the paper is a skeleton while the text is written; the
-  demo still runs at <https://neovand.github.io/polyformer/sketchpad/> until it is ported).
+  demo runs at <https://neovand.github.io/sketchpad/demo>).
 - **Weights:** [mohsenvand/sketchpad-0.8b-preview](https://huggingface.co/mohsenvand/sketchpad-0.8b-preview) (the
   browser program) and [mohsenvand/sketchpad-0.8b-runs](https://huggingface.co/mohsenvand/sketchpad-0.8b-runs)
   (every training run with its evaluation).

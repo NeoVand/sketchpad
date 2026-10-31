@@ -9,7 +9,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<meta name="theme-color" content="#080808" />
+	<meta name="theme-color" content="#ffffff" />
 </svelte:head>
 
 <TopBar />
