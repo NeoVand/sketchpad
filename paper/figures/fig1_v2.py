@@ -397,6 +397,7 @@ VMAX = 20.0
 wi = int(add_m.argmin())
 check(abs(add_m.min() - 3.016) < 1e-9 and wi == 73, "the weakest view: SUM row 73, margin 3.016")
 check(S["weak"]["cells"] == [" ", "5", "6"] and S["weak"]["answer"] == ["b"], "SUM [ ,5,6] writes b (1, carry 1)")
+check("abcdefghij".index(S["weak"]["answer"][0]) == (5 + 6) % 10 and 5 + 6 >= 10, "b is digit 1 with a carry: 11")
 Y2 = ROW1_END + 7.0
 letter(fig, 1.0, Y2 - 3.0, LETTERS[2])
 T(16.0 - 0.9, Y2, "the guarantee: every view the runs can read, checked once", L, INK)
@@ -480,7 +481,7 @@ else:
 tx = cx + sw + 2.2
 T(tx, sy0 + 0.8, "the weakest of the 2,446 views", SM, INK, va="center")
 T(tx, sy0 + 3.7, "SUM reads 5 and 6, no carry in;", SM, SOFT)
-T(tx, sy0 + 6.6, "it writes b: 1, carry 1", SM, SOFT)
+T(tx, sy0 + 6.6, "it writes 11 as one token, 'b': digit 1, carry 1", SM, SOFT)
 T(tx, sy0 + 9.8, f"margin {add_m.min():.2f} logits", L, ROSE)
 # ramp
 rx, ryy = tx, sy0 + 13.2
