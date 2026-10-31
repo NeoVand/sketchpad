@@ -9,3 +9,7 @@ pnpm-lock.yaml
 
 # Written by research scripts; kept byte for byte as the script writes them
 research/**/*.json
+
+# the paper: records, data and prose are kept byte for byte (build.sh checks data checksums); only its code is formatted
+/paper/**
+!/paper/**/*.ts
