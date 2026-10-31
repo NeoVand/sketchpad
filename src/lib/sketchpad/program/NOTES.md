@@ -1,3 +1,157 @@
+Round 3 passes **222 tests**, including **2,200 generated correctness cases per path/check mode**, exact checks of the textbook rewrites, strict TypeScript, ESLint, Prettier and **150 reference-cost comparisons**. **$0; RefCalc only.** Committed on `algebra-textbook`; nothing pushed.
+
+Both paths refuse **200/200 wrong roots (100%)** in each check mode. Textbook refuses **185/200 arithmetic faults (92.5%)**; evaluation refuses **173/200 (86.5%)**. All missed faults leave the answer unchanged in these samples. Fault locations differ because the procedures differ; these rates do not establish protection against arbitrary corruption.
+
+Decisions: textbook is the default, light remains the default check, and evaluation stays an explicit mode. Pascal's additions use fewer rows than the recurrence for every supported positive exponent; the zero exponent ties. **Six of eleven orders are under 12 modeled seconds in both paths and both check modes.** The expansions, larger system and factoring still miss that target.
+
+Seconds below; each pair is **light / strong**. ✓ means both are below 12 s. Full rows/calls/seconds follow the examples.
+
+| Work order          |      Textbook s |      Evaluation s | Both <12 s |
+| ------------------- | --------------: | ----------------: | ---------- |
+| 6×6 product         |   6.542 / 6.542 |     6.542 / 6.542 | ✓          |
+| 3(x−2)+5=2x+14      |   2.762 / 4.291 |     4.530 / 6.449 | ✓          |
+| 7x+13=2026−4x       |   7.619 / 7.479 |   11.825 / 11.685 | ✓          |
+| 2×2 system          |   5.895 / 5.895 |     9.843 / 9.399 | ✓          |
+| Expand (x+2)⁵       | 12.058 / 30.716 |   33.066 / 41.974 | —          |
+| Expand (2x−3)⁴      | 12.474 / 31.735 |   36.014 / 45.005 | —          |
+| Expand (x+1)¹⁰      | 21.924 / 68.047 | 142.208 / 164.736 | —          |
+| Bracketed quadratic |   5.718 / 7.904 |    9.799 / 11.660 | ✓          |
+| x²−x−6=0            |   8.779 / 8.779 |   11.129 / 11.129 | ✓          |
+| 3×3 system          | 22.806 / 22.806 |   26.536 / 25.426 | —          |
+| Factor x³−6x²+11x−6 | 16.900 / 19.252 |   31.521 / 33.483 | —          |
+
+The requested derivations follow. Typed-side checks are shown, except the expansion uses light mode. Repeated left sides in the expansion are written as a continuous equality chain.
+
+`solve 3(x-2)+5=2x+14`
+
+```text
+3(x − 2) + 5 = 2x + 14
+3x − 3·2 + 5 = 2x + 14
+3x − 6 + 5 = 2x + 14    -(3·2) = -6
+3x − 1 = 2x + 14    -6 + 5 = -1
+3x − 2x = 14 + 1
+x = 15    3 − 2 = 1,   14 + 1 = 15
+3(15 − 2) + 5 = 44 = 2·15 + 14  ✓
+x = 15
+```
+
+`solve x^2-x-6=0`
+
+```text
+x² − x − 6 = 0
+(-1)² − 4·1·(-6) = 25
+√25 = 5
+x = (1 − 5)/(2·1) = -2
+x = (1 + 5)/(2·1) = 3
+(-2)² + 2 − 6 = 0  ✓
+3² − 3 − 6 = 0  ✓
+x = -2, 3
+```
+
+`expand (x+2)^5`
+
+```text
+(x + 2)⁵
+= x⁵ + 5·2x⁴ + 10·2²x³ + 10·2³x² + 5·2⁴x + 2⁵
+= x⁵ + 5·2x⁴ + 10·4x³ + 10·8x² + 5·16x + 32
+= x⁵ + 10x⁴ + 40x³ + 80x² + 80x + 32
+(1 + 2)⁵ = 243 = 1⁵ + 10·1⁴ + 40·1³ + 80·1² + 80·1 + 32  ✓
+(x + 2)⁵ = x⁵ + 10x⁴ + 40x³ + 80x² + 80x + 32
+```
+
+`solve 2x+3y=7,x-y=1`
+
+```text
+2x + 3y = 7
+x − y = 1
+2x − 2y = 2    Multiply equation 2 by 2
+2x + 3y − (2x − 2y) = 7 − 2    Subtract the scaled equation 2 from the scaled equation 1
+5y = 5
+y = 1
+2x + 3·1 = 7    Back-substitute the known values
+2x = 7 − 3
+2x = 4
+x = 2
+2·2 + 3·1 = 7  ✓
+2 − 1 = 1  ✓
+x = 2,   y = 1
+```
+
+`factor x^3-6x^2+11x-6`
+
+```text
+x³ − 6x² + 11x − 6
+Candidates:  1, -1, 2, -2, 3, -3, 6, -6
+1³ − 6·1² + 11·1 − 6 = 0
+1 | 1 -6 11 -6
+  |    1 -5  6
+  ----------
+  | 1 -5  6  0
+x³ − 6x² + 11x − 6 = (x − 1)(x² − 5x + 6)
+1³ − 6·1² + 11·1 − 6 = 0  ✓
+(-5)² − 4·1·6 = 1
+√1 = 1
+x = (5 − 1)/(2·1) = 2
+x = (5 + 1)/(2·1) = 3
+2 | 1 -5  6
+  |    2 -6
+  -------
+  | 1 -3  0
+x² − 5x + 6 = (x − 2)(x − 3)
+2³ − 6·2² + 11·2 − 6 = 0  ✓
+3³ − 6·3² + 11·3 − 6 = 0  ✓
+x³ − 6x² + 11x − 6 = (x − 1)(x − 2)(x − 3)
+```
+
+## Round 3 full cost table
+
+Each cell is **rows / calls after waves / seconds**. ✓ marks strictly below 12 seconds. Seconds are `0.037 × rows + 0.065 × calls`; they are predictions, not device timings. Calls count the sheet procedures' forward passes, not high-level Calc invocations.
+
+| Work order                            | Textbook light r/c/s | Textbook strong r/c/s | Evaluation light r/c/s | Evaluation strong r/c/s |
+| ------------------------------------- | -------------------: | --------------------: | ---------------------: | ----------------------: |
+| `123456 * 654321`                     |        96/46/6.542 ✓ |         96/46/6.542 ✓ |          96/46/6.542 ✓ |           96/46/6.542 ✓ |
+| `solve 3(x-2)+5=2x+14`                |        36/22/2.762 ✓ |         58/33/4.291 ✓ |          75/27/4.530 ✓ |           97/44/6.449 ✓ |
+| `solve 7x+13=2026-4x`                 |        97/62/7.619 ✓ |        102/57/7.479 ✓ |        165/88/11.825 ✓ |         170/83/11.685 ✓ |
+| `solve 2x+3y=7,x-y=1`                 |        75/48/5.895 ✓ |         75/48/5.895 ✓ |         194/41/9.843 ✓ |          182/41/9.399 ✓ |
+| `expand (x+2)^5`                      |        159/95/12.058 |        398/246/30.716 |         458/248/33.066 |          697/249/41.974 |
+| `expand (2x-3)^4`                     |        172/94/12.474 |        415/252/31.735 |         492/274/36.014 |          735/274/45.005 |
+| `expand (x+1)^10`                     |       322/154/21.924 |        901/534/68.047 |       2359/845/142.208 |        2938/862/164.736 |
+| `solve (2x-3)(x+5)=x^2+1-16`          |        79/43/5.718 ✓ |        117/55/7.904 ✓ |         177/50/9.799 ✓ |         215/57/11.660 ✓ |
+| `solve x^2-x-6=0`                     |       102/77/8.779 ✓ |        102/77/8.779 ✓ |        162/79/11.129 ✓ |         162/79/11.129 ✓ |
+| `solve 2x+3y-z=1, x-y+2z=3, 3x+y+z=8` |       323/167/22.806 |        323/167/22.806 |         538/102/26.536 |          508/102/25.426 |
+| `factor x^3-6x^2+11x-6`               |       195/149/16.900 |        241/159/19.252 |         483/210/31.521 |          529/214/33.483 |
+
+## Round 3 API and verification
+
+`run(source, calc)` now selects `{ path: 'textbook', checkMode: 'light' }`. Use `{ path: 'evaluation' }` for the retained procedure and `{ checkMode: 'strong' }` to check the typed sides. The original result text, coefficient grids and trace remain available. Evaluation mode retains its existing grids; its algebra derivation list is empty.
+
+Each statement returns `derivation.lines`, with `tex`, `kind`, optional `note`, `calls` and `numbers`. Calls index **RunResult.trace**, not the statement's sliced trace; `traceOffset` locates that slice. A copied named value may refer to an earlier statement's call. Each computed-number occurrence has its own stable HTML id, source call, result field, original digits, displayed digits and sign/decimal-layout metadata. Typed literals, structural exponents, unit coefficients and trial candidates need no model output id. Notes can contain ordinary explanatory text or TeX arithmetic. A refusal returns only the given lines, withholding unverified results.
+
+The additional proof fields are testable mathematical data. A solving equation need not hold for every x: its rewrite is checked by comparing the old left-minus-right expression with the appropriately scaled new one. Each polynomial identity is evaluated with RefCalc at enough distinct points in every variable to establish equality at its degree. Root substitutions, endpoint signs, candidate divisibility, numeric table entries and number-to-trace links are checked separately. The fixed-seed generated algebra cases run those derivation checks too. Focused rendering tests exercise KaTeX, copied names, rational synthetic tables, zero coefficients, higher total degrees, fractional equations and irrational brackets.
+
+Assumptions beyond the requested display: retain an independent collection confirmation at x=y=z=1 before trusting the light check; bound divisor enumeration at 10000 trials; preserve the earlier conservative `complete: false` factor result. The confirming point sums collected coefficients through Calc because every variable is one. It is an internal guard, not an extra solving line. A single confirming point is not a proof against arbitrary arithmetic corruption. Factor candidates are enumerated as ±p/q and may contain equivalent unreduced fractions; arithmetic and acceptance checks still run through Calc. An unresolved factor remains visible. Irrational brackets are checked against the original typed equation in strong mode and the original collected coefficients in light mode.
+
+The choice of Pascal additions is measured in `binomial-costs.json` for exponents 0 through 12; the multiplicative recurrence is retained as a tested alternative. Integer equation elimination keeps fractions out of the row operations; final divisions and back-substitution can produce fractions. Native answer arithmetic would remove sheet cost but violate the Calc boundary, so it is not used in the textbook runtime. The evaluation path remains the requested comparison. No model, provider request, server or watch process was used.
+
+The fault populations keep the earlier source seeds and wrong offered roots. For each procedure, arithmetic targets are sampled inside its initial coefficient-evaluation/collection work, including its confirmation. The exact target inputs agree between light and strong within a path. A changed schedule changes the available positions and hence the sampled targets, so the percentage difference between paths is descriptive rather than a controlled estimate of relative fault tolerance. Miss details remain in the JSON files. Recomputed evaluation costs and refusal results match the frozen round-two artifacts exactly.
+
+## Reproduce round 3
+
+Run from this worktree only. The report environment variable writes only artifacts in this directory; ordinary tests write none.
+
+```sh
+PROGRAM_REPORT=1 nice -n 19 pnpm vitest run src/lib/sketchpad/program
+pnpm exec tsc --ignoreConfig --noEmit --target es2022 --module esnext --moduleResolution bundler --skipLibCheck --strict --types node src/lib/sketchpad/program/*.ts
+pnpm exec eslint src/lib/sketchpad/program
+pnpm exec prettier --check research/ALGEBRA3.md research/GLOSSARY.md src/lib/sketchpad/program
+python3 src/lib/sketchpad/program/verify_costs.py
+python3 src/lib/sketchpad/program/verify_round3.py
+```
+
+`round3-{path}-{mode}.json` contains all eleven costs, population counts, fault details and demo TeX; `derivations-{mode}.json` contains the requested examples without highlight markup. The cost audit independently recomputes decimal seconds, rates, thresholds and count totals and compares the evaluation path with round two. The reference-cost audit reads only this repository's Python reference. All changes were authored here; nothing was copied from or changed in another checkout.
+
+## Earlier implementation record (ported; superseded above)
+
 Round 2 passes **97 tests**, including **2,200 generated correctness cases per mode**. TypeScript, ESLint, formatting and the 150 reference-cost comparisons pass.
 
 Both modes refuse **200/200 wrong roots (100%)** and **173/200 evaluation faults (86.5%)**. The 27 missed faults leave the answers unchanged; this does not establish protection against arbitrary corruption.

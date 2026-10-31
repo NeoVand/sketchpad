@@ -1,184 +1,80 @@
 [
 	{
 		"n": 0,
-		"pascal": {
-			"rows": 0,
-			"calls": 0,
-			"seconds": 0
-		},
-		"recurrence": {
-			"rows": 0,
-			"calls": 0,
-			"seconds": 0
-		},
+		"pascal": { "rows": 0, "calls": 0, "seconds": 0 },
+		"recurrence": { "rows": 0, "calls": 0, "seconds": 0 },
 		"selected": "pascal"
 	},
 	{
 		"n": 1,
-		"pascal": {
-			"rows": 0,
-			"calls": 0,
-			"seconds": 0
-		},
-		"recurrence": {
-			"rows": 15,
-			"calls": 12,
-			"seconds": 1.335
-		},
+		"pascal": { "rows": 0, "calls": 0, "seconds": 0 },
+		"recurrence": { "rows": 15, "calls": 12, "seconds": 1.335 },
 		"selected": "pascal"
 	},
 	{
 		"n": 2,
-		"pascal": {
-			"rows": 2,
-			"calls": 2,
-			"seconds": 0.20400000000000001
-		},
-		"recurrence": {
-			"rows": 30,
-			"calls": 24,
-			"seconds": 2.67
-		},
+		"pascal": { "rows": 2, "calls": 2, "seconds": 0.20400000000000001 },
+		"recurrence": { "rows": 30, "calls": 24, "seconds": 2.67 },
 		"selected": "pascal"
 	},
 	{
 		"n": 3,
-		"pascal": {
-			"rows": 6,
-			"calls": 4,
-			"seconds": 0.482
-		},
-		"recurrence": {
-			"rows": 45,
-			"calls": 36,
-			"seconds": 4.005
-		},
+		"pascal": { "rows": 6, "calls": 4, "seconds": 0.482 },
+		"recurrence": { "rows": 45, "calls": 36, "seconds": 4.005 },
 		"selected": "pascal"
 	},
 	{
 		"n": 4,
-		"pascal": {
-			"rows": 12,
-			"calls": 6,
-			"seconds": 0.834
-		},
-		"recurrence": {
-			"rows": 62,
-			"calls": 50,
-			"seconds": 5.5440000000000005
-		},
+		"pascal": { "rows": 12, "calls": 6, "seconds": 0.834 },
+		"recurrence": { "rows": 62, "calls": 50, "seconds": 5.5440000000000005 },
 		"selected": "pascal"
 	},
 	{
 		"n": 5,
-		"pascal": {
-			"rows": 20,
-			"calls": 8,
-			"seconds": 1.26
-		},
-		"recurrence": {
-			"rows": 88,
-			"calls": 73,
-			"seconds": 8.001
-		},
+		"pascal": { "rows": 20, "calls": 8, "seconds": 1.26 },
+		"recurrence": { "rows": 88, "calls": 73, "seconds": 8.001 },
 		"selected": "pascal"
 	},
 	{
 		"n": 6,
-		"pascal": {
-			"rows": 33,
-			"calls": 11,
-			"seconds": 1.936
-		},
-		"recurrence": {
-			"rows": 106,
-			"calls": 89,
-			"seconds": 9.707
-		},
+		"pascal": { "rows": 33, "calls": 11, "seconds": 1.936 },
+		"recurrence": { "rows": 106, "calls": 89, "seconds": 9.707 },
 		"selected": "pascal"
 	},
 	{
 		"n": 7,
-		"pascal": {
-			"rows": 49,
-			"calls": 14,
-			"seconds": 2.723
-		},
-		"recurrence": {
-			"rows": 126,
-			"calls": 107,
-			"seconds": 11.617
-		},
+		"pascal": { "rows": 49, "calls": 14, "seconds": 2.723 },
+		"recurrence": { "rows": 126, "calls": 107, "seconds": 11.617 },
 		"selected": "pascal"
 	},
 	{
 		"n": 8,
-		"pascal": {
-			"rows": 68,
-			"calls": 17,
-			"seconds": 3.621
-		},
-		"recurrence": {
-			"rows": 144,
-			"calls": 123,
-			"seconds": 13.323
-		},
+		"pascal": { "rows": 68, "calls": 17, "seconds": 3.621 },
+		"recurrence": { "rows": 144, "calls": 123, "seconds": 13.323 },
 		"selected": "pascal"
 	},
 	{
 		"n": 9,
-		"pascal": {
-			"rows": 90,
-			"calls": 20,
-			"seconds": 4.63
-		},
-		"recurrence": {
-			"rows": 176,
-			"calls": 151,
-			"seconds": 16.326999999999998
-		},
+		"pascal": { "rows": 90, "calls": 20, "seconds": 4.63 },
+		"recurrence": { "rows": 176, "calls": 151, "seconds": 16.326999999999998 },
 		"selected": "pascal"
 	},
 	{
 		"n": 10,
-		"pascal": {
-			"rows": 118,
-			"calls": 24,
-			"seconds": 5.926
-		},
-		"recurrence": {
-			"rows": 240,
-			"calls": 204,
-			"seconds": 22.14
-		},
+		"pascal": { "rows": 118, "calls": 24, "seconds": 5.926 },
+		"recurrence": { "rows": 240, "calls": 204, "seconds": 22.14 },
 		"selected": "pascal"
 	},
 	{
 		"n": 11,
-		"pascal": {
-			"rows": 154,
-			"calls": 28,
-			"seconds": 7.518
-		},
-		"recurrence": {
-			"rows": 286,
-			"calls": 240,
-			"seconds": 26.182000000000002
-		},
+		"pascal": { "rows": 154, "calls": 28, "seconds": 7.518 },
+		"recurrence": { "rows": 286, "calls": 240, "seconds": 26.182000000000002 },
 		"selected": "pascal"
 	},
 	{
 		"n": 12,
-		"pascal": {
-			"rows": 194,
-			"calls": 32,
-			"seconds": 9.258
-		},
-		"recurrence": {
-			"rows": 330,
-			"calls": 274,
-			"seconds": 30.020000000000003
-		},
+		"pascal": { "rows": 194, "calls": 32, "seconds": 9.258 },
+		"recurrence": { "rows": 330, "calls": 274, "seconds": 30.020000000000003 },
 		"selected": "pascal"
 	}
 ]

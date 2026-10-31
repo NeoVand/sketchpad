@@ -1,0 +1,624 @@
+{
+	"seeds": {
+		"expressions": 14865,
+		"linear": 49,
+		"quadratic": 50,
+		"system2": 818,
+		"system3": 819,
+		"expand": 52,
+		"factor": 53,
+		"wrongRoots": 54,
+		"evaluationFaults": 55
+	},
+	"costs": {
+		"expressions": { "count": 1000, "medianSeconds": 91.448, "p95Seconds": 353.28499999999997 },
+		"linear": { "count": 200, "medianSeconds": 16.4195, "p95Seconds": 22.95 },
+		"quadratic": { "count": 200, "medianSeconds": 29.018, "p95Seconds": 388.76800000000003 },
+		"system2": { "count": 200, "medianSeconds": 41.166, "p95Seconds": 66.33099999999999 },
+		"system3": { "count": 200, "medianSeconds": 154.32350000000002, "p95Seconds": 241.356 },
+		"expand": {
+			"count": 200,
+			"medianSeconds": 42.801500000000004,
+			"p95Seconds": 134.60399999999998
+		},
+		"factor": { "count": 200, "medianSeconds": 254.03199999999998, "p95Seconds": 3113.268 }
+	},
+	"demos": [
+		{
+			"source": "123456 * 654321",
+			"dryRunSeconds": 7,
+			"seconds": 6.542,
+			"rows": 96,
+			"calls": 46,
+			"rowFloorSeconds": 3.5519999999999996,
+			"derivation": [
+				{ "kind": "given", "tex": "123456\\cdot 654321" },
+				{ "kind": "result", "tex": "123456\\cdot 654321 = \\htmlId{d0-l1-n0-value-0}{80779853376}" }
+			],
+			"under12": true
+		},
+		{
+			"source": "solve 3(x-2)+5=2x+14",
+			"dryRunSeconds": 4,
+			"seconds": 2.762,
+			"rows": 36,
+			"calls": 22,
+			"rowFloorSeconds": 1.3319999999999999,
+			"derivation": [
+				{ "kind": "given", "tex": "3\\left(x - 2\\right) + 5 = 2x + 14" },
+				{ "kind": "expand", "tex": "3x - 3\\cdot 2 + 5 = 2x + 14" },
+				{
+					"kind": "evaluate",
+					"tex": "3x - \\htmlId{d0-l2-n0-value-0}{6} + 5 = 2x + 14",
+					"note": "-\\left(3\\cdot 2\\right) = \\htmlId{d0-l2-n0-value-1}{-6}"
+				},
+				{
+					"kind": "collect",
+					"tex": "3x - \\htmlId{d0-l3-n1-value-0}{1} = 2x + 14",
+					"note": "\\htmlId{d0-l3-n0-value-1}{-6} + 5 = \\htmlId{d0-l3-n1-value-2}{-1}"
+				},
+				{ "kind": "move", "tex": "3x - 2x = 14 + \\htmlId{d0-l4-n1-value-0}{1}" },
+				{
+					"kind": "collect",
+					"tex": "x = \\htmlId{d0-l5-n10-value-0}{15}",
+					"note": "3 - 2 = \\htmlId{d0-l5-n9-value-1}{1},\\quad 14 + \\htmlId{d0-l5-n1-value-2}{1} = \\htmlId{d0-l5-n10-value-3}{15}"
+				},
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l6-n10-value-0}{15} - \\htmlId{d0-l6-n10-value-1}{15} = \\htmlId{d0-l6-n11-value-2}{0}\\quad\\checkmark",
+					"note": "Substitute into the collected equation"
+				},
+				{ "kind": "result", "tex": "x = \\htmlId{d0-l7-n10-value-0}{15}" }
+			],
+			"under12": true
+		},
+		{
+			"source": "solve 7x+13=2026-4x",
+			"dryRunSeconds": 8,
+			"seconds": 7.619,
+			"rows": 97,
+			"calls": 62,
+			"rowFloorSeconds": 3.589,
+			"derivation": [
+				{ "kind": "given", "tex": "7x + 13 = 2026 - 4x" },
+				{ "kind": "collect", "tex": "7x + 13 = \\left(-4\\right)x + 2026" },
+				{ "kind": "move", "tex": "7x - \\left(-4\\right)x = 2026 - 13" },
+				{
+					"kind": "collect",
+					"tex": "\\htmlId{d0-l3-n6-value-0}{11}x = \\htmlId{d0-l3-n7-value-1}{2013}",
+					"note": "7 + 4 = \\htmlId{d0-l3-n6-value-2}{11},\\quad 2026 - 13 = \\htmlId{d0-l3-n7-value-3}{2013}"
+				},
+				{
+					"kind": "divide",
+					"tex": "x = \\htmlId{d0-l4-n8-q-0}{183}",
+					"note": "Divide both sides by the coefficient of x"
+				},
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l5-n6-value-0}{11}\\cdot \\htmlId{d0-l5-n8-q-1}{183} - \\htmlId{d0-l5-n7-value-2}{2013} = \\htmlId{d0-l5-n10-value-3}{0}\\quad\\checkmark",
+					"note": "Substitute into the collected equation"
+				},
+				{ "kind": "result", "tex": "x = \\htmlId{d0-l6-n8-q-0}{183}" }
+			],
+			"under12": true
+		},
+		{
+			"source": "solve 2x+3y=7,x-y=1",
+			"dryRunSeconds": 5,
+			"seconds": 5.895,
+			"rows": 75,
+			"calls": 48,
+			"rowFloorSeconds": 2.775,
+			"derivation": [
+				{ "kind": "given", "tex": "2x + 3y = 7" },
+				{ "kind": "given", "tex": "x - y = 1" },
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l2-n4-value-0}{2}x - \\htmlId{d0-l2-n13-value-1}{2}y = \\htmlId{d0-l2-n4-value-2}{2}",
+					"note": "Multiply equation 2 by \\htmlId{d0-l2-n4-value-3}{2}"
+				},
+				{
+					"kind": "move",
+					"tex": "\\htmlId{d0-l3-n4-value-0}{2}x + \\htmlId{d0-l3-n5-value-1}{3}y - \\left(\\htmlId{d0-l3-n4-value-2}{2}x - \\htmlId{d0-l3-n13-value-3}{2}y\\right) = \\htmlId{d0-l3-n6-value-4}{7} - \\htmlId{d0-l3-n4-value-5}{2}",
+					"note": "Subtract the scaled equation 2 from the scaled equation 1"
+				},
+				{
+					"kind": "collect",
+					"tex": "\\htmlId{d0-l4-n15-value-0}{5}y = \\htmlId{d0-l4-n16-value-1}{5}"
+				},
+				{ "kind": "divide", "tex": "y = \\htmlId{d0-l5-n17-q-0}{1}" },
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l6-n4-value-0}{2}x + \\htmlId{d0-l6-n5-value-1}{3}\\cdot \\htmlId{d0-l6-n17-q-2}{1} = \\htmlId{d0-l6-n6-value-3}{7}",
+					"note": "Back-substitute the known values"
+				},
+				{
+					"kind": "move",
+					"tex": "\\htmlId{d0-l7-n4-value-0}{2}x = \\htmlId{d0-l7-n6-value-1}{7} - \\htmlId{d0-l7-n5-value-2}{3}"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l8-n4-value-0}{2}x = \\htmlId{d0-l8-n18-value-1}{4}"
+				},
+				{ "kind": "divide", "tex": "x = \\htmlId{d0-l9-n19-q-0}{2}" },
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l10-n4-value-0}{2}\\cdot \\htmlId{d0-l10-n19-q-1}{2} + \\htmlId{d0-l10-n5-value-2}{3}\\cdot \\htmlId{d0-l10-n17-q-3}{1} = \\htmlId{d0-l10-n22-value-4}{7}\\quad\\checkmark"
+				},
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l11-n19-q-0}{2} - \\htmlId{d0-l11-n17-q-1}{1} = \\htmlId{d0-l11-n23-value-2}{1}\\quad\\checkmark"
+				},
+				{
+					"kind": "result",
+					"tex": "x = \\htmlId{d0-l12-n19-q-0}{2},\\quad y = \\htmlId{d0-l12-n17-q-1}{1}"
+				}
+			],
+			"under12": true
+		},
+		{
+			"source": "expand (x+2)^5",
+			"dryRunSeconds": 23,
+			"seconds": 12.058,
+			"rows": 159,
+			"calls": 95,
+			"rowFloorSeconds": 5.883,
+			"derivation": [
+				{ "kind": "given", "tex": "\\left(x + 2\\right)^{5}" },
+				{
+					"kind": "expand",
+					"tex": "\\left(x + 2\\right)^{5} = x^{5} + \\htmlId{d0-l1-n6-value-0}{5}\\cdot 2x^{4} + \\htmlId{d0-l1-n7-value-1}{10}\\cdot 2^{2}x^{3} + \\htmlId{d0-l1-n8-value-2}{10}\\cdot 2^{3}x^{2} + \\htmlId{d0-l1-n9-value-3}{5}\\cdot 2^{4}x + 2^{5}",
+					"note": "Binomial theorem; coefficients from Pascal's additions"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "x^{5} + \\htmlId{d0-l2-n6-value-0}{5}\\cdot 2x^{4} + \\htmlId{d0-l2-n7-value-1}{10}\\cdot 2^{2}x^{3} + \\htmlId{d0-l2-n8-value-2}{10}\\cdot 2^{3}x^{2} + \\htmlId{d0-l2-n9-value-3}{5}\\cdot 2^{4}x + 2^{5} = x^{5} + \\htmlId{d0-l2-n6-value-4}{5}\\cdot 2x^{4} + \\htmlId{d0-l2-n7-value-5}{10}\\cdot \\htmlId{d0-l2-n10-value-6}{4}x^{3} + \\htmlId{d0-l2-n8-value-7}{10}\\cdot \\htmlId{d0-l2-n11-value-8}{8}x^{2} + \\htmlId{d0-l2-n9-value-9}{5}\\cdot \\htmlId{d0-l2-n12-value-10}{16}x + \\htmlId{d0-l2-n13-value-11}{32}",
+					"note": "Evaluate the powers"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "x^{5} + \\htmlId{d0-l3-n6-value-0}{5}\\cdot 2x^{4} + \\htmlId{d0-l3-n7-value-1}{10}\\cdot \\htmlId{d0-l3-n10-value-2}{4}x^{3} + \\htmlId{d0-l3-n8-value-3}{10}\\cdot \\htmlId{d0-l3-n11-value-4}{8}x^{2} + \\htmlId{d0-l3-n9-value-5}{5}\\cdot \\htmlId{d0-l3-n12-value-6}{16}x + \\htmlId{d0-l3-n13-value-7}{32} = x^{5} + \\htmlId{d0-l3-n14-value-8}{10}x^{4} + \\htmlId{d0-l3-n15-value-9}{40}x^{3} + \\htmlId{d0-l3-n16-value-10}{80}x^{2} + \\htmlId{d0-l3-n17-value-11}{80}x + \\htmlId{d0-l3-n13-value-12}{32}",
+					"note": "Multiply the coefficients"
+				},
+				{
+					"kind": "check",
+					"tex": "\\left(1 + 2\\right)^{5} = \\htmlId{d0-l4-n22-value-0}{243} = 1^{5} + \\htmlId{d0-l4-n14-value-1}{10}\\cdot 1^{4} + \\htmlId{d0-l4-n15-value-2}{40}\\cdot 1^{3} + \\htmlId{d0-l4-n16-value-3}{80}\\cdot 1^{2} + \\htmlId{d0-l4-n17-value-4}{80}\\cdot 1 + \\htmlId{d0-l4-n13-value-5}{32}\\quad\\checkmark",
+					"note": "Check at x = 1"
+				},
+				{
+					"kind": "result",
+					"tex": "\\left(x + 2\\right)^{5} = x^{5} + \\htmlId{d0-l5-n14-value-0}{10}x^{4} + \\htmlId{d0-l5-n15-value-1}{40}x^{3} + \\htmlId{d0-l5-n16-value-2}{80}x^{2} + \\htmlId{d0-l5-n17-value-3}{80}x + \\htmlId{d0-l5-n13-value-4}{32}"
+				}
+			],
+			"under12": false
+		},
+		{
+			"source": "expand (2x-3)^4",
+			"dryRunSeconds": 21,
+			"seconds": 12.474,
+			"rows": 172,
+			"calls": 94,
+			"rowFloorSeconds": 6.364,
+			"derivation": [
+				{ "kind": "given", "tex": "\\left(2x - 3\\right)^{4}" },
+				{
+					"kind": "expand",
+					"tex": "\\left(2x - 3\\right)^{4} = 2^{4}x^{4} + \\htmlId{d0-l1-n3-value-0}{4}\\cdot 2^{3}\\cdot \\left(-3\\right)x^{3} + \\htmlId{d0-l1-n4-value-1}{6}\\cdot 2^{2}\\cdot \\left(-3\\right)^{2}x^{2} + \\htmlId{d0-l1-n5-value-2}{4}\\cdot 2\\cdot \\left(-3\\right)^{3}x + \\left(-3\\right)^{4}",
+					"note": "Binomial theorem; coefficients from Pascal's additions"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "2^{4}x^{4} + \\htmlId{d0-l2-n3-value-0}{4}\\cdot 2^{3}\\cdot \\left(-3\\right)x^{3} + \\htmlId{d0-l2-n4-value-1}{6}\\cdot 2^{2}\\cdot \\left(-3\\right)^{2}x^{2} + \\htmlId{d0-l2-n5-value-2}{4}\\cdot 2\\cdot \\left(-3\\right)^{3}x + \\left(-3\\right)^{4} = \\htmlId{d0-l2-n8-value-3}{16}x^{4} + \\htmlId{d0-l2-n3-value-4}{4}\\cdot \\htmlId{d0-l2-n7-value-5}{8}\\cdot \\left(-3\\right)x^{3} + \\htmlId{d0-l2-n4-value-6}{6}\\cdot \\htmlId{d0-l2-n6-value-7}{4}\\cdot \\htmlId{d0-l2-n9-value-8}{9}x^{2} + \\htmlId{d0-l2-n5-value-9}{4}\\cdot 2\\cdot \\left(\\htmlId{d0-l2-n10-value-10}{-27}\\right)x + \\htmlId{d0-l2-n11-value-11}{81}",
+					"note": "Evaluate the powers"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l3-n8-value-0}{16}x^{4} + \\htmlId{d0-l3-n3-value-1}{4}\\cdot \\htmlId{d0-l3-n7-value-2}{8}\\cdot \\left(-3\\right)x^{3} + \\htmlId{d0-l3-n4-value-3}{6}\\cdot \\htmlId{d0-l3-n6-value-4}{4}\\cdot \\htmlId{d0-l3-n9-value-5}{9}x^{2} + \\htmlId{d0-l3-n5-value-6}{4}\\cdot 2\\cdot \\left(\\htmlId{d0-l3-n10-value-7}{-27}\\right)x + \\htmlId{d0-l3-n11-value-8}{81} = \\htmlId{d0-l3-n8-value-9}{16}x^{4} - \\htmlId{d0-l3-n13-value-10}{96}x^{3} + \\htmlId{d0-l3-n15-value-11}{216}x^{2} - \\htmlId{d0-l3-n17-value-12}{216}x + \\htmlId{d0-l3-n11-value-13}{81}",
+					"note": "Multiply the coefficients"
+				},
+				{
+					"kind": "check",
+					"tex": "\\left(2\\cdot 1 - 3\\right)^{4} = \\htmlId{d0-l4-n22-value-0}{1} = \\htmlId{d0-l4-n8-value-1}{16}\\cdot 1^{4} - \\htmlId{d0-l4-n13-value-2}{96}\\cdot 1^{3} + \\htmlId{d0-l4-n15-value-3}{216}\\cdot 1^{2} - \\htmlId{d0-l4-n17-value-4}{216}\\cdot 1 + \\htmlId{d0-l4-n11-value-5}{81}\\quad\\checkmark",
+					"note": "Check at x = 1"
+				},
+				{
+					"kind": "result",
+					"tex": "\\left(2x - 3\\right)^{4} = \\htmlId{d0-l5-n8-value-0}{16}x^{4} - \\htmlId{d0-l5-n13-value-1}{96}x^{3} + \\htmlId{d0-l5-n15-value-2}{216}x^{2} - \\htmlId{d0-l5-n17-value-3}{216}x + \\htmlId{d0-l5-n11-value-4}{81}"
+				}
+			],
+			"under12": false
+		},
+		{
+			"source": "expand (x+1)^10",
+			"dryRunSeconds": 118,
+			"seconds": 21.924,
+			"rows": 322,
+			"calls": 154,
+			"rowFloorSeconds": 11.914,
+			"derivation": [
+				{ "kind": "given", "tex": "\\left(x + 1\\right)^{10}" },
+				{
+					"kind": "expand",
+					"tex": "\\left(x + 1\\right)^{10} = x^{10} + \\htmlId{d0-l1-n36-value-0}{10}x^{9} + \\htmlId{d0-l1-n37-value-1}{45}x^{8} + \\htmlId{d0-l1-n38-value-2}{120}x^{7} + \\htmlId{d0-l1-n39-value-3}{210}x^{6} + \\htmlId{d0-l1-n40-value-4}{252}x^{5} + \\htmlId{d0-l1-n41-value-5}{210}x^{4} + \\htmlId{d0-l1-n42-value-6}{120}x^{3} + \\htmlId{d0-l1-n43-value-7}{45}x^{2} + \\htmlId{d0-l1-n44-value-8}{10}x + 1",
+					"note": "Binomial theorem; coefficients from Pascal's additions"
+				},
+				{
+					"kind": "check",
+					"tex": "\\left(1 + 1\\right)^{10} = \\htmlId{d0-l2-n54-value-0}{1024} = 1^{10} + \\htmlId{d0-l2-n36-value-1}{10}\\cdot 1^{9} + \\htmlId{d0-l2-n37-value-2}{45}\\cdot 1^{8} + \\htmlId{d0-l2-n38-value-3}{120}\\cdot 1^{7} + \\htmlId{d0-l2-n39-value-4}{210}\\cdot 1^{6} + \\htmlId{d0-l2-n40-value-5}{252}\\cdot 1^{5} + \\htmlId{d0-l2-n41-value-6}{210}\\cdot 1^{4} + \\htmlId{d0-l2-n42-value-7}{120}\\cdot 1^{3} + \\htmlId{d0-l2-n43-value-8}{45}\\cdot 1^{2} + \\htmlId{d0-l2-n44-value-9}{10}\\cdot 1 + 1\\quad\\checkmark",
+					"note": "Check at x = 1"
+				},
+				{
+					"kind": "result",
+					"tex": "\\left(x + 1\\right)^{10} = x^{10} + \\htmlId{d0-l3-n36-value-0}{10}x^{9} + \\htmlId{d0-l3-n37-value-1}{45}x^{8} + \\htmlId{d0-l3-n38-value-2}{120}x^{7} + \\htmlId{d0-l3-n39-value-3}{210}x^{6} + \\htmlId{d0-l3-n40-value-4}{252}x^{5} + \\htmlId{d0-l3-n41-value-5}{210}x^{4} + \\htmlId{d0-l3-n42-value-6}{120}x^{3} + \\htmlId{d0-l3-n43-value-7}{45}x^{2} + \\htmlId{d0-l3-n44-value-8}{10}x + 1"
+				}
+			],
+			"under12": false
+		},
+		{
+			"source": "solve (2x-3)(x+5)=x^2+1-16",
+			"dryRunSeconds": 29,
+			"seconds": 5.718,
+			"rows": 79,
+			"calls": 43,
+			"rowFloorSeconds": 2.923,
+			"derivation": [
+				{ "kind": "given", "tex": "\\left(2x - 3\\right)\\left(x + 5\\right) = x^{2} + 1 - 16" },
+				{ "kind": "expand", "tex": "2x^{2} + 2\\cdot 5x - 3x - 3\\cdot 5 = x^{2} + 1 - 16" },
+				{
+					"kind": "evaluate",
+					"tex": "2x^{2} + \\htmlId{d0-l2-n0-value-0}{10}x - 3x - \\htmlId{d0-l2-n1-value-1}{15} = x^{2} + 1 - 16",
+					"note": "2\\cdot 5 = \\htmlId{d0-l2-n0-value-2}{10},\\quad -\\left(3\\cdot 5\\right) = \\htmlId{d0-l2-n1-value-3}{-15}"
+				},
+				{
+					"kind": "collect",
+					"tex": "2x^{2} + \\htmlId{d0-l3-n2-value-0}{7}x - \\htmlId{d0-l3-n1-value-1}{15} = x^{2} - \\htmlId{d0-l3-n3-value-2}{15}",
+					"note": "\\htmlId{d0-l3-n0-value-3}{10} - 3 = \\htmlId{d0-l3-n2-value-4}{7},\\quad 1 - 16 = \\htmlId{d0-l3-n3-value-5}{-15}"
+				},
+				{
+					"kind": "move",
+					"tex": "x^{2} + \\htmlId{d0-l4-n15-value-0}{7}x = 0",
+					"note": "Move all terms to the left"
+				},
+				{
+					"kind": "expand",
+					"tex": "x^{2} + \\htmlId{d0-l5-n15-value-0}{7}x = x\\left(\\htmlId{d0-l5-n16-value-1}{1}x + \\htmlId{d0-l5-n15-value-2}{7}\\right)",
+					"note": "Factor out x"
+				},
+				{
+					"kind": "divide",
+					"tex": "x = \\htmlId{d0-l6-n14-value-0}{0}\\quad\\text{or}\\quad x = \\frac{\\htmlId{d0-l6-n15-value-1}{-7}}{\\htmlId{d0-l6-n16-value-2}{1}} = \\htmlId{d0-l6-n15-value-3}{-7}"
+				},
+				{
+					"kind": "check",
+					"tex": "\\left(\\htmlId{d0-l7-n15-value-0}{-7}\\right)^{2} + \\htmlId{d0-l7-n15-value-1}{7}\\cdot \\left(\\htmlId{d0-l7-n15-value-2}{-7}\\right) = \\htmlId{d0-l7-n19-value-3}{0}\\quad\\checkmark",
+					"note": "Substitute into the collected equation"
+				},
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l8-n14-value-0}{0}^{2} + \\htmlId{d0-l8-n15-value-1}{7}\\cdot \\htmlId{d0-l8-n14-value-2}{0} = \\htmlId{d0-l8-n22-value-3}{0}\\quad\\checkmark",
+					"note": "Substitute into the collected equation"
+				},
+				{
+					"kind": "result",
+					"tex": "x = \\htmlId{d0-l9-n15-value-0}{-7},\\;\\htmlId{d0-l9-n14-value-1}{0}"
+				}
+			],
+			"under12": true
+		},
+		{
+			"source": "solve x^2-x-6=0",
+			"dryRunSeconds": 29,
+			"seconds": 8.779,
+			"rows": 102,
+			"calls": 77,
+			"rowFloorSeconds": 3.774,
+			"derivation": [
+				{ "kind": "given", "tex": "x^{2} - x - 6 = 0" },
+				{
+					"kind": "formula",
+					"tex": "\\left(\\htmlId{d0-l1-n6-value-0}{-1}\\right)^{2} - 4\\cdot \\htmlId{d0-l1-n7-value-1}{1}\\cdot \\left(\\htmlId{d0-l1-n5-value-2}{-6}\\right) = \\htmlId{d0-l1-n10-value-3}{25}",
+					"note": "Discriminant: b² − 4ac"
+				},
+				{
+					"kind": "formula",
+					"tex": "\\sqrt{\\htmlId{d0-l2-n10-value-0}{25}} = \\htmlId{d0-l2-n11-root-1}{5}"
+				},
+				{
+					"kind": "divide",
+					"tex": "x = \\frac{\\htmlId{d0-l3-n6-value-0}{1} - \\htmlId{d0-l3-n11-root-1}{5}}{2\\cdot \\htmlId{d0-l3-n7-value-2}{1}} = \\htmlId{d0-l3-n14-q-3}{-2}"
+				},
+				{
+					"kind": "divide",
+					"tex": "x = \\frac{\\htmlId{d0-l4-n6-value-0}{1} + \\htmlId{d0-l4-n11-root-1}{5}}{2\\cdot \\htmlId{d0-l4-n7-value-2}{1}} = \\htmlId{d0-l4-n16-q-3}{3}"
+				},
+				{
+					"kind": "check",
+					"tex": "\\left(\\htmlId{d0-l5-n14-q-0}{-2}\\right)^{2} + \\htmlId{d0-l5-n14-q-1}{2} - \\htmlId{d0-l5-n5-value-2}{6} = \\htmlId{d0-l5-n19-value-3}{0}\\quad\\checkmark",
+					"note": "Substitute into the collected equation"
+				},
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l6-n16-q-0}{3}^{2} - \\htmlId{d0-l6-n16-q-1}{3} - \\htmlId{d0-l6-n5-value-2}{6} = \\htmlId{d0-l6-n22-value-3}{0}\\quad\\checkmark",
+					"note": "Substitute into the collected equation"
+				},
+				{ "kind": "result", "tex": "x = \\htmlId{d0-l7-n14-q-0}{-2},\\;\\htmlId{d0-l7-n16-q-1}{3}" }
+			],
+			"under12": true
+		},
+		{
+			"source": "solve 2x+3y-z=1, x-y+2z=3, 3x+y+z=8",
+			"dryRunSeconds": null,
+			"seconds": 22.805999999999997,
+			"rows": 323,
+			"calls": 167,
+			"rowFloorSeconds": 11.950999999999999,
+			"derivation": [
+				{ "kind": "given", "tex": "2x + 3y - z = 1" },
+				{ "kind": "given", "tex": "x - y + 2z = 3" },
+				{ "kind": "given", "tex": "3x + y + z = 8" },
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l3-n6-value-0}{2}x - \\htmlId{d0-l3-n29-value-1}{2}y + \\htmlId{d0-l3-n30-value-2}{4}z = \\htmlId{d0-l3-n31-value-3}{6}",
+					"note": "Multiply equation 2 by \\htmlId{d0-l3-n6-value-4}{2}"
+				},
+				{
+					"kind": "move",
+					"tex": "\\htmlId{d0-l4-n6-value-0}{2}x + \\htmlId{d0-l4-n7-value-1}{3}y - z - \\left(\\htmlId{d0-l4-n6-value-2}{2}x - \\htmlId{d0-l4-n29-value-3}{2}y + \\htmlId{d0-l4-n30-value-4}{4}z\\right) = \\htmlId{d0-l4-n15-value-5}{1} - \\htmlId{d0-l4-n31-value-6}{6}",
+					"note": "Subtract the scaled equation 2 from the scaled equation 1"
+				},
+				{
+					"kind": "collect",
+					"tex": "\\htmlId{d0-l5-n33-value-0}{5}y - \\htmlId{d0-l5-n34-value-1}{5}z = \\htmlId{d0-l5-n35-value-2}{-5}"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l6-n39-value-0}{6}x + \\htmlId{d0-l6-n6-value-1}{2}y + \\htmlId{d0-l6-n6-value-2}{2}z = \\htmlId{d0-l6-n40-value-3}{16}",
+					"note": "Multiply equation 3 by \\htmlId{d0-l6-n6-value-4}{2}"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l7-n41-value-0}{6}x + \\htmlId{d0-l7-n42-value-1}{9}y - \\htmlId{d0-l7-n43-value-2}{3}z = \\htmlId{d0-l7-n24-value-3}{3}",
+					"note": "Multiply equation 1 by \\htmlId{d0-l7-n24-value-4}{3}"
+				},
+				{
+					"kind": "move",
+					"tex": "\\htmlId{d0-l8-n41-value-0}{6}x + \\htmlId{d0-l8-n42-value-1}{9}y - \\htmlId{d0-l8-n43-value-2}{3}z - \\left(\\htmlId{d0-l8-n39-value-3}{6}x + \\htmlId{d0-l8-n6-value-4}{2}y + \\htmlId{d0-l8-n6-value-5}{2}z\\right) = \\htmlId{d0-l8-n24-value-6}{3} - \\htmlId{d0-l8-n40-value-7}{16}",
+					"note": "Subtract the scaled equation 3 from the scaled equation 1"
+				},
+				{
+					"kind": "collect",
+					"tex": "\\htmlId{d0-l9-n45-value-0}{7}y - \\htmlId{d0-l9-n46-value-1}{5}z = \\htmlId{d0-l9-n47-value-2}{-13}"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l10-n53-value-0}{35}y - \\htmlId{d0-l10-n54-value-1}{25}z = \\htmlId{d0-l10-n55-value-2}{-65}",
+					"note": "Multiply equation 3 by \\htmlId{d0-l10-n33-value-3}{5}"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l11-n57-value-0}{35}y - \\htmlId{d0-l11-n58-value-1}{35}z = \\htmlId{d0-l11-n59-value-2}{-35}",
+					"note": "Multiply equation 2 by \\htmlId{d0-l11-n45-value-3}{7}"
+				},
+				{
+					"kind": "move",
+					"tex": "\\htmlId{d0-l12-n53-value-0}{35}y - \\htmlId{d0-l12-n54-value-1}{25}z - \\left(\\htmlId{d0-l12-n57-value-2}{35}y - \\htmlId{d0-l12-n58-value-3}{35}z\\right) = \\htmlId{d0-l12-n55-value-4}{-65} + \\htmlId{d0-l12-n59-value-5}{35}",
+					"note": "Subtract the scaled equation 2 from the scaled equation 3"
+				},
+				{
+					"kind": "collect",
+					"tex": "\\htmlId{d0-l13-n62-value-0}{10}z = \\htmlId{d0-l13-n63-value-1}{-30}"
+				},
+				{ "kind": "divide", "tex": "z = \\htmlId{d0-l14-n64-q-0}{-3}" },
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l15-n33-value-0}{5}y - \\htmlId{d0-l15-n34-value-1}{5}\\cdot \\left(\\htmlId{d0-l15-n64-q-2}{-3}\\right) = \\htmlId{d0-l15-n35-value-3}{-5}",
+					"note": "Back-substitute the known values"
+				},
+				{
+					"kind": "move",
+					"tex": "\\htmlId{d0-l16-n33-value-0}{5}y = \\htmlId{d0-l16-n35-value-1}{-5} - \\htmlId{d0-l16-n65-value-2}{15}"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l17-n33-value-0}{5}y = \\htmlId{d0-l17-n66-value-1}{-20}"
+				},
+				{ "kind": "divide", "tex": "y = \\htmlId{d0-l18-n67-q-0}{-4}" },
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l19-n6-value-0}{2}x + \\htmlId{d0-l19-n7-value-1}{3}\\cdot \\left(\\htmlId{d0-l19-n67-q-2}{-4}\\right) + \\htmlId{d0-l19-n64-q-3}{3} = \\htmlId{d0-l19-n9-value-4}{1}",
+					"note": "Back-substitute the known values"
+				},
+				{
+					"kind": "move",
+					"tex": "\\htmlId{d0-l20-n6-value-0}{2}x = \\htmlId{d0-l20-n9-value-1}{1} + \\htmlId{d0-l20-n68-value-2}{12} - \\htmlId{d0-l20-n69-value-3}{3}"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "\\htmlId{d0-l21-n6-value-0}{2}x = \\htmlId{d0-l21-n71-value-1}{10}"
+				},
+				{ "kind": "divide", "tex": "x = \\htmlId{d0-l22-n72-q-0}{5}" },
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l23-n6-value-0}{2}\\cdot \\htmlId{d0-l23-n72-q-1}{5} + \\htmlId{d0-l23-n7-value-2}{3}\\cdot \\left(\\htmlId{d0-l23-n67-q-3}{-4}\\right) + \\htmlId{d0-l23-n64-q-4}{3} = \\htmlId{d0-l23-n76-value-5}{1}\\quad\\checkmark"
+				},
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l24-n72-q-0}{5} + \\htmlId{d0-l24-n67-q-1}{4} + \\htmlId{d0-l24-n17-value-2}{2}\\cdot \\left(\\htmlId{d0-l24-n64-q-3}{-3}\\right) = \\htmlId{d0-l24-n79-value-4}{3}\\quad\\checkmark"
+				},
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l25-n24-value-0}{3}\\cdot \\htmlId{d0-l25-n72-q-1}{5} - \\htmlId{d0-l25-n67-q-2}{4} - \\htmlId{d0-l25-n64-q-3}{3} = \\htmlId{d0-l25-n82-value-4}{8}\\quad\\checkmark"
+				},
+				{
+					"kind": "result",
+					"tex": "x = \\htmlId{d0-l26-n72-q-0}{5},\\quad y = \\htmlId{d0-l26-n67-q-1}{-4},\\quad z = \\htmlId{d0-l26-n64-q-2}{-3}"
+				}
+			],
+			"under12": false
+		},
+		{
+			"source": "factor x^3-6x^2+11x-6",
+			"dryRunSeconds": null,
+			"seconds": 16.9,
+			"rows": 195,
+			"calls": 149,
+			"rowFloorSeconds": 7.215,
+			"derivation": [
+				{ "kind": "given", "tex": "x^{3} - 6x^{2} + 11x - 6" },
+				{
+					"kind": "formula",
+					"tex": "\\text{Candidates: } 1,\\;-1,\\;2,\\;-2,\\;\\htmlId{d0-l1-n2-q-0}{3},\\;\\htmlId{d0-l1-n2-q-1}{-3},\\;\\htmlId{d0-l1-n1-q-2}{6},\\;\\htmlId{d0-l1-n1-q-3}{-6}",
+					"note": "Rational root theorem: numerator divides the constant, denominator divides the leading coefficient"
+				},
+				{
+					"kind": "evaluate",
+					"tex": "1^{3} - 6\\cdot 1^{2} + 11\\cdot 1 - 6 = \\htmlId{d0-l2-n9-value-0}{0}",
+					"note": "A root: continue with synthetic division"
+				},
+				{
+					"kind": "divide",
+					"tex": "\\begin{array}{r|rrrr}\\htmlId{d0-l3-n4-q-0}{1}&1&-6&11&-6\\\\ & &1&\\htmlId{d0-l3-n10-value-1}{-5}&\\htmlId{d0-l3-n11-value-2}{6}\\\\\\hline &1&\\htmlId{d0-l3-n10-value-3}{-5}&\\htmlId{d0-l3-n11-value-4}{6}&\\htmlId{d0-l3-n12-value-5}{0}\\end{array}",
+					"note": "Synthetic division"
+				},
+				{
+					"kind": "divide",
+					"tex": "x^{3} - 6x^{2} + 11x - 6 = \\left(x - \\htmlId{d0-l4-n4-q-0}{1}\\right)\\left(x^{2} - \\htmlId{d0-l4-n10-value-1}{5}x + \\htmlId{d0-l4-n11-value-2}{6}\\right)",
+					"note": "Zero remainder proves the factor"
+				},
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l5-n4-q-0}{1}^{3} - 6\\cdot \\htmlId{d0-l5-n4-q-1}{1}^{2} + 11\\cdot \\htmlId{d0-l5-n4-q-2}{1} - 6 = \\htmlId{d0-l5-n17-value-3}{0}\\quad\\checkmark",
+					"note": "Substitute into the collected equation"
+				},
+				{
+					"kind": "formula",
+					"tex": "\\left(\\htmlId{d0-l6-n10-value-0}{-5}\\right)^{2} - 4\\cdot 1\\cdot \\htmlId{d0-l6-n11-value-1}{6} = \\htmlId{d0-l6-n20-value-2}{1}",
+					"note": "Discriminant: b² − 4ac"
+				},
+				{
+					"kind": "formula",
+					"tex": "\\sqrt{\\htmlId{d0-l7-n20-value-0}{1}} = \\htmlId{d0-l7-n21-root-1}{1}"
+				},
+				{
+					"kind": "divide",
+					"tex": "x = \\frac{\\htmlId{d0-l8-n10-value-0}{5} - \\htmlId{d0-l8-n21-root-1}{1}}{2\\cdot 1} = \\htmlId{d0-l8-n23-q-2}{2}"
+				},
+				{
+					"kind": "divide",
+					"tex": "x = \\frac{\\htmlId{d0-l9-n10-value-0}{5} + \\htmlId{d0-l9-n21-root-1}{1}}{2\\cdot 1} = \\htmlId{d0-l9-n25-q-2}{3}"
+				},
+				{
+					"kind": "divide",
+					"tex": "\\begin{array}{r|rrr}\\htmlId{d0-l10-n23-q-0}{2}&1&\\htmlId{d0-l10-n10-value-1}{-5}&\\htmlId{d0-l10-n11-value-2}{6}\\\\ & &\\htmlId{d0-l10-n23-q-3}{2}&\\htmlId{d0-l10-n27-value-4}{-6}\\\\\\hline &1&\\htmlId{d0-l10-n26-value-5}{-3}&\\htmlId{d0-l10-n28-value-6}{0}\\end{array}",
+					"note": "Synthetic division"
+				},
+				{
+					"kind": "divide",
+					"tex": "x^{2} - \\htmlId{d0-l11-n10-value-0}{5}x + \\htmlId{d0-l11-n11-value-1}{6} = \\left(x - \\htmlId{d0-l11-n23-q-2}{2}\\right)\\left(x - \\htmlId{d0-l11-n26-value-3}{3}\\right)",
+					"note": "Zero remainder proves the factor"
+				},
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l12-n23-q-0}{2}^{3} - 6\\cdot \\htmlId{d0-l12-n23-q-1}{2}^{2} + 11\\cdot \\htmlId{d0-l12-n23-q-2}{2} - 6 = \\htmlId{d0-l12-n33-value-3}{0}\\quad\\checkmark",
+					"note": "Substitute into the collected equation"
+				},
+				{
+					"kind": "check",
+					"tex": "\\htmlId{d0-l13-n26-value-0}{3}^{3} - 6\\cdot \\htmlId{d0-l13-n26-value-1}{3}^{2} + 11\\cdot \\htmlId{d0-l13-n26-value-2}{3} - 6 = \\htmlId{d0-l13-n39-value-3}{0}\\quad\\checkmark",
+					"note": "Substitute into the collected equation"
+				},
+				{
+					"kind": "result",
+					"tex": "x^{3} - 6x^{2} + 11x - 6 = \\left(x - \\htmlId{d0-l14-n4-q-0}{1}\\right)\\left(x - \\htmlId{d0-l14-n23-q-1}{2}\\right)\\left(x - \\htmlId{d0-l14-n26-value-2}{3}\\right)"
+				}
+			],
+			"under12": false
+		}
+	],
+	"refusal": {
+		"wrongRoots": { "attempts": 200, "caught": 200 },
+		"evaluationFaults": {
+			"attempts": 200,
+			"caught": 185,
+			"missed": 15,
+			"missesWithWrongAnswer": 0,
+			"details": [
+				{
+					"source": "solve (7x+(7))(x-x)+1x+(-8)=-7",
+					"target": 3,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (2x+(1))(x-x)+2x+(-5)=-7",
+					"target": 5,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (5x+(-5))(x-x)+6x+(-8)=-14",
+					"target": 4,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (8x+(-7))(x-x)+2x+(-7)=-23",
+					"target": 6,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (1x+(6))(x-x)+5x+(-1)=-26",
+					"target": 3,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (5x+(-5))(x-x)+5x+(2)=32",
+					"target": 5,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (4x+(5))(x-x)+7x+(-7)=28",
+					"target": 3,
+					"status": "ok",
+					"changed": false
+				},
+				{ "source": "solve (5x+(3))(x-x)+1x+(2)=8", "target": 3, "status": "ok", "changed": false },
+				{
+					"source": "solve (3x+(-8))(x-x)+2x+(6)=18",
+					"target": 3,
+					"status": "ok",
+					"changed": false
+				},
+				{ "source": "solve (2x+(-2))(x-(4))=0", "target": 4, "status": "ok", "changed": false },
+				{
+					"source": "solve (2x+(-3))(x-x)+4x+(-3)=25",
+					"target": 6,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (7x+(2))(x-x)+2x+(8)=-2",
+					"target": 6,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (2x+(-3))(x-x)+7x+(-9)=5",
+					"target": 6,
+					"status": "ok",
+					"changed": false
+				},
+				{ "source": "solve (1x+(9))(x-x)+2x+(1)=3", "target": 3, "status": "ok", "changed": false },
+				{
+					"source": "solve (2x+(-9))(x-x)+8x+(-1)=7",
+					"target": 6,
+					"status": "ok",
+					"changed": false
+				}
+			]
+		}
+	}
+}
