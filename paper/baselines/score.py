@@ -13,9 +13,10 @@ Choices the registration leaves open, fixed here before any reply was read:
 - The 300-character fallback takes the digit run as it lies inside the window (`strict`); `score.py` also reports any
   problem whose exactness would change if a run cut by the window's left edge were taken whole.
 
-  python score.py <sketchpad results.json> <raw.jsonl> [<raw.jsonl> ...]
+  python score.py raw/sketchpad_e7/results.json raw/stock_0.8b/raw.jsonl.gz raw/stock_27b_fp8/raw.jsonl.gz
 """
 
+import gzip
 import json
 import pathlib
 import re
@@ -84,7 +85,8 @@ def main(sk_path, raw_paths):
         r["system"], r["mode"] = "sketchpad", None
         out.append(r)
     for path in raw_paths:
-        for line in pathlib.Path(path).read_text().splitlines():
+        text = gzip.open(path, "rt").read() if str(path).endswith(".gz") else pathlib.Path(path).read_text()
+        for line in text.splitlines():
             g = json.loads(line)
             p = probs[g["id"]]
             key = "27b" if g["model_key"] != "0.8b" else "0.8b"

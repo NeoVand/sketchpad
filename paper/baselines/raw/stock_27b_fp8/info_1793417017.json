@@ -1,0 +1,30 @@
+{
+ "model_key": "27b-fp8",
+ "model": "Qwen/Qwen3.5-27B-FP8@97f5941b",
+ "path": "/out/hf/Qwen--Qwen3.5-27B-FP8--97f5941b",
+ "load_seconds": 314.4,
+ "max_model_len": 36864,
+ "gpu_memory_utilization": 0.93,
+ "max_num_seqs": 128,
+ "num_gpu_blocks": 879,
+ "block_size": 784,
+ "kv_cache_dtype": "auto",
+ "dtype": "torch.bfloat16",
+ "quantization": "fp8",
+ "vllm_log": [],
+ "job": "stock_27b_fp8",
+ "vllm": "0.31.0",
+ "modes": {
+  "thinking": {
+   "enable_thinking": true,
+   "temperature": 0.6,
+   "top_p": 0.95,
+   "top_k": 20,
+   "max_tokens": 32768
+  }
+ },
+ "seed": 20261031,
+ "resumed_with": 0,
+ "rendered_prompt_thinking": "<|im_start|>user\nWhat is 2313236434 + 2613410972? Give the exact integer. Put the final answer in \\boxed{}.<|im_end|>\n<|im_start|>assistant\n<think>\n",
+ "longest_prompt_plus_cap": 34797
+}
