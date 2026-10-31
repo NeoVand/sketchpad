@@ -325,3 +325,30 @@ rate for DeepSeek, so the recorded usage is an upper bound on what Ollama meters
 By the registered rule the cut to 10 per length does not bring the five under $55 either ($58.52), so the open tier
 stops after its pilot (usage $1.10), and the decision goes to `QUESTIONS.md` 15. Seven of the ten pilot replies ran
 to the 32,768-token cap.
+
+### Kimi K3 replaced (31 Oct 2026, Neo: "Swap Kimi for a cheaper model"; before any further call)
+
+**Kimi K3 is dropped, on cost.** Its pilot alone projected $62.57 of the $117 (output at $15 per million tokens). Its
+two pilot replies stay in `raw/frontier/ollama_kimi-k3.jsonl` and are not in the comparison.
+
+**The replacement.** Three large open models from other labs, from ollama.com/pricing (read 31 Oct 2026) and
+`/api/show`:
+
+| model | lab | parameters (Ollama) | thinking | input / output per million | Ollama `modified_at` |
+|---|---|---|---|---|---|
+| `mistral-large-4` | Mistral AI | 1,050 B | yes | $0.70 / $2.10 | 2026-10-06 |
+| `nemotron-3-ultra` | NVIDIA | 550 B | yes | $0.10 / $3.00 | 2026-06-04 |
+| `minimax-m3` | MiniMax | not reported | yes | $0.60 / $2.40 | 2026-06-01 |
+
+Chosen: **`mistral-large-4`**, `think: true`, `num_predict` 32,768. It is the largest and newest of the three and has
+the lowest output rate, which dominates the cost here (the pilots' replies are mostly reasoning). Prediction: 170 of
+220, 1 of 20 at + 1,000, 8 of 20 at × 20.
+
+**DeepSeek's rate.** Off-peak ($0.66 / $1.98) applies outside 12:00–18:00 UTC on weekdays and all weekend. Every reply
+now records its start and end time (UTC); a DeepSeek reply is costed off-peak only if its call started and ended
+off-peak, else at the peak rate. The pilot replies, made before times were recorded, stay at the peak rate.
+
+**The rule with five.** The projection (as above, from each model's own pilot) with DeepSeek at off-peak for the
+calls still to make: gpt-oss $4.34 + DeepSeek $7.98 + GLM $31.90 + Gemma $2.28 = $46.50, which leaves **$8.50** for
+`mistral-large-4`. Its pilot decides: within $8.50, the five run at 20 per length; otherwise stop and report. The
+running stop stays at $55 of recorded Ollama usage (the Kimi pilot's $0.60 included).
