@@ -1,0 +1,321 @@
+{
+	"seeds": {
+		"expressions": 14865,
+		"linear": 49,
+		"quadratic": 50,
+		"system2": 818,
+		"system3": 819,
+		"expand": 52,
+		"factor": 53,
+		"wrongRoots": 54,
+		"evaluationFaults": 55
+	},
+	"costs": {
+		"expressions": {
+			"count": 1000,
+			"medianSeconds": 118.875,
+			"p95Seconds": 433.631
+		},
+		"linear": {
+			"count": 200,
+			"medianSeconds": 70.735,
+			"p95Seconds": 105.437
+		},
+		"quadratic": {
+			"count": 200,
+			"medianSeconds": 84.381,
+			"p95Seconds": 975.1669999999999
+		},
+		"system2": {
+			"count": 200,
+			"medianSeconds": 76.02850000000001,
+			"p95Seconds": 104.582
+		},
+		"system3": {
+			"count": 200,
+			"medianSeconds": 315.079,
+			"p95Seconds": 424.95399999999995
+		},
+		"expand": {
+			"count": 200,
+			"medianSeconds": 722.142,
+			"p95Seconds": 3219.439
+		},
+		"factor": {
+			"count": 200,
+			"medianSeconds": 209.807,
+			"p95Seconds": 651.721
+		}
+	},
+	"demos": [
+		{
+			"source": "123456 * 654321",
+			"dryRunSeconds": 7,
+			"seconds": 6.542,
+			"rows": 96,
+			"calls": 46
+		},
+		{
+			"source": "solve 3(x-2)+5=2x+14",
+			"dryRunSeconds": 4,
+			"seconds": 22.393,
+			"rows": 224,
+			"calls": 217
+		},
+		{
+			"source": "solve 7x+13=2026-4x",
+			"dryRunSeconds": 8,
+			"seconds": 38.043,
+			"rows": 394,
+			"calls": 361
+		},
+		{
+			"source": "solve 2x+3y=7,x-y=1",
+			"dryRunSeconds": 5,
+			"seconds": 25.314,
+			"rows": 252,
+			"calls": 246
+		},
+		{
+			"source": "expand (x+2)^5",
+			"dryRunSeconds": 23,
+			"seconds": 149.32600000000002,
+			"rows": 1803,
+			"calls": 1271
+		},
+		{
+			"source": "expand (2x-3)^4",
+			"dryRunSeconds": 21,
+			"seconds": 146.911,
+			"rows": 1808,
+			"calls": 1231
+		},
+		{
+			"source": "expand (x+1)^10",
+			"dryRunSeconds": 118,
+			"seconds": 589.558,
+			"rows": 8264,
+			"calls": 4366
+		},
+		{
+			"source": "solve (2x-3)(x+5)=x^2+1-16",
+			"dryRunSeconds": 29,
+			"seconds": 50.552,
+			"rows": 516,
+			"calls": 484
+		},
+		{
+			"source": "solve x^2-x-6=0",
+			"dryRunSeconds": 29,
+			"seconds": 37.774,
+			"rows": 392,
+			"calls": 358
+		}
+	],
+	"refusal": {
+		"wrongRoots": {
+			"attempts": 200,
+			"caught": 200
+		},
+		"evaluationFaults": {
+			"attempts": 200,
+			"caught": 168,
+			"missed": 32,
+			"missesWithWrongAnswer": 0,
+			"details": [
+				{
+					"source": "solve (4x+(-5))(x-x)+6x+(-7)=-49",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (5x+(1))(x-x)+9x+(6)=87",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (7x+(-2))(x-x)+4x+(2)=2",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (7x+(7))(x-x)+1x+(-8)=-7",
+					"target": 2,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (6x+(-1))(x-x)+2x+(-9)=-21",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (3x+(9))(x-x)+9x+(4)=-50",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (8x+(9))(x-x)+1x+(5)=8",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (7x+(4))(x-x)+1x+(-2)=-10",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (3x+(9))(x-x)+8x+(-9)=55",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (8x+(-3))(x-x)+8x+(6)=62",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (2x+(6))(x-x)+4x+(9)=25",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (5x+(3))(x-x)+1x+(-8)=-12",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (4x+(-8))(x-x)+8x+(3)=3",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (1x+(7))(x-x)+7x+(-4)=52",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (8x+(-4))(x-x)+4x+(-6)=2",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (4x+(-2))(x-x)+4x+(-6)=14",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (8x+(-8))(x-x)+3x+(-8)=-5",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (4x+(-2))(x-x)+5x+(5)=-5",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (7x+(6))(x-x)+6x+(9)=27",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (4x+(-9))(x-x)+5x+(-9)=-34",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (6x+(-7))(x-x)+3x+(0)=-24",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (7x+(-7))(x-(-1))=0",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (3x+(7))(x-x)+7x+(-1)=-15",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (6x+(8))(x-x)+7x+(4)=53",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (3x+(5))(x-x)+1x+(-3)=-12",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (2x+(2))(x-x)+7x+(9)=51",
+					"target": 2,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (8x+(4))(x-x)+6x+(-1)=-19",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (3x+(-5))(x-x)+5x+(5)=45",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (8x+(9))(x-x)+2x+(6)=12",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (2x+(5))(x-x)+8x+(0)=56",
+					"target": 1,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (8x+(0))(x-x)+1x+(-2)=-1",
+					"target": 0,
+					"status": "ok",
+					"changed": false
+				},
+				{
+					"source": "solve (7x+(7))(x-(3))=0",
+					"target": 2,
+					"status": "ok",
+					"changed": false
+				}
+			]
+		}
+	}
+}

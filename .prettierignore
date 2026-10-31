@@ -6,3 +6,6 @@ pnpm-lock.yaml
 
 # Agent tooling
 /.claude/
+
+# Written by research scripts; kept byte for byte as the script writes them
+research/**/*.json

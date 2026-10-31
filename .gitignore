@@ -31,3 +31,6 @@ vite.config.ts.timestamp-*
 
 # Agent tooling
 /.claude/settings.local.json
+
+# Unpublished programs for local checks (models.ts: VITE_LOCAL_PROGRAM); never committed
+/static/sketchpad/models/
