@@ -1,3 +1,4 @@
+import { irrationalRoots, type RadicalValue } from './radicals';
 import { Arithmetic, CheckFailed, flip, integer, magnitude } from './arithmetic';
 import {
 	assertIntegerPolynomial,
@@ -146,7 +147,7 @@ export async function formulaRoots(
 	eq: Equation,
 	showLinear = true,
 	checkCoefficients = cs
-): Promise<{ roots: Quantity[]; checks: RootCheck[]; text?: string }> {
+): Promise<{ roots: Quantity[]; checks: RootCheck[]; text?: string; radicals?: RadicalValue }> {
 	while (cs.length > 1 && cs.at(-1)!.value.n === 0n) cs = cs.slice(0, -1);
 	if (cs.length === 1) {
 		const text = cs[0].value.n === 0n ? 'every x' : 'no solution';
@@ -245,6 +246,7 @@ export async function formulaRoots(
 		}
 		return { roots, checks: [] };
 	}
+	if (b.places === undefined) return irrationalRoots(b, cs, disc, den, sqrt, squared);
 	const checks: RootCheck[] = [],
 		bounds: string[] = [];
 	const ar = new Arithmetic(b.trace, b.mode);
@@ -386,6 +388,7 @@ export async function textbookSolve(b: DerivationBuilder, eq: Equation): Promise
 	if (numeric.text) {
 		const result = empty();
 		result.text = numeric.text;
+		result.radicals = numeric.radicals;
 		result.checks = numeric.checks;
 		result.coefficients = cs.map((c) => c.value);
 		return result;
@@ -564,6 +567,7 @@ export async function textbookFactor(
 			);
 			if (!formula.roots.length) {
 				radicalText = formula.text;
+				result.radicals = formula.radicals;
 				result.checks.push(...formula.checks);
 				break;
 			}
@@ -616,6 +620,7 @@ export async function textbookFactor(
 					originalCoefficients
 				);
 				radicalText = formula.text;
+				result.radicals = formula.radicals;
 				result.checks.push(...formula.checks);
 			}
 			break;

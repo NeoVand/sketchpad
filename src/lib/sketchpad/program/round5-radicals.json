@@ -1,0 +1,190 @@
+{
+	"light": {
+		"measurements": [
+			{
+				"source": "solve x^2-2=0",
+				"rows": 216,
+				"calls": 162,
+				"seconds": 18.522000000000002,
+				"under12": false,
+				"brackets": { "rows": 6076, "calls": 2436, "seconds": 383.152 },
+				"answer": "= x = ± √2 ≈ ± 1.4142",
+				"lines": [
+					{ "kind": "given", "tex": "x^{2} - 2 = 0" },
+					{
+						"kind": "formula",
+						"tex": "0^{2} - 4\\cdot 1\\cdot \\left(-2\\right) = 8",
+						"note": "Discriminant: b² − 4ac"
+					},
+					{ "kind": "formula", "tex": "\\sqrt{8} = \\sqrt{4\\cdot 2} = 2\\cdot \\sqrt{2}" },
+					{ "kind": "divide", "tex": "x = \\frac{\\pm 2\\sqrt{2}}{2} = \\pm \\sqrt{2}" },
+					{
+						"kind": "check",
+						"tex": "x_1+x_2 = 0,\\quad x_1x_2 = 0^{2} - 2 = -2\\quad\\checkmark",
+						"note": "Exact Vieta check of the reduced pair"
+					},
+					{ "kind": "result", "tex": "x = \\pm \\sqrt{2}" },
+					{
+						"kind": "approximation",
+						"tex": "x \\approx \\pm 1.4142",
+						"note": "Rounded display; the preceding radical answer is exact"
+					}
+				]
+			},
+			{
+				"source": "solve 2x^2+3x-1=0",
+				"rows": 340,
+				"calls": 192,
+				"seconds": 25.060000000000002,
+				"under12": false,
+				"brackets": { "rows": 6534, "calls": 2558, "seconds": 408.028 },
+				"answer": "= x = (−3 ± √17)/4 ≈ −1.7808, 0.2808",
+				"lines": [
+					{ "kind": "given", "tex": "2x^{2} + 3x - 1 = 0" },
+					{
+						"kind": "formula",
+						"tex": "3^{2} - 4\\cdot 2\\cdot \\left(-1\\right) = 17",
+						"note": "Discriminant: b² − 4ac"
+					},
+					{ "kind": "divide", "tex": "x = \\frac{-3 \\pm \\sqrt{17}}{4}" },
+					{
+						"kind": "check",
+						"tex": "x_1+x_2 = \\frac{-3}{2},\\quad x_1x_2 = \\frac{\\left(-3\\right)^{2} - 17}{16} = \\frac{-1}{2}\\quad\\checkmark",
+						"note": "Exact Vieta check of the reduced pair"
+					},
+					{ "kind": "result", "tex": "x = \\frac{-3 \\pm \\sqrt{17}}{4}" },
+					{
+						"kind": "approximation",
+						"tex": "x \\approx -1.7808,\\;0.2808",
+						"note": "Rounded display; the preceding radical answer is exact"
+					}
+				]
+			},
+			{
+				"source": "solve x^2-6x+4=0",
+				"rows": 275,
+				"calls": 199,
+				"seconds": 23.11,
+				"under12": false,
+				"brackets": { "rows": 5408, "calls": 2113, "seconds": 337.44100000000003 },
+				"answer": "= x = 3 ± √5 ≈ 0.7639, 5.2361",
+				"lines": [
+					{ "kind": "given", "tex": "x^{2} - 6x + 4 = 0" },
+					{
+						"kind": "formula",
+						"tex": "\\left(-6\\right)^{2} - 4\\cdot 1\\cdot 4 = 20",
+						"note": "Discriminant: b² − 4ac"
+					},
+					{ "kind": "formula", "tex": "\\sqrt{20} = \\sqrt{4\\cdot 5} = 2\\cdot \\sqrt{5}" },
+					{ "kind": "divide", "tex": "x = \\frac{6 \\pm 2\\sqrt{5}}{2} = 3 \\pm \\sqrt{5}" },
+					{
+						"kind": "check",
+						"tex": "x_1+x_2 = 6,\\quad x_1x_2 = 3^{2} - 5 = 4\\quad\\checkmark",
+						"note": "Exact Vieta check of the reduced pair"
+					},
+					{ "kind": "result", "tex": "x = 3 \\pm \\sqrt{5}" },
+					{
+						"kind": "approximation",
+						"tex": "x \\approx 0.7639,\\;5.2361",
+						"note": "Rounded display; the preceding radical answer is exact"
+					}
+				]
+			}
+		],
+		"refusal": { "seed": 17569, "attempts": 200, "caught": 200, "missed": 0, "details": [] }
+	},
+	"strong": {
+		"measurements": [
+			{
+				"source": "solve x^2-2=0",
+				"rows": 216,
+				"calls": 162,
+				"seconds": 18.522000000000002,
+				"under12": false,
+				"brackets": { "rows": 11396, "calls": 4147, "seconds": 691.207 },
+				"answer": "= x = ± √2 ≈ ± 1.4142",
+				"lines": [
+					{ "kind": "given", "tex": "x^{2} - 2 = 0" },
+					{
+						"kind": "formula",
+						"tex": "0^{2} - 4\\cdot 1\\cdot \\left(-2\\right) = 8",
+						"note": "Discriminant: b² − 4ac"
+					},
+					{ "kind": "formula", "tex": "\\sqrt{8} = \\sqrt{4\\cdot 2} = 2\\cdot \\sqrt{2}" },
+					{ "kind": "divide", "tex": "x = \\frac{\\pm 2\\sqrt{2}}{2} = \\pm \\sqrt{2}" },
+					{
+						"kind": "check",
+						"tex": "x_1+x_2 = 0,\\quad x_1x_2 = 0^{2} - 2 = -2\\quad\\checkmark",
+						"note": "Exact Vieta check of the reduced pair"
+					},
+					{ "kind": "result", "tex": "x = \\pm \\sqrt{2}" },
+					{
+						"kind": "approximation",
+						"tex": "x \\approx \\pm 1.4142",
+						"note": "Rounded display; the preceding radical answer is exact"
+					}
+				]
+			},
+			{
+				"source": "solve 2x^2+3x-1=0",
+				"rows": 340,
+				"calls": 192,
+				"seconds": 25.060000000000002,
+				"under12": false,
+				"brackets": { "rows": 22432, "calls": 6581, "seconds": 1257.7489999999998 },
+				"answer": "= x = (−3 ± √17)/4 ≈ −1.7808, 0.2808",
+				"lines": [
+					{ "kind": "given", "tex": "2x^{2} + 3x - 1 = 0" },
+					{
+						"kind": "formula",
+						"tex": "3^{2} - 4\\cdot 2\\cdot \\left(-1\\right) = 17",
+						"note": "Discriminant: b² − 4ac"
+					},
+					{ "kind": "divide", "tex": "x = \\frac{-3 \\pm \\sqrt{17}}{4}" },
+					{
+						"kind": "check",
+						"tex": "x_1+x_2 = \\frac{-3}{2},\\quad x_1x_2 = \\frac{\\left(-3\\right)^{2} - 17}{16} = \\frac{-1}{2}\\quad\\checkmark",
+						"note": "Exact Vieta check of the reduced pair"
+					},
+					{ "kind": "result", "tex": "x = \\frac{-3 \\pm \\sqrt{17}}{4}" },
+					{
+						"kind": "approximation",
+						"tex": "x \\approx -1.7808,\\;0.2808",
+						"note": "Rounded display; the preceding radical answer is exact"
+					}
+				]
+			},
+			{
+				"source": "solve x^2-6x+4=0",
+				"rows": 275,
+				"calls": 199,
+				"seconds": 23.11,
+				"under12": false,
+				"brackets": { "rows": 19328, "calls": 5637, "seconds": 1081.541 },
+				"answer": "= x = 3 ± √5 ≈ 0.7639, 5.2361",
+				"lines": [
+					{ "kind": "given", "tex": "x^{2} - 6x + 4 = 0" },
+					{
+						"kind": "formula",
+						"tex": "\\left(-6\\right)^{2} - 4\\cdot 1\\cdot 4 = 20",
+						"note": "Discriminant: b² − 4ac"
+					},
+					{ "kind": "formula", "tex": "\\sqrt{20} = \\sqrt{4\\cdot 5} = 2\\cdot \\sqrt{5}" },
+					{ "kind": "divide", "tex": "x = \\frac{6 \\pm 2\\sqrt{5}}{2} = 3 \\pm \\sqrt{5}" },
+					{
+						"kind": "check",
+						"tex": "x_1+x_2 = 6,\\quad x_1x_2 = 3^{2} - 5 = 4\\quad\\checkmark",
+						"note": "Exact Vieta check of the reduced pair"
+					},
+					{ "kind": "result", "tex": "x = 3 \\pm \\sqrt{5}" },
+					{
+						"kind": "approximation",
+						"tex": "x \\approx 0.7639,\\;5.2361",
+						"note": "Rounded display; the preceding radical answer is exact"
+					}
+				]
+			}
+		],
+		"refusal": { "seed": 17569, "attempts": 200, "caught": 200, "missed": 0, "details": [] }
+	}
+}

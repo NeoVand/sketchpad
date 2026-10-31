@@ -13,3 +13,5 @@ export { Arithmetic, CheckFailed, type Rational, type CheckMode } from './arithm
 export { checkRoot, type AlgebraResult, type CoefficientGrid, type RootCheck } from './algebra';
 
 export type { Derivation, DerivationLine, DerivationKind, NumberSpan } from './derivation';
+
+export type { RadicalValue } from './radicals';

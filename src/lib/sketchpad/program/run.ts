@@ -25,6 +25,10 @@ export interface RunResult {
 export interface RunOptions {
 	checkMode?: CheckMode;
 	path?: 'textbook' | 'evaluation';
+	/** Opt into the retained certified six-place quadratic brackets. */
+	places?: 6;
+	/** Compute the optional decimal display after the exact radical answer (default true). */
+	approximate?: boolean;
 }
 export async function run(
 	source: string | WorkOrder,
@@ -45,7 +49,9 @@ export async function run(
 				env,
 				`d${results.length}`,
 				options.path ?? 'textbook',
-				[...known.values()]
+				[...known.values()],
+				statement.kind === 'solve' ? (statement.places ?? options.places) : options.places,
+				options.approximate ?? true
 			);
 		try {
 			let value: Rational | undefined, algebra: AlgebraResult | undefined, text: string;
@@ -85,6 +91,13 @@ export async function run(
 							? await solve(a, statement.equations[0], env)
 							: await system(a, statement.equations, env);
 				algebra.checkMode = a.checkMode;
+				for (const approximation of b.pendingApproximations) {
+					try {
+						algebra.text += await approximation();
+					} catch (e) {
+						algebra.approximationError = e instanceof Error ? e.message : String(e);
+					}
+				}
 				text = algebra.text;
 			}
 			results.push({

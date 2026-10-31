@@ -23,7 +23,7 @@ export interface CoefficientGrid {
 	rows: GridRow[];
 }
 export interface RootCheck {
-	kind: 'substitution' | 'horner' | 'bracket';
+	kind: 'substitution' | 'horner' | 'bracket' | 'vieta';
 	mode?: 'light' | 'strong';
 	passed: boolean;
 	root?: Rational;
@@ -31,6 +31,9 @@ export interface RootCheck {
 	upper?: Rational;
 }
 export interface AlgebraResult {
+	/** An optional display failure never invalidates the already checked exact answer. */
+	approximationError?: string;
+	radicals?: import('./radicals').RadicalValue;
 	checkMode?: 'light' | 'strong';
 	text: string;
 	coefficients?: Rational[];

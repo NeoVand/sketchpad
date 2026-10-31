@@ -1,6 +1,7 @@
+import { hasRadical, symbolicEqual, symbolicCompare } from './symbolic-test-helper';
 import { expect } from 'vitest';
 import { Arithmetic, integer, type Rational } from './arithmetic';
-import { fields } from './derivation';
+import { fields, binary, num } from './derivation';
 import { RefCalc } from './calc';
 import type { Expr, Equation } from './parse';
 import type { RunResult } from './run';
@@ -37,6 +38,10 @@ export async function validateDerivation(result: RunResult): Promise<void> {
 				: a.div(l, r);
 	};
 	const same = async (eq: Equation, env: Map<string, Rational>, label: string) => {
+		if (hasRadical(eq.left) || hasRadical(eq.right)) {
+			expect(await symbolicEqual(eq, env), label).toBe(true);
+			return;
+		}
 		const l = await evaluate(eq.left, env),
 			r = await evaluate(eq.right, env);
 		expect(await a.equal(l, r), label).toBe(true);
@@ -60,8 +65,9 @@ export async function validateDerivation(result: RunResult): Promise<void> {
 				)?.[1];
 				expect(String(value)).toBe(span.value);
 				const shown = BigInt(span.displayed.replace('.', ''));
-				expect(shown === value || shown === -value!, span.id).toBe(true);
-				expect(span.signFlipped).toBe(shown !== value);
+				const sourceDigits = value! / 10n ** BigInt(span.discardedDigits ?? 0);
+				expect(shown === sourceDigits || shown === -sourceDigits, span.id).toBe(true);
+				expect(span.signFlipped).toBe(shown !== 0n && shown < 0n !== value! < 0n);
 				expect(span.displayed.includes('.') ? span.displayed.split('.')[1].length : 0).toBe(
 					span.decimalPlaces
 				);
@@ -122,6 +128,20 @@ export async function validateDerivation(result: RunResult): Promise<void> {
 					);
 				}
 			}
+			if (line.radicalApproximation)
+				for (let i = 0; i < line.radicalApproximation.exact.length; i++) {
+					const exact = line.radicalApproximation.exact[i],
+						display = line.radicalApproximation.displayed[i];
+					expect(
+						await symbolicCompare({ left: exact, right: binary('-', display, num('0.0001')) }, env),
+						label
+					).toBeGreaterThanOrEqual(0);
+					expect(
+						await symbolicCompare({ left: exact, right: binary('+', display, num('0.0001')) }, env),
+						label
+					).toBeLessThanOrEqual(0);
+				}
+
 			if (line.approximation) {
 				const v = await a.evaluate(line.approximation.expression, env, {
 					places: line.approximation.places
@@ -136,6 +156,7 @@ export async function validateDerivation(result: RunResult): Promise<void> {
 					(line.conditions?.length ?? 0) > 0 ||
 					!!line.candidates ||
 					!!line.approximation ||
+					!!line.radicalApproximation ||
 					(line.equations?.length ?? 0) > 1,
 				label
 			).toBe(true);

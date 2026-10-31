@@ -1,0 +1,106 @@
+{
+	"light": [
+		{
+			"source": "solve x^2-2=0",
+			"exact": { "rows": 86, "calls": 65, "seconds": 7.407 },
+			"total": { "rows": 216, "calls": 162, "seconds": 18.522000000000002 },
+			"resultReadyAfterCall": 16,
+			"approximationFirstOperation": 17,
+			"lines": [
+				{ "kind": "given", "tex": "x^{2} - 2 = 0" },
+				{ "kind": "formula", "tex": "0^{2} - 4\\cdot 1\\cdot \\left(-2\\right) = 8" },
+				{ "kind": "formula", "tex": "\\sqrt{8} = \\sqrt{4\\cdot 2} = 2\\cdot \\sqrt{2}" },
+				{ "kind": "divide", "tex": "x = \\frac{\\pm 2\\sqrt{2}}{2} = \\pm \\sqrt{2}" },
+				{ "kind": "check", "tex": "x_1+x_2 = 0,\\quad x_1x_2 = 0^{2} - 2 = -2\\quad\\checkmark" },
+				{ "kind": "result", "tex": "x = \\pm \\sqrt{2}" },
+				{ "kind": "approximation", "tex": "x \\approx \\pm 1.4142" }
+			]
+		},
+		{
+			"source": "solve 2x^2+3x-1=0",
+			"exact": { "rows": 144, "calls": 88, "seconds": 11.048 },
+			"total": { "rows": 340, "calls": 192, "seconds": 25.060000000000002 },
+			"resultReadyAfterCall": 28,
+			"approximationFirstOperation": 29,
+			"lines": [
+				{ "kind": "given", "tex": "2x^{2} + 3x - 1 = 0" },
+				{ "kind": "formula", "tex": "3^{2} - 4\\cdot 2\\cdot \\left(-1\\right) = 17" },
+				{ "kind": "divide", "tex": "x = \\frac{-3 \\pm \\sqrt{17}}{4}" },
+				{
+					"kind": "check",
+					"tex": "x_1+x_2 = \\frac{-3}{2},\\quad x_1x_2 = \\frac{\\left(-3\\right)^{2} - 17}{16} = \\frac{-1}{2}\\quad\\checkmark"
+				},
+				{ "kind": "result", "tex": "x = \\frac{-3 \\pm \\sqrt{17}}{4}" },
+				{ "kind": "approximation", "tex": "x \\approx -1.7808,\\;0.2808" }
+			]
+		},
+		{
+			"source": "solve x^2-6x+4=0",
+			"exact": { "rows": 133, "calls": 96, "seconds": 11.161 },
+			"total": { "rows": 275, "calls": 199, "seconds": 23.11 },
+			"resultReadyAfterCall": 24,
+			"approximationFirstOperation": 25,
+			"lines": [
+				{ "kind": "given", "tex": "x^{2} - 6x + 4 = 0" },
+				{ "kind": "formula", "tex": "\\left(-6\\right)^{2} - 4\\cdot 1\\cdot 4 = 20" },
+				{ "kind": "formula", "tex": "\\sqrt{20} = \\sqrt{4\\cdot 5} = 2\\cdot \\sqrt{5}" },
+				{ "kind": "divide", "tex": "x = \\frac{6 \\pm 2\\sqrt{5}}{2} = 3 \\pm \\sqrt{5}" },
+				{ "kind": "check", "tex": "x_1+x_2 = 6,\\quad x_1x_2 = 3^{2} - 5 = 4\\quad\\checkmark" },
+				{ "kind": "result", "tex": "x = 3 \\pm \\sqrt{5}" },
+				{ "kind": "approximation", "tex": "x \\approx 0.7639,\\;5.2361" }
+			]
+		}
+	],
+	"strong": [
+		{
+			"source": "solve x^2-2=0",
+			"exact": { "rows": 86, "calls": 65, "seconds": 7.407 },
+			"total": { "rows": 216, "calls": 162, "seconds": 18.522000000000002 },
+			"resultReadyAfterCall": 16,
+			"approximationFirstOperation": 17,
+			"lines": [
+				{ "kind": "given", "tex": "x^{2} - 2 = 0" },
+				{ "kind": "formula", "tex": "0^{2} - 4\\cdot 1\\cdot \\left(-2\\right) = 8" },
+				{ "kind": "formula", "tex": "\\sqrt{8} = \\sqrt{4\\cdot 2} = 2\\cdot \\sqrt{2}" },
+				{ "kind": "divide", "tex": "x = \\frac{\\pm 2\\sqrt{2}}{2} = \\pm \\sqrt{2}" },
+				{ "kind": "check", "tex": "x_1+x_2 = 0,\\quad x_1x_2 = 0^{2} - 2 = -2\\quad\\checkmark" },
+				{ "kind": "result", "tex": "x = \\pm \\sqrt{2}" },
+				{ "kind": "approximation", "tex": "x \\approx \\pm 1.4142" }
+			]
+		},
+		{
+			"source": "solve 2x^2+3x-1=0",
+			"exact": { "rows": 144, "calls": 88, "seconds": 11.048 },
+			"total": { "rows": 340, "calls": 192, "seconds": 25.060000000000002 },
+			"resultReadyAfterCall": 28,
+			"approximationFirstOperation": 29,
+			"lines": [
+				{ "kind": "given", "tex": "2x^{2} + 3x - 1 = 0" },
+				{ "kind": "formula", "tex": "3^{2} - 4\\cdot 2\\cdot \\left(-1\\right) = 17" },
+				{ "kind": "divide", "tex": "x = \\frac{-3 \\pm \\sqrt{17}}{4}" },
+				{
+					"kind": "check",
+					"tex": "x_1+x_2 = \\frac{-3}{2},\\quad x_1x_2 = \\frac{\\left(-3\\right)^{2} - 17}{16} = \\frac{-1}{2}\\quad\\checkmark"
+				},
+				{ "kind": "result", "tex": "x = \\frac{-3 \\pm \\sqrt{17}}{4}" },
+				{ "kind": "approximation", "tex": "x \\approx -1.7808,\\;0.2808" }
+			]
+		},
+		{
+			"source": "solve x^2-6x+4=0",
+			"exact": { "rows": 133, "calls": 96, "seconds": 11.161 },
+			"total": { "rows": 275, "calls": 199, "seconds": 23.11 },
+			"resultReadyAfterCall": 24,
+			"approximationFirstOperation": 25,
+			"lines": [
+				{ "kind": "given", "tex": "x^{2} - 6x + 4 = 0" },
+				{ "kind": "formula", "tex": "\\left(-6\\right)^{2} - 4\\cdot 1\\cdot 4 = 20" },
+				{ "kind": "formula", "tex": "\\sqrt{20} = \\sqrt{4\\cdot 5} = 2\\cdot \\sqrt{5}" },
+				{ "kind": "divide", "tex": "x = \\frac{6 \\pm 2\\sqrt{5}}{2} = 3 \\pm \\sqrt{5}" },
+				{ "kind": "check", "tex": "x_1+x_2 = 6,\\quad x_1x_2 = 3^{2} - 5 = 4\\quad\\checkmark" },
+				{ "kind": "result", "tex": "x = 3 \\pm \\sqrt{5}" },
+				{ "kind": "approximation", "tex": "x \\approx 0.7639,\\;5.2361" }
+			]
+		}
+	]
+}

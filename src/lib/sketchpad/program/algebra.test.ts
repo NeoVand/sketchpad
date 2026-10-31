@@ -8,7 +8,7 @@ import { run as runWork } from './run';
 describe.each(['textbook', 'evaluation'] as const)('%s path', (path) => {
 	describe.each(['light', 'strong'] as const)('algebra integration (%s)', (mode) => {
 		const run = (source: string, calc: RefCalc | LyingCalc) =>
-			runWork(source, calc, { checkMode: mode, path });
+			runWork(source, calc, { checkMode: mode, path, places: 6 });
 		it.each([
 			['solve 3(x-2)+5=2x+14', 'x = 15'],
 			['solve 7x+13=2026-4x', 'x = 183'],

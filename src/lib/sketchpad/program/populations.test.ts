@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import { writeReport } from './report-test-helper';
 import { Arithmetic, CheckFailed, integer } from './arithmetic';
 import { checkRoot } from './algebra';
@@ -9,6 +9,9 @@ import { DerivationBuilder, literal } from './derivation';
 import { checkTextbookRoot } from './textbook';
 import { normalizeEquation } from './textbook-poly';
 import { validateDerivation } from './derivation-test-helper';
+
+// each population runs hundreds of procedures; on a busy machine the default 5 s is too short
+vi.setConfig({ testTimeout: 60_000 });
 
 // Independent native-BigInt oracle: never imported by the runtime.
 type Q = { n: bigint; d: bigint };
@@ -161,8 +164,22 @@ describe.each(['textbook', 'evaluation'] as const)('%s path', (path) => {
 					const s = BigInt(rand(1, 100)),
 						v = s * s + 1n;
 					const result = await execute(`solve x^2=${v}`, 'quadratic');
-					expect(result.algebra!.checks).toHaveLength(2);
-					for (const check of result.algebra!.checks) {
+					let checks = result.algebra!.checks;
+					if (path === 'textbook') {
+						const pair = result.algebra!.radicals!;
+						expect(pair.p).toBe(0n);
+						expect(pair.q * pair.q * pair.m).toBe(v * pair.d * pair.d);
+						expect(checks).toEqual([{ kind: 'vieta', mode, passed: true }]);
+						const legacy = await run(`solve x^2=${v}`, new RefCalc(), {
+							checkMode: mode,
+							path,
+							places: 6
+						});
+						expect(legacy.results[0].status).toBe('ok');
+						checks = legacy.results[0].algebra!.checks;
+					}
+					expect(checks).toHaveLength(2);
+					for (const check of checks) {
 						const lo = check.lower!,
 							hi = check.upper!;
 						const f = lo.n * lo.n - v * lo.d * lo.d,

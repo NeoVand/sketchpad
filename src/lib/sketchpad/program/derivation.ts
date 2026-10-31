@@ -11,7 +11,16 @@ import { TraceCalc, type Calc, type Result, type ScalarOp } from './calc';
 import type { Equation, Expr } from './parse';
 
 export type DerivationKind =
-	'given' | 'expand' | 'evaluate' | 'collect' | 'move' | 'divide' | 'formula' | 'check' | 'result';
+	| 'given'
+	| 'expand'
+	| 'evaluate'
+	| 'collect'
+	| 'move'
+	| 'divide'
+	| 'formula'
+	| 'check'
+	| 'result'
+	| 'approximation';
 export interface NumberSource {
 	call: number;
 	field: string;
@@ -30,10 +39,13 @@ export interface NumberSpan {
 	displayed: string;
 	signFlipped: boolean;
 	decimalPlaces: number;
+	discardedDigits?: number;
 }
 export interface DerivationLine {
 	tex: string;
 	kind: DerivationKind;
+	/** Global trace index after all work needed to establish this line has completed. */
+	readyAfterCall: number;
 	note?: string;
 	calls: number[];
 	numbers: NumberSpan[];
@@ -44,6 +56,7 @@ export interface DerivationLine {
 	bounds?: { equation: Equation; lower: Rational; upper: Rational }[];
 	given?: Expr | Equation[];
 	candidates?: { constant: Expr; leading: Expr; values: Rational[] };
+	radicalApproximation?: { exact: Expr[]; displayed: Expr[] };
 	approximation?: { expression: Expr; value: Rational; places?: number };
 	conditions?: { expression: Expr; relation: 'zero' | 'nonzero' | 'negative' }[];
 }
@@ -98,15 +111,20 @@ class CapturedCalc implements Calc {
 }
 export class DerivationBuilder {
 	readonly derivation: Derivation;
+	/** Run only after the statement's exact solving/factoring work has finished. */
+	readonly pendingApproximations: (() => Promise<string>)[] = [];
 	private sources = new WeakMap<Expr, NumberSource>();
 	private scales = new WeakMap<Expr, number>();
+	private discarded = new WeakMap<Expr, number>();
 	constructor(
 		readonly trace: TraceCalc,
 		readonly mode: CheckMode,
 		readonly env: Environment = new Map(),
 		readonly prefix = 'd0',
 		path: 'textbook' | 'evaluation' = 'textbook',
-		readonly known: Quantity[] = []
+		readonly known: Quantity[] = [],
+		readonly places?: number,
+		readonly approximate = true
 	) {
 		this.derivation = { lines: [], path, traceOffset: trace.calls.length };
 	}
@@ -164,15 +182,19 @@ export class DerivationBuilder {
 		if (q.d) this.sources.set(d, q.d);
 		return binary('/', n, d);
 	}
-	decimalExpr(q: Quantity, places: number): Expr {
+	decimalExpr(q: Quantity, places: number, shownPlaces = places): Expr {
 		const digits = magnitude(q.value.n)
 			.toString()
 			.padStart(places + 1, '0');
 		const e = num(
-			(q.value.n < 0n ? '-' : '') + digits.slice(0, -places) + '.' + digits.slice(-places)
+			(q.value.n < 0n ? '-' : '') +
+				digits.slice(0, -places) +
+				'.' +
+				digits.slice(-places).slice(0, shownPlaces)
 		);
 		if (q.n) this.sources.set(e, q.n);
-		this.scales.set(e, places);
+		this.scales.set(e, shownPlaces);
+		if (places > shownPlaces) this.discarded.set(e, places - shownPlaces);
 		return e;
 	}
 	private render(e: Expr, spans: NumberSpan[], line: number, parent = 0): string {
@@ -188,7 +210,9 @@ export class DerivationBuilder {
 				field: source.field,
 				value: String(source.value),
 				displayed: e.text,
-				signFlipped: BigInt(e.text.replace('.', '')) !== source.value,
+				signFlipped:
+					e.text.startsWith('-') !== source.value < 0n && BigInt(e.text.replace('.', '')) !== 0n,
+				...(this.discarded.has(e) ? { discardedDigits: this.discarded.get(e) } : {}),
 				decimalPlaces: this.scales.get(e) ?? 0
 			});
 			const text = `\\htmlId{${id}}{${e.text}}`;
@@ -237,7 +261,9 @@ export class DerivationBuilder {
 	line(
 		kind: DerivationKind,
 		display: (render: (e: Expr) => string) => string,
-		data: Partial<Omit<DerivationLine, 'tex' | 'kind' | 'note' | 'calls' | 'numbers'>> = {},
+		data: Partial<
+			Omit<DerivationLine, 'tex' | 'kind' | 'note' | 'calls' | 'numbers' | 'readyAfterCall'>
+		> = {},
 		note?: string | ((render: (e: Expr) => string) => string)
 	) {
 		const numbers: NumberSpan[] = [],
@@ -247,6 +273,7 @@ export class DerivationBuilder {
 			noteText = typeof note === 'function' ? note(render) : note;
 		this.derivation.lines.push({
 			kind,
+			readyAfterCall: this.trace.calls.length - 1,
 			tex,
 			note: noteText,
 			identities: [],
