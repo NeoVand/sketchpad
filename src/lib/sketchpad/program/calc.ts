@@ -181,6 +181,7 @@ export class RefCalc implements Calc {
 }
 /** Trace any Calc without inspecting or trusting its implementation. */
 export class TraceCalc implements Calc {
+	protected readonly indices = new WeakMap<Promise<Result>, number>();
 	readonly calls: CalcCall[] = [];
 	constructor(readonly inner: Calc) {}
 	async wave<T>(jobs: (() => Promise<T>)[]): Promise<T[]> {
@@ -205,8 +206,16 @@ export class TraceCalc implements Calc {
 		call: Promise<T>
 	): Promise<T> {
 		const result = await call;
+		this.indices.set(call, this.calls.length);
 		this.calls.push({ op, operands, result });
 		return result;
+	}
+	/** Exact trace attribution, including when other jobs complete concurrently. */
+	async indexed(op: ScalarOp, operands: bigint[]): Promise<{ result: Result; index: number }> {
+		const call =
+			op === 'isqrt' ? this.inner.isqrt(operands[0]) : this.inner[op](operands[0], operands[1]);
+		const result = await this.record<Result>(op, operands, call);
+		return { result, index: this.indices.get(call)! };
 	}
 	add(a: bigint, b: bigint) {
 		return this.record('add', [a, b], this.inner.add(a, b));
@@ -247,6 +256,7 @@ export class LyingCalc extends TraceCalc {
 		const index = this.invoked++;
 		const answer = await call;
 		const result = (index === this.target ? this.corrupt(answer) : answer) as T;
+		this.indices.set(call, this.calls.length);
 		this.calls.push({ op, operands, result });
 		return result;
 	}
