@@ -11,7 +11,16 @@ import { TraceCalc, type Calc, type Result, type ScalarOp } from './calc';
 import type { Equation, Expr } from './parse';
 
 export type DerivationKind =
-	'given' | 'expand' | 'evaluate' | 'collect' | 'move' | 'divide' | 'formula' | 'check' | 'result';
+	| 'given'
+	| 'expand'
+	| 'evaluate'
+	| 'collect'
+	| 'move'
+	| 'divide'
+	| 'formula'
+	| 'check'
+	| 'result'
+	| 'approximation';
 export interface NumberSource {
 	call: number;
 	field: string;
@@ -35,6 +44,8 @@ export interface NumberSpan {
 export interface DerivationLine {
 	tex: string;
 	kind: DerivationKind;
+	/** Global trace index after all work needed to establish this line has completed. */
+	readyAfterCall: number;
 	note?: string;
 	calls: number[];
 	numbers: NumberSpan[];
@@ -100,6 +111,8 @@ class CapturedCalc implements Calc {
 }
 export class DerivationBuilder {
 	readonly derivation: Derivation;
+	/** Run only after the statement's exact solving/factoring work has finished. */
+	readonly pendingApproximations: (() => Promise<string>)[] = [];
 	private sources = new WeakMap<Expr, NumberSource>();
 	private scales = new WeakMap<Expr, number>();
 	private discarded = new WeakMap<Expr, number>();
@@ -110,7 +123,8 @@ export class DerivationBuilder {
 		readonly prefix = 'd0',
 		path: 'textbook' | 'evaluation' = 'textbook',
 		readonly known: Quantity[] = [],
-		readonly places?: number
+		readonly places?: number,
+		readonly approximate = true
 	) {
 		this.derivation = { lines: [], path, traceOffset: trace.calls.length };
 	}
@@ -247,7 +261,9 @@ export class DerivationBuilder {
 	line(
 		kind: DerivationKind,
 		display: (render: (e: Expr) => string) => string,
-		data: Partial<Omit<DerivationLine, 'tex' | 'kind' | 'note' | 'calls' | 'numbers'>> = {},
+		data: Partial<
+			Omit<DerivationLine, 'tex' | 'kind' | 'note' | 'calls' | 'numbers' | 'readyAfterCall'>
+		> = {},
 		note?: string | ((render: (e: Expr) => string) => string)
 	) {
 		const numbers: NumberSpan[] = [],
@@ -257,6 +273,7 @@ export class DerivationBuilder {
 			noteText = typeof note === 'function' ? note(render) : note;
 		this.derivation.lines.push({
 			kind,
+			readyAfterCall: this.trace.calls.length - 1,
 			tex,
 			note: noteText,
 			identities: [],

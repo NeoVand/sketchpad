@@ -26,7 +26,7 @@ describe.each(['light', 'strong'] as const)('%s exact radicals', (mode) => {
 			expect(result.results[0].status, result.lines.join()).toBe('ok');
 			expect(result.results[0].algebra?.radicals).toEqual(expected[i]);
 			expect(result.results[0].algebra?.checks).toEqual([{ kind: 'vieta', mode, passed: true }]);
-			expect(result.results[0].derivation.lines.at(-1)?.kind).toBe('result');
+			expect(result.results[0].derivation.lines.at(-1)?.kind).toBe('approximation');
 			expect(result.results[0].derivation.lines.some((l) => l.bounds)).toBe(false);
 			await validateDerivation(result);
 			for (const l of result.results[0].derivation.lines)
@@ -152,5 +152,5 @@ it('keeps rational substitution checks and expected rounded displays', async () 
 	]);
 });
 afterAll(async () => {
-	if (process.env.RADICAL_REPORT) await writeReport('./round4.json', reports);
+	if (process.env.RADICAL_REPORT) await writeReport('./round5-radicals.json', reports);
 });

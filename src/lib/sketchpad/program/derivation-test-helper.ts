@@ -156,6 +156,7 @@ export async function validateDerivation(result: RunResult): Promise<void> {
 					(line.conditions?.length ?? 0) > 0 ||
 					!!line.candidates ||
 					!!line.approximation ||
+					!!line.radicalApproximation ||
 					(line.equations?.length ?? 0) > 1,
 				label
 			).toBe(true);

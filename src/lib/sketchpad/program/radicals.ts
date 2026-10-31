@@ -258,29 +258,31 @@ export async function irrationalRoots(
 			`x = ${pairTex(b, original, r)}${b.plain(originals[0]) === b.plain(roots[0]) ? '' : ` = ${pairTex(b, pair, r)}`}`,
 		{ identities: originals.map((v, i) => eq(v, roots[den.value.n < 0n ? 1 - i : i])) }
 	);
-	const combined = await b.trace.wave<RootCheck | Awaited<ReturnType<typeof approximate>>>([
-		() => checkRadicalPair(b, cs, pair),
-		() => approximate(b, pair)
-	]);
-	const [check, approximations] = combined as [RootCheck, Awaited<ReturnType<typeof approximate>>];
-	const shown = approximations.map((v) => b.decimalExpr(v.quantity, v.digits, 4));
-	b.line(
-		'result',
-		(r) =>
-			`x = ${pairTex(b, pair, r)}\\;\\approx\\;${p.value.n === 0n ? `\\pm ${r(shown[1])}` : shown.map(r).join(',\\;')}`,
-		{
-			identities: [
-				eq(binary('+', roots[0], roots[1]), binary('/', b.expr(negate(bb)), b.expr(cs[2])))
-			],
-			radicalApproximation: { exact: roots, displayed: shown }
-		},
-		'Rounded display; the radical pair is exact'
-	);
-	const display = shown.map((v) => b.plain(v).replaceAll('-', '−'));
+	const check = await checkRadicalPair(b, cs, pair);
+	b.line('result', (r) => `x = ${pairTex(b, pair, r)}`, {
+		identities: [
+			eq(binary('+', roots[0], roots[1]), binary('/', b.expr(negate(bb)), b.expr(cs[2])))
+		]
+	});
+	if (b.approximate)
+		b.pendingApproximations.push(async () => {
+			const approximations = await approximate(b, pair);
+			const shown = approximations.map((v) => b.decimalExpr(v.quantity, v.digits, 4));
+			b.line(
+				'approximation',
+				(r) => `x \\approx ${p.value.n === 0n ? `\\pm ${r(shown[1])}` : shown.map(r).join(',\\;')}`,
+				{
+					radicalApproximation: { exact: roots, displayed: shown }
+				},
+				'Rounded display; the preceding radical answer is exact'
+			);
+			const display = shown.map((v) => b.plain(v).replaceAll('-', '−'));
+			return ` ≈ ${p.value.n === 0n ? '± ' + display[1] : display.join(', ')}`;
+		});
 	return {
 		roots: [],
 		checks: [check],
 		radicals: radicalValue(pair),
-		text: `x = ${pairText(pair)} ≈ ${p.value.n === 0n ? '± ' + display[1] : display.join(', ')}`
+		text: `x = ${pairText(pair)}`
 	};
 }

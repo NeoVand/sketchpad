@@ -31,6 +31,8 @@ export interface RootCheck {
 	upper?: Rational;
 }
 export interface AlgebraResult {
+	/** An optional display failure never invalidates the already checked exact answer. */
+	approximationError?: string;
 	radicals?: import('./radicals').RadicalValue;
 	checkMode?: 'light' | 'strong';
 	text: string;
