@@ -45,10 +45,10 @@ export const SECTIONS: Section[] = [
 	},
 	{
 		id: 'algebra',
-		title: 'Algebra by evaluation',
+		title: 'Algebra as written',
 		holds:
-			'Equations solved by evaluating the typed sides at a few numbers and reading the polynomial off the values; (x + 2)^5 expanded as 1002^5 (Kronecker substitution); systems by Cramer’s rule and Bareiss elimination; factoring by guess, then prove. Every arithmetic step is certified; what is not is said once.',
-		waits: 'the work-order runtime under 12 s per problem; on-device runs'
+			'The runtime solves the way people write algebra: it multiplies out brackets, collects like terms, moves terms across, applies the quadratic formula, expands powers by the binomial theorem, factors by the rational root theorem and synthetic division, and eliminates in systems. The model computes every number, and every answer is checked by substitution before it is shown. The evaluation method (interpolation, Kronecker substitution) stays as the comparison.',
+		waits: 'irrational roots as simplified radicals; on-device timings for every example'
 	},
 	{
 		id: 'one-model',

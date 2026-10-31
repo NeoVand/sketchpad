@@ -26,8 +26,11 @@ that reveal structure. The opening figure shows the contribution at once: the sh
    a routine lift: state it, do not sell it.
 4. **A calculator on the sheet.** The five tables; Knuth's Algorithm D; square root with c² normalisation; gcd; signed
    numbers. Waits on: E7 (CALC stream) and the on-device runs.
-5. **Algebra by evaluation.** Interpolation from values, Kronecker substitution, Cramer and Bareiss, guess then prove;
-   the light and strong checks and their refusal rates. Waits on: the work-order runtime round 2 (PROGRAM stream).
+5. **Algebra as written.** Textbook steps (expand, collect, move, the formula, the binomial theorem, the rational root
+   theorem and synthetic division, elimination), each number computed by the model, each answer checked by
+   substitution. Neo chose this over showing the evaluation method on 31 Oct 2026 ("no one's going to notice that this
+   is algebra"). The evaluation path (interpolation, Kronecker substitution) is the comparison. Source:
+   `src/lib/sketchpad/program/NOTES.md`, `research/ALGEBRA3.md`.
 6. **One model that decides.** The gate (`lora_gate`: 0 is stock bit for bit, 1 the program); the work order;
    self-distillation for retention; precision and recall of opening the sheet; instruction-following against stock.
    Waits on: the chat fine-tune (CHAT stream).

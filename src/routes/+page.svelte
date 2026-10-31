@@ -37,13 +37,15 @@
 				itself on a sheet it reads with its own eyes, three cells at a time: every digit comes from
 				one forward pass, and the sheet is its only memory. It adds, subtracts, multiplies and
 				divides signed whole numbers of any length, takes square roots and finds greatest common
-				divisors, all exactly. We certify every one of the 2,446 views it can ever meet, and each
-				visitor’s GPU checks the weakest of them again before a run.
+				divisors, all exactly. On top of that arithmetic it does algebra the way people write it: it
+				multiplies out brackets, collects terms, uses the quadratic formula, expands, factors and
+				eliminates, computing every number itself and checking every answer by substitution. We
+				certify every one of the 2,446 views it can ever meet, and each visitor’s GPU checks the
+				weakest of them again before a run.
 			</p>
 			<p class="waits">
-				Waiting on: the published model’s 200 on-device runs (under way); algebra by evaluation
-				within 12 s on device; one gated model that chats like stock Qwen and opens its sheet by
-				itself.
+				Waiting on: irrational roots as simplified radicals; one gated model that chats like stock
+				Qwen and opens its sheet by itself.
 			</p>
 		</div>
 	</section>
