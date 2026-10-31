@@ -74,8 +74,9 @@ describe('the paper source', () => {
 		expect(tex).toContain('(\\hyperref[eq-b]{2})');
 		expect(tex).toContain('\\begin{equation}\ny = 2\n\\tag{2}\\label{eq-b}\n\\end{equation}');
 		// a display stays in its paragraph: no blank line before it, none after it when the sentence goes on
+		// each tagged equation names its own hyperref anchor, which amsmath's \tag would otherwise share
 		expect(tex).toContain(
-			'is one:\n\\begin{equation}\nx = 1\n\\tag{1}\\label{eq-a}\n\\end{equation}\nand then\n\\begin'
+			'is one:\n\\renewcommand{\\theHequation}{eq-a}\n\\begin{equation}\nx = 1\n\\tag{1}\\label{eq-a}\n\\end{equation}\nand then\n\\renewcommand{\\theHequation}{eq-b}\n\\begin'
 		);
 		expect(tex).toContain('\\[\nz\n\\]\n\nNew paragraph.');
 	});
@@ -131,5 +132,23 @@ describe('the paper source', () => {
 		expect(html.missing).toEqual([]);
 		const tex = renderTex(md, bib, { figDir: '', figExists: () => true });
 		expect(tex).toContain('\\begin{thebibliography}');
+		// the arXiv build is plain ASCII for pdfLaTeX
+		const arxiv = renderTex(md, bib, { figDir: '', figExists: () => true, engine: 'pdflatex' });
+		expect(arxiv).not.toMatch(/[\u0080-\u{10FFFF}]/u);
+		expect(arxiv).toContain('\\pdfoutput=1');
+		expect(arxiv).not.toContain('fontspec');
+	});
+
+	it('maps Unicode to LaTeX commands for pdfLaTeX, in text and in maths, and refuses what it cannot map', () => {
+		const opt = { figDir: '', figExists: () => true, engine: 'pdflatex' as const };
+		const tex = renderTex(
+			'Gr\u00f6bner: 3 \u00d7 4 \u2212 1 \u2013 \u201cok\u201d, $a \u2264 b$.',
+			new Map(),
+			opt
+		);
+		expect(tex).toContain(
+			'Gr\\"{o}bner: 3 \\ensuremath{\\times} 4 \\ensuremath{-} 1 \\textendash{} \\textquotedblleft{}ok\\textquotedblright{}, $a \\le  b$.'
+		);
+		expect(() => renderTex('\u2603', new Map(), opt)).toThrow(/U\+2603/);
 	});
 });

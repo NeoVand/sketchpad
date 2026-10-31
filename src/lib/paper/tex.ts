@@ -160,9 +160,9 @@ export function renderTex(md: string, bib: Map<string, Entry>, opt: TexOptions):
 			case 'math': {
 				const r = b.attrs.id ? num.ids.get(b.attrs.id) : undefined;
 				const tex = mathTex(b.tex);
-				// amsmath undoes the counter step of a \tag'ged equation, so hyperref would name every anchor
-				// equation.1 and every equation link would land on the first one; pdfTeX warns, so give each its own
-				const anchor = pdf && r ? `\\renewcommand{\\theHequation}{${b.attrs.id}}\n` : '';
+				// amsmath undoes the counter step of a \tag'ged equation, so hyperref would reuse one anchor name
+				// (equation.1, or equation.<section>.1) and equation links would land on the wrong equation
+				const anchor = r ? `\\renewcommand{\\theHequation}{${b.attrs.id}}\n` : '';
 				return r
 					? `${anchor}\\begin{equation}\n${tex}\n\\tag{${r.n}}\\label{${b.attrs.id}}\n\\end{equation}`
 					: `\\[\n${tex}\n\\]`;
@@ -473,7 +473,7 @@ const LETTER_CMD: Record<string, string> = {
 	ı: '{\\i}'
 };
 
-const NON_ASCII = /[^\x00-\x7f]/;
+const NON_ASCII = /[\u0080-\u{10FFFF}]/u;
 
 const unmapped = (c: string, s: string, i: number) =>
 	new Error(

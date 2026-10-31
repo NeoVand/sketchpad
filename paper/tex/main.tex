@@ -92,6 +92,7 @@ Because every step is a function of its view and the views form a finite set, th
 \textbf{Views and prompts.} The sheet is a grid of 32-pixel cells, each blank or a digit, rendered from a fixed glyph set. A view is a vertical strip of three cells, which the vision encoder maps to three image tokens. A step prompt consists of an operation token, the view, \texttt{=\allowbreak{}} and two placeholder tokens; the step's outputs are decoded at these three positions in a single forward pass. Since the model is causal, padding after \texttt{=\allowbreak{}} does not affect the outputs (Lemma \hyperref[lem-cache]{4}), and steps of different operations can be batched (Methods).
 
 \textbf{Tables.} For each operation, a table enumerates every view the operation can encounter, with its correct outputs: column addition (\texttt{SUM}, 242 views); the five operations of long multiplication (1,553); subtraction (\texttt{SUB}, 242); estimation of a quotient digit (\texttt{EST}, 400); and decrement of an estimate (\texttt{DEC}, 9). With $\mathcal O$ the nine operations and $G$ the eleven glyphs, the table rows form the set
+\renewcommand{\theHequation}{eq-views}
 \begin{equation}
 V = \bigsqcup_{o \in \mathcal O} V_o, \qquad V_o \subseteq \{o\} \times G^3, \qquad |V| = 242 + 1{,}553 + 651 = 2{,}446,
 \tag{1}\label{eq-views}
@@ -99,6 +100,7 @@ V = \bigsqcup_{o \in \mathcal O} V_o, \qquad V_o \subseteq \{o\} \times G^3, \qq
 whose terms count addition, multiplication and the calculator tables \texttt{SUB}, \texttt{EST} and \texttt{DEC} (Extended Data Table \hyperref[tbl-tables]{1}).
 
 \textbf{Runtime.} For each procedure, a runtime of a few hundred lines lays out the operands, extracts views, invokes the model and writes its outputs. In multiplication, control flow is determined entirely by the model's next-operation output. In division and square roots, the runtime fixes the outer loop, and the branches within it are decided by the model's outputs. The runtime checks that every extracted view is a row of a table; no view outside the tables occurred in any experiment. Independent procedures are executed in lockstep, with one view from each in a shared batch. On the M4, a computation of $n_{\text{pass}}$ forward passes over $n_{\text{view}}$ views takes
+\renewcommand{\theHequation}{eq-cost}
 \begin{equation}
 t \approx \alpha\, n_{\text{pass}} + \beta\, n_{\text{view}}, \qquad \alpha = 0.065\ \text{s}, \quad \beta = 0.037\ \text{s}
 \tag{2}\label{eq-cost}
@@ -114,6 +116,7 @@ t \approx \alpha\, n_{\text{pass}} + \beta\, n_{\text{view}}, \qquad \alpha = 0.
 \end{figure}
 \section{Certification}\label{sec-cert}
 At output position $k$ of a view $v$, let $z_k(v) \in \mathbb R^{\Sigma}$ be the model's logits over the vocabulary $\Sigma$ and $T_k(v)$ the correct token. The margin of $v$ is the smallest lead of a correct token over any other token,
+\renewcommand{\theHequation}{eq-margin}
 \begin{equation}
 m(v) = \min_{k} \Big( z_k(v)_{T_k(v)} - \max_{a \neq T_k(v)} z_k(v)_a \Big),
 \tag{3}\label{eq-margin}
@@ -121,6 +124,7 @@ m(v) = \min_{k} \Big( z_k(v)_{T_k(v)} - \max_{a \neq T_k(v)} z_k(v)_a \Big),
 and $v$ passes if $m(v) > 0$; the model's output $f(v)$, the argmax at each position, then equals $T(v)$ under any tie rule. A certificate records $m(v)$ for every $v \in V$.
 
 Let $C$ be the configurations of a procedure (sheet contents, view position and control state), $\mathcal V \supseteq V$ all views and $A$ the outputs. At configuration $c_t$, the runtime either halts, $\mathrm{view}(c_t) = \bot$, or presents the view $\mathrm{view}(c_t) \in \mathcal V$ and writes the outputs:
+\renewcommand{\theHequation}{eq-step}
 \begin{equation}
 c_{t+1} = \mathrm{paint}\big(c_t,\, f(\mathrm{view}(c_t))\big),
 \tag{4}\label{eq-step}
@@ -138,6 +142,7 @@ The hypothesis that $f$ depends only on the view is essential. If a step's conte
 \begin{proofbox}\noindent\textit{Proof sketch.}\enspace On a context with $n$ tokens after a sink token, $k$ of them events, the head writes $4Rk/(e^{c} + n)$ to the logit of the wrong state, where $R$ is the lookup's margin and $c$ the head's score on the sink. With $e^{c} = 3M + 5$, for $M$ the length of the longest test context, the write exceeds $R$ only on longer contexts (Appendix \hyperref[app-proofs]{A}). This is an instance of Moore's result that no finite experiment identifies a machine with an unbounded number of states\cite{moore1956gedanken}.
 \end{proofbox}
 \begin{thmbox}\phantomsection\label{thm-compose}\noindent\textbf{Theorem 3} (Composition).\enspace\itshape Consider $K$ calls in which the input $x_i = q_i(v)$ of call $i$ depends only on the results $v_j$ of earlier calls and the answer $g(v)$ only on $v_1, \dots, v_K$; let $q^*_i$, $T^*_i$ and $g^*$ be the intended inputs, functions and combining program, with results $v^*_i = T^*_i(q^*_i(v^*))$. If every call returns its table's output on the input it received, $v_i = T_i(x_i)$, as Theorem \hyperref[thm-p]{1} guarantees for a certified procedure, then a wrong answer requires a wrong table, $T_i(q^*_i(v^*)) \neq T^*_i(q^*_i(v^*))$, a wrong transcription, $q_i(v^*) \neq q^*_i(v^*)$, or a wrong combining program, $g(v^*) \neq g^*(v^*)$, and for any distribution of transcripts
+\renewcommand{\theHequation}{eq-compose}
 \begin{equation}
 \Pr\big[g(v) \neq g^*(v^*)\big] \le \Pr[\textup{some table wrong}] + \Pr[\textup{some transcription wrong}] + \Pr\big[g(v^*) \neq g^*(v^*)\big].
 \tag{5}\label{eq-compose}
@@ -158,6 +163,7 @@ We certify twice. In 32-bit PyTorch, the smallest margin over all 2,446 views is
 \end{figure}
 \section{Arithmetic}\label{sec-calc}
 Signed addition and subtraction proceed column by column; the borrow out of the final column determines the sign. Multiplication is the schoolbook algorithm. Division follows Knuth's Algorithm D\cite{knuth1997taocp2}. Both operands are multiplied by $\lfloor 10/(d_0 + 1) \rfloor$, where $d_0$ is the divisor's leading digit; this leaves the quotient unchanged and makes the divisor's leading digit $d$ at least 5. Let $r < 10b$ be the current partial remainder for the scaled divisor $b$, with leading digits $r_1 r_2$ when written with one digit more than $b$, so that $r_1 \le d$. The quotient digit is $q = \lfloor r/b \rfloor$, and \texttt{EST} returns
+\renewcommand{\theHequation}{eq-est}
 \begin{equation}
 \hat q = \min\Big(9, \Big\lfloor \frac{10 r_1 + r_2}{d} \Big\rfloor\Big), \qquad q \le \hat q \le q + 2,
 \tag{6}\label{eq-est}
@@ -182,6 +188,7 @@ We compare this route with evaluation-based methods from computer algebra, inter
 \end{figure}
 \section{Gating}\label{sec-gate}
 An earlier arithmetic adapter changed perplexity on plain text by a factor of only 1.0065, yet reduced strict instruction-following accuracy on IFEval\cite{zhou2023ifeval} by 16.4 points, an instance of catastrophic forgetting\cite{mccloskey1989catastrophic,kirkpatrick2017ewc}. We therefore multiply every adapter branch by a scalar graph input $g$:
+\renewcommand{\theHequation}{eq-gate}
 \begin{equation}
 y = xW + g\, s\, (xA^{\top})B^{\top}, \qquad y\big|_{g=0} = xW,
 \tag{7}\label{eq-gate}
@@ -197,11 +204,13 @@ The gate does not decide when to compute. We therefore trained the adapter to in
 \end{figure}
 \section{Mechanism}\label{sec-inside}
 We applied the logit lens\cite{nostalgebraist2020logitlens,belrose2023tunedlens} at the first output position: with $h_\ell$ the residual state after depth $\ell$, and $W_U$ and $\mathrm{norm}$ the final unembedding and normalisation,
+\renewcommand{\theHequation}{eq-lens}
 \begin{equation}
 \hat p_\ell = \operatorname{softmax}\big(W_U\, \mathrm{norm}(h_\ell)\big).
 \tag{8}\label{eq-lens}
 \end{equation}
 The correct output becomes and remains the top token at a median depth of 19 for addition, 20 for multiplication and 18 for the addition steps of the multiplier; up to depth 15 it is the top token for at most 13\% of views in any of these tables (Fig. \hyperref[fig-inside]{6}a). At the final layer, states cluster by output, and sums with a carry (10–19) separate from those without (Fig. \hyperref[fig-inside]{6}b). A class-mean intervention\cite{turner2023actadd,rimsky2024caa} moves the state of a view with output $a$ toward a target output $a'$,
+\renewcommand{\theHequation}{eq-steer}
 \begin{equation}
 h_\ell \leftarrow h_\ell + \mu^{\ell}_{a'} - \mu^{\ell}_{a},
 \tag{9}\label{eq-steer}
@@ -214,19 +223,19 @@ where $\mu^{\ell}_a$ is the mean of $h_\ell$ over the table's views with output 
 \caption*{\textbf{Fig. 6 $|$} \textbf{Mechanism.} \textbf{a}, Logit lens: fraction of views whose top token after each depth equals the final output, by operation; ticks mark the median decision depth, triangles the ends of full-attention layers. \textbf{b}, Final-layer states projected to three dimensions, coloured by output, for addition (0–19) and multiplication digits. \textbf{c}, Fraction of steps changed by a class-mean intervention, against intervention depth, for an earlier adapter (addition and multiplication) and the published adapter (depth 20).}\phantomsection\label{fig-inside}
 \end{figure}
 \section{Related work}\label{sec-related}
-\textbf{Neural arithmetic.} The Neural GPU learned binary addition and multiplication that generalise beyond the training length\cite{kaiser2016neuralgpu,price2016neuralgpu}, and specialised arithmetic units followed\cite{trask2018nalu,madsen2020nau}. For transformers, positional encodings and data formats determine length generalisation\cite{nogueira2021limitations,anil2022length,lee2024teaching,zhou2024raspl,zhou2024robust,mcleish2024abacus,cho2024coupling}, and fine-tuned models reach high accuracy on bounded arithmetic\cite{liu2023goat,yang2023mathglm}, with division and gcd remaining difficult\cite{shen2024revorder,charton2024gcd,kasliwal2026division}. Neural cellular automata and differentiable transducers trained from scratch add and multiply far beyond their training lengths\cite{wei2026nca,wei2026ncaadd,dfst2025}. Mechanistic analyses find addition circuits correct on almost all inputs\cite{quirke2024verified}, and exactness has been proved under idealised training\cite{backdeluca2025exact}. Sketchpad differs in using a pretrained vision-language model, in covering division, square roots and gcd, and in certifying exactness by enumeration rather than estimating it.
+\textbf{Neural arithmetic.} The Neural GPU learned binary addition and multiplication that generalise beyond the training length\cite{kaiser2016neuralgpu,price2016neuralgpu}, and specialised arithmetic units followed\cite{trask2018nalu,madsen2020nau}. For transformers, positional encodings and data formats determine length generalisation\cite{nogueira2021limitations,anil2022length,lee2024teaching,zhou2024raspl,zhou2024robust,mcleish2024abacus,cho2024coupling}, and fine-tuned models reach high accuracy on bounded arithmetic\cite{liu2023goat,yang2023mathglm}, with division and gcd remaining difficult\cite{shen2024revorder,charton2024gcd,kasliwal2026division}. Neural cellular automata and differentiable transducers trained from scratch add and multiply far beyond their training lengths\cite{wei2026nca,wei2026ncaadd,dfst2025}. Mechanistic analyses find addition circuits correct on almost all inputs\cite{quirke2024verified}. Exactness has been proved under idealised training\cite{backdeluca2025exact}, for small recurrent networks that add inputs of any length after training with a description-length objective\cite{lan2022mdl}, and for a purpose-built transformer parameterisation that evaluates Boolean circuits of any depth\cite{ito2026circuits}. Sketchpad differs in using a pretrained vision-language model, in covering division, square roots and gcd, and in certifying the trained weights by enumeration, where these works estimate accuracy on samples or prove exactness for idealised, small or purpose-built networks.
 
-\textbf{Procedures in language models.} CAEF fine-tunes Llama-3.1-8B to execute arithmetic operators step by step on a text tape, with one adapter per operator\cite{lai2024caef}. Other work embeds non-learned arithmetic modules\cite{dugan2024occamllm,igc2025}, compiles programs into transformer weights\cite{giannou2023looped,loom2026,percepta2026vm,dong2023neuralcomprehension}, trains transformers to predict program execution traces\cite{xu2026universal}, or lets a language model emulate an interpreter\cite{li2024chainofcode}.
+\textbf{Procedures in language models.} Neural programmer-interpreters learned grade-school addition as a sequence of steps on a scratch pad read through pointers\cite{reed2016npi}, the architecture whose generalisation Cai et al. later verified\cite{cai2017recursion}, and a controller moving over a two-dimensional grid learned multi-digit addition that extends to thousands of digits\cite{zaremba2016simple}. CAEF fine-tunes Llama-3.1-8B to execute arithmetic operators step by step on a text tape, with one adapter per operator\cite{lai2024caef}. Other work embeds non-learned arithmetic modules\cite{dugan2024occamllm,igc2025}, compiles programs into transformer weights\cite{giannou2023looped,loom2026,percepta2026vm,dong2023neuralcomprehension}, trains transformers to predict program execution traces\cite{xu2026universal}, or lets a language model emulate an interpreter\cite{li2024chainofcode}.
 
 \textbf{Tool use.} Toolformer\cite{schick2023toolformer}, PAL, Program of Thoughts, ToRA, ReTool and ToolRL\cite{gao2023pal,chen2023pot,gou2024tora,feng2025retool,qian2025toolrl} and recursive language models\cite{zhang2025rlm} delegate computation to external interpreters.
 
-\textbf{Verification.} Neural network verification typically bounds outputs over continuous input regions\cite{katz2017reluplex}; here the input set is finite. Our theorems specialise results on the identification of finite machines\cite{moore1956gedanken,chow1978testing}, the verification of learned recursive programs\cite{cai2017recursion} and certified universal computation by language models\cite{schuurmans2024universal,lewandowski2026universal}. The context discipline resembles the inductive scratchpad\cite{abbe2024globality} and PENCIL\cite{yang2025pencil}. Certification from examples can be hard in general and length-generalisation bounds can be uncomputable\cite{backdeluca2026certification,yang2026lengthbounds}; the pinned policy avoids these obstacles by making the input set finite.
+\textbf{Verification.} Neural network verification typically bounds outputs over continuous input regions\cite{katz2017reluplex}; here the input set is finite, as in computer-assisted proofs of a small transformer's accuracy on a task of fixed input size\cite{gross2024compact}, except that a finite set of views covers inputs of every length. Our theorems specialise results on the identification of finite machines\cite{moore1956gedanken,chow1978testing}, the verification of learned recursive programs\cite{cai2017recursion} and certified universal computation by language models\cite{schuurmans2024universal,lewandowski2026universal}. The context discipline resembles the inductive scratchpad\cite{abbe2024globality} and PENCIL\cite{yang2025pencil}. Certification from examples can be hard in general and length-generalisation bounds can be uncomputable\cite{backdeluca2026certification,yang2026lengthbounds}; the pinned policy avoids these obstacles by making the input set finite.
 
-\textbf{Visual input and scratchpads.} Pixel-based language models\cite{rust2023pixel,tschannen2023clippo,lee2023pix2struct} and visual context compression\cite{wei2025deepseekocr,cheng2025glyph} read rendered text, though vision-language models still fail at multiplication from images\cite{balter2026vlm}. Visual scratchpads support multimodal reasoning\cite{hu2024visualsketchpad,menon2024whiteboard,li2025mvot,selfimagine2024,mathcanvas2025}. The name refers to Sutherland's Sketchpad\cite{sutherland1963sketchpad}.
+\textbf{Visual input and scratchpads.} Pixel-based language models\cite{rust2023pixel,tschannen2023clippo,lee2023pix2struct} and visual context compression\cite{wei2025deepseekocr,cheng2025glyph} read rendered text. A small network learned addition and subtraction of seven-digit numbers, but not multiplication, from pictures of numbers\cite{hoshen2016visual}, and vision-language models still fail at multiplication from images\cite{balter2026vlm}. Visual scratchpads support multimodal reasoning\cite{hu2024visualsketchpad,menon2024whiteboard,li2025mvot,selfimagine2024,mathcanvas2025}. The name refers to Sutherland's Sketchpad\cite{sutherland1963sketchpad}.
 
 \textbf{Algebra.} Transformers have been trained for symbolic integration\cite{lample2020symbolic}, polynomial simplification\cite{agarwal2021polynomial} and Gröbner bases\cite{kera2024groebner}, and large models solve school algebra with chain of thought\cite{lewkowycz2022minerva,feng2023cot}. None of these is exact by construction.
 
-\textbf{Continual learning.} Learning without Forgetting\cite{li2017lwf}, progressive networks\cite{rusu2016progressive}, elastic weight consolidation\cite{kirkpatrick2017ewc} and adapter routing\cite{buehler2024xlora} address forgetting; on-policy distillation and the analysis of Shenfeld et al. relate forgetting to divergence from the base model on its own outputs\cite{agarwal2024gkd,lu2025onpolicy,shenfeld2025razor}. Our gate is a hard switch in the spirit of progressive networks.
+\textbf{Continual learning.} Learning without Forgetting\cite{li2017lwf}, progressive networks\cite{rusu2016progressive}, elastic weight consolidation\cite{kirkpatrick2017ewc} and adapter routing\cite{buehler2024xlora} address forgetting; on-policy distillation and the analysis of Shenfeld et al. relate forgetting to divergence from the base model on its own outputs\cite{agarwal2024gkd,lu2025onpolicy,shenfeld2025razor}. Our gate is a hard switch in the spirit of progressive networks. Activated LoRA likewise applies an adapter only to tokens after its invocation, reusing the base model's cache for earlier tokens\cite{greenewald2025alora}, and modality-gated adapters leave inputs of other modalities bit-for-bit unchanged, as their authors verify by exact-equality tests\cite{tonmoy2026modalitygated}. In Sketchpad the gate is a graph input set by the runtime, and the identity is tested on every logit, hidden state and cached state (Methods).
 
 \section{Limitations}\label{sec-limits}
 The certificate covers the model's steps only. The runtime, the choice of procedure and the transcription of a problem are conventional code and are not certified; in algebra, answer checks partly compensate. The theorems assume exact arithmetic; on hardware they hold through the margins, for the path on which the margins were measured, and a client by default rechecks only the lowest-margin tenth of each table. The algebra is limited to polynomials of low degree in one variable and linear systems of up to three equations, and its checks verify the roots found, not that all roots were found. Inputs are rendered in the model's glyph set. Execution is slow, about 0.1 s per step on a laptop GPU. Translating a word problem into a computation is not certified, and the 0.8-billion-parameter model mistranslates about 7\% of held-out word problems.
@@ -240,6 +249,7 @@ Glyphs are fixed 32 × 32 sprites of blank and the ten digits, so the set of pos
 
 \subsection*{Training}
 Each training step draws a batch $R$ of rows from every table, together with rows replayed from the last certificate. With $z_k(v;\theta)$ the logits at output position $k$ of row $v$, $K_v \in \{1, 3\}$ the number of output positions and $m_k(v;\theta)$ the margin at position $k$, the term inside the minimum in (\hyperref[eq-margin]{3}), the loss is
+\renewcommand{\theHequation}{eq-loss}
 \begin{equation}
 \begin{aligned}
 \mathcal L(\theta) = {} & \frac{1}{|R|} \sum_{v \in R} \frac{1}{K_v} \sum_{k=1}^{K_v} \Big[ -\log \operatorname{softmax}\big(z_k(v;\theta)\big)_{T_k(v)} + \max\big(0,\, h - m_k(v;\theta)\big) \Big] \\
@@ -259,6 +269,7 @@ The browser test drew its 200 problems from a fixed generator before any run: $a
 
 \subsection*{Algebra}
 The algebra runtime parses a problem, constructs the derivation and obtains every number through the calculator interface; independent calls are batched. Each line of the derivation records the model calls that produced its numbers. The default check substitutes rational roots into the collected equation and verifies expansions at one additional point; the strict check substitutes into the original expressions. An irrational pair of roots of $ax^2 + bx + c$, written $(p \pm q\sqrt m)/d$ with integers $p$, $q > 0$, $m > 0$ and $d > 0$, is accepted only if
+\renewcommand{\theHequation}{eq-vieta}
 \begin{equation}
 2ap = -bd \quad \text{and} \quad a\,(p^2 - q^2 m) = c\,d^2,
 \tag{11}\label{eq-vieta}
@@ -424,6 +435,7 @@ Lemma \hyperref[lem-cache]{4} & \texttt{resid\_\allowbreak{}congr}, \texttt{cach
 \end{table}
 \subsection*{Definitions and lemmas}
 \begin{thmbox}\phantomsection\label{def-machine}\noindent\textbf{Definition 1} (Sheet machine).\enspace\itshape A sheet machine consists of sets $C$ of configurations, $\mathcal V$ of views and $A$ of outputs, a view map $\mathrm{view}\colon C \to \mathcal V \cup \{\bot\}$ and a paint map $\mathrm{paint}\colon C \times A \to C$. For $g\colon \mathcal V \to A$, the step $\sigma_g\colon C \to C$ is
+\renewcommand{\theHequation}{eq-sigma}
 \begin{equation}
 \sigma_g(c) = \begin{cases} \mathrm{paint}\big(c, g(v)\big) & \text{if } \mathrm{view}(c) = v \in \mathcal V, \\ c & \text{if } \mathrm{view}(c) = \bot, \end{cases}
 \tag{12}\label{eq-sigma}
@@ -465,6 +477,7 @@ Traces: the $i$-th entry of the trace on $w$ is the fold over the prefix $e_1 \c
 \end{proofbox}
 \subsection*{Theorem 1}
 \begin{proofbox}\noindent\textit{Proof of Theorem 1.}\enspace Fix $c_0 \in I$ and apply Lemma \hyperref[lem-regen]{2} with $S = C$, a single event $E = B = \{\ast\}$, $F(c, \ast) = \sigma_f(c)$ and $\delta(c, \ast) = \sigma_T(c)$. The words over $B$ are $\ast^n$, $F^{\ast^n}(c_0) = \sigma_f^n(c_0)$, the trace on $\ast^n$ is the run of length $n$, and $\mathrm{Reach}^B_\delta(c_0) = \mathrm{Reach}_T(\{c_0\})$. By the lemma, the model's run from $c_0$ equals the reference run at every length if and only if
+\renewcommand{\theHequation}{eq-agree}
 \begin{equation}
 \sigma_f(c) = \sigma_T(c) \quad \text{for every } c \in \mathrm{Reach}_T(\{c_0\}).
 \tag{13}\label{eq-agree}
@@ -480,11 +493,13 @@ Traces: the $i$-th entry of the trace on $w$ is the fold over the prefix $e_1 \c
 Let $\Sigma$ be a set of tokens, $\Pi$ a fixed prompt and $\rho\colon \Sigma^* \to \Sigma$ a step map that returns a maximiser of the logits at the last position of a context. On events $e_1 e_2 \cdots$ from a state $s_0$, pinned decoding computes $s_i = \rho(\Pi\, s_{i-1}\, e_i)$; unpinned decoding keeps the whole context, $x_0 = \Pi\, s_0$, $s_i = \rho(x_{i-1}\, e_i)$ and $x_i = x_{i-1}\, e_i\, s_i$. A row $(s, e)$ of a table $\delta$ passes if the logits at $\Pi\, s\, e$ have their strict maximum at $\delta(s, e)$.
 
 \begin{thmbox}\phantomsection\label{def-counter}\noindent\textbf{Definition 4} (The counterexample).\enspace\itshape The tokens are $\Sigma = \{\omega, \mathsf u, \mathsf v, \mathsf a\}$, where $\omega$ is a sink token, and the prompt is $\Pi = \omega\, \mathsf u\, \mathsf a\, \mathsf u\, \mathsf v\, \mathsf a\, \mathsf v$. The table has states $\{\mathsf u, \mathsf v\}$, the event $\mathsf a$, $\delta(\mathsf u, \mathsf a) = \mathsf u$, $\delta(\mathsf v, \mathsf a) = \mathsf v$ and start $\mathsf u$, so its state is $\mathsf u$ after every input. For $R > 0$ and $c \in \mathbb R$, the logits at the last position of a context $x = x_0 x_1 \cdots x_{N-1}$ are
+\renewcommand{\theHequation}{eq-counter}
 \begin{equation}
 \ell(x)_y = R\, [\, y = x_{N-2} \,] + [\, y = \mathsf v \,]\, \eta(x), \qquad \eta(x) = \frac{\sum_{j=0}^{N-1} e^{\kappa_j} \beta_j}{\sum_{j=0}^{N-1} e^{\kappa_j}},
 \tag{14}\label{eq-counter}
 \end{equation}
 with scores $\kappa_0 = c$ and $\kappa_j = 0$ for $j \ge 1$, and values $\beta_j = 4R$ if $x_j = \mathsf a$ and $\beta_j = 0$ otherwise. The first term is a lookup that returns the state token of the last row, which is the correct output for $\delta$; the second is one attention head at the last position, with score $c$ on the sink, which writes its value to the logit of $\mathsf v$. If $x_0 = \omega$ and $k$ of the $n = N - 1$ tokens after it are $\mathsf a$,
+\renewcommand{\theHequation}{eq-write}
 \begin{equation}
 \eta(x) = \frac{4Rk}{e^{c} + n}.
 \tag{15}\label{eq-write}
@@ -546,7 +561,7 @@ Every number in this paper is listed, with its source record, in \texttt{paper/\
 \begingroup\small
 \renewcommand{\refname}{}
 \vspace{-2.5em}
-\begin{thebibliography}{94}
+\begin{thebibliography}{102}
 \setlength{\itemsep}{1pt}
 \bibitem{wei2022cot} Wei, J. et al. Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. In Advances in Neural Information Processing Systems, 24824–24837 (2022). \url{https://arxiv.org/abs/2201.11903}
 \bibitem{nye2021scratchpad} Nye, M. et al. Show Your Work: Scratchpads for Intermediate Computation with Language Models. Preprint at arXiv:2112.00114 (2021). \url{https://arxiv.org/abs/2112.00114}
@@ -602,6 +617,10 @@ Every number in this paper is listed, with its source record, in \texttt{paper/\
 \bibitem{dfst2025} Papazov, H., D'Angelo, F. \& Flammarion, N. Exact Learning of Arithmetic with Differentiable Agents. Preprint at arXiv:2511.22751 (2025). \url{https://arxiv.org/abs/2511.22751}
 \bibitem{quirke2024verified} Quirke, P., Neo, C. \& Barez, F. Understanding Addition and Subtraction in Transformers. Preprint at arXiv:2402.02619 (2024). \url{https://arxiv.org/abs/2402.02619}
 \bibitem{backdeluca2025exact} Back de Luca, A., Giapitzakis, G. \& Fountoulakis, K. Learning to Add, Multiply, and Execute Algorithmic Instructions Exactly with Neural Networks. In Advances in Neural Information Processing Systems, 87469–87513 (2025). \url{https://doi.org/10.52202/085713-2636}
+\bibitem{lan2022mdl} Lan, N., Geyer, M., Chemla, E. \& Katzir, R. Minimum Description Length Recurrent Neural Networks. Transactions of the Association for Computational Linguistics \textbf{10}, 785–799 (2022). \url{https://doi.org/10.1162/tacl_a_00489}
+\bibitem{ito2026circuits} Ito, T., Puri, R., Campbell, M. \& Ram, P. Universal Transformers for Circuit Computations: Perfect Length Generalization in Tiny Transformers. Preprint at arXiv:2608.31067 (2026). \url{https://arxiv.org/abs/2608.31067}
+\bibitem{reed2016npi} Reed, S. \& de Freitas, N. Neural Programmer-Interpreters. In International Conference on Learning Representations (ICLR 2016) (2016). \url{https://arxiv.org/abs/1511.06279}
+\bibitem{zaremba2016simple} Zaremba, W., Mikolov, T., Joulin, A. \& Fergus, R. Learning Simple Algorithms from Examples. In Proceedings of the 33rd International Conference on Machine Learning, 421–429 (2016). \url{https://arxiv.org/abs/1511.07275}
 \bibitem{lai2024caef} Lai, J. et al. Executing Arithmetic: Fine-Tuning Large Language Models as {Turing} Machines. Preprint at arXiv:2410.07896 (2024). \url{https://arxiv.org/abs/2410.07896}
 \bibitem{dugan2024occamllm} Dugan, O. et al. {OccamLLM}: Fast and Exact Language Model Arithmetic in a Single Step. In Advances in Neural Information Processing Systems, 35665–35699 (2024). \url{https://doi.org/10.52202/079017-1125}
 \bibitem{igc2025} Dietz, F. \& Klakow, D. {IGC}: Integrating a Gated Calculator into an {LLM} to Solve Arithmetic Tasks Reliably and Efficiently. Preprint at arXiv:2501.00684 (2025). \url{https://arxiv.org/abs/2501.00684}
@@ -614,6 +633,7 @@ Every number in this paper is listed, with its source record, in \texttt{paper/\
 \bibitem{qian2025toolrl} Qian, C. et al. {ToolRL}: Reward is All Tool Learning Needs. In Advances in Neural Information Processing Systems, 116896–116926 (2025). \url{https://doi.org/10.52202/085713-3524}
 \bibitem{zhang2025rlm} Zhang, A. L., Kraska, T. \& Khattab, O. Recursive Language Models. Preprint at arXiv:2512.24601 (2025). \url{https://arxiv.org/abs/2512.24601}
 \bibitem{katz2017reluplex} Katz, G., Barrett, C., Dill, D. L., Julian, K. \& Kochenderfer, M. J. {Reluplex}: An Efficient {SMT} Solver for Verifying Deep Neural Networks. In Computer Aided Verification (CAV 2017), 97–117 (2017). \url{https://doi.org/10.1007/978-3-319-63387-9_5}
+\bibitem{gross2024compact} Gross, J. et al. Compact Proofs of Model Performance via Mechanistic Interpretability. In Advances in Neural Information Processing Systems, 79453–79515 (2024). \url{https://doi.org/10.52202/079017-2523}
 \bibitem{chow1978testing} Chow, T. S. Testing Software Design Modeled by Finite-State Machines. IEEE Transactions on Software Engineering \textbf{SE-4}, 178–187 (1978). \url{https://doi.org/10.1109/TSE.1978.231496}
 \bibitem{schuurmans2024universal} Schuurmans, D., Dai, H. \& Zanini, F. Autoregressive Large Language Models are Computationally Universal. Preprint at arXiv:2410.03170 (2024). \url{https://arxiv.org/abs/2410.03170}
 \bibitem{abbe2024globality} Abbe, E., Bengio, S., Lotfi, A., Sandon, C. \& Saremi, O. How Far Can Transformers Reason? The Globality Barrier and Inductive Scratchpad. In Advances in Neural Information Processing Systems, 27850–27895 (2024). \url{https://doi.org/10.52202/079017-0874}
@@ -625,6 +645,7 @@ Every number in this paper is listed, with its source record, in \texttt{paper/\
 \bibitem{lee2023pix2struct} Lee, K. et al. {Pix2Struct}: Screenshot Parsing as Pretraining for Visual Language Understanding. In Proceedings of the 40th International Conference on Machine Learning, 18893–18912 (2023). \url{https://arxiv.org/abs/2210.03347}
 \bibitem{wei2025deepseekocr} Wei, H., Sun, Y. \& Li, Y. {DeepSeek-OCR}: Contexts Optical Compression. Preprint at arXiv:2510.18234 (2025). \url{https://arxiv.org/abs/2510.18234}
 \bibitem{cheng2025glyph} Cheng, J. et al. {Glyph}: Scaling Context Windows via Visual-Text Compression. In Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), 37145–37158 (2026). \url{https://doi.org/10.18653/v1/2026.acl-long.1722}
+\bibitem{hoshen2016visual} Hoshen, Y. \& Peleg, S. Visual Learning of Arithmetic Operations. In Proceedings of the AAAI Conference on Artificial Intelligence, 3733–3739 (2016). \url{https://doi.org/10.1609/aaai.v30i1.9882}
 \bibitem{balter2026vlm} Balter, S. G., Jerzak, E. \& Jerzak, C. T. Multiplication in Multimodal {LLMs}: Computation with Text, Image, and Audio Inputs. In Findings of the Association for Computational Linguistics: ACL 2026, 40766–40780 (2026). \url{https://doi.org/10.18653/v1/2026.findings-acl.2025}
 \bibitem{hu2024visualsketchpad} Hu, Y. et al. Visual {Sketchpad}: Sketching as a Visual Chain of Thought for Multimodal Language Models. In Advances in Neural Information Processing Systems, 139348–139379 (2024). \url{https://doi.org/10.52202/079017-4423}
 \bibitem{menon2024whiteboard} Menon, S., Zemel, R. \& Vondrick, C. Whiteboard-of-Thought: Thinking Step-by-Step Across Modalities. In Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing, 20016–20031 (2024). \url{https://doi.org/10.18653/v1/2024.emnlp-main.1117}
@@ -639,6 +660,8 @@ Every number in this paper is listed, with its source record, in \texttt{paper/\
 \bibitem{feng2023cot} Feng, G. et al. Towards Revealing the Mystery behind Chain of Thought: A Theoretical Perspective. In Advances in Neural Information Processing Systems, 70757–70798 (2023). \url{https://doi.org/10.52202/075280-3100}
 \bibitem{rusu2016progressive} Rusu, A. A. et al. Progressive Neural Networks. Preprint at arXiv:1606.04671 (2016). \url{https://arxiv.org/abs/1606.04671}
 \bibitem{buehler2024xlora} Buehler, E. L. \& Buehler, M. J. {X-LoRA}: Mixture of low-rank adapter experts, a flexible framework for large language models with applications in protein mechanics and molecular design. APL Machine Learning \textbf{2} (2024). \url{https://doi.org/10.1063/5.0203126}
+\bibitem{greenewald2025alora} Greenewald, K. et al. Activated {LoRA}: Fine-tuned {LLMs} for Intrinsics. In Advances in Neural Information Processing Systems, 59025–59052 (2025). \url{https://doi.org/10.52202/085713-1769}
+\bibitem{tonmoy2026modalitygated} Tonmoy, A. B., Hoque, K. F., Arham, M. S. I. \& Luthra, A. Modality-Gated Deep Adapters: Adding a Modality to a Frozen Embedding Model with Exact Preservation. Preprint at arXiv:2609.26182 (2026). \url{https://arxiv.org/abs/2609.26182}
 \bibitem{norobots2023} Rajani, N. et al. {No Robots}. Hugging Face dataset. Dataset HuggingFaceH4/no\_robots, CC BY-NC 4.0 (2023). \url{https://huggingface.co/datasets/HuggingFaceH4/no_robots}
 \bibitem{demoura2021lean4} de Moura, L. \& Ullrich, S. The {Lean} 4 Theorem Prover and Programming Language. In Automated Deduction -- {CADE} 28, 625–635 (2021). \url{https://doi.org/10.1007/978-3-030-79876-5_37}
 \bibitem{mathlib2020} {The mathlib Community}. The {Lean} Mathematical Library. In Proceedings of the 9th ACM SIGPLAN International Conference on Certified Programs and Proofs (CPP 2020), 367–381 (2020). \url{https://doi.org/10.1145/3372885.3373824}
