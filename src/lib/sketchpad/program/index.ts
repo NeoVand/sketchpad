@@ -11,3 +11,5 @@ export { run, type RunResult, type StatementResult, type RunOptions } from './ru
 export { RefCalc, LyingCalc, TraceCalc, type Calc, type CalcCall, type SheetCost } from './calc';
 export { Arithmetic, CheckFailed, type Rational, type CheckMode } from './arithmetic';
 export { checkRoot, type AlgebraResult, type CoefficientGrid, type RootCheck } from './algebra';
+
+export type { Derivation, DerivationLine, DerivationKind, NumberSpan } from './derivation';

@@ -42,7 +42,8 @@ export async function integerCoefficients(
 	cs: Quantity[]
 ): Promise<{ coefficients: Quantity[]; scale: Quantity }> {
 	let scale = literal(1n);
-	for (const c of cs) if (c.value.d !== 1n) scale = await b.mul(scale, literal(c.value.d));
+	for (const c of cs)
+		if (c.value.d !== 1n) scale = await b.mul(scale, { value: integer(c.value.d), n: c.d });
 	const coefficients = await b.trace.wave(
 		cs.map((c) => async () => {
 			if (scale.value.n === 1n) return c;
@@ -180,7 +181,7 @@ export async function formulaRoots(
 		b.line(
 			'divide',
 			(r) =>
-				`x = 0\\quad\\text{or}\\quad x = ${r(binary('/', b.expr(negate(bb)), b.expr(a)))} = ${r(b.expr(other))}`,
+				`x = ${r(b.expr(zero))}\\quad\\text{or}\\quad x = ${r(binary('/', b.expr(negate(bb)), b.expr(a)))} = ${r(b.expr(other))}`,
 			{
 				roots: roots.map((root) => ({
 					equation: qEq(coefficientExpr(b, cs), num(0n)),
