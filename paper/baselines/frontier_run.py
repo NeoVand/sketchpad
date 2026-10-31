@@ -23,7 +23,9 @@ CAP = 32768
 WORKERS = 8
 MODULES = {"gpt": "frontier_openai", "claude": "frontier_anthropic", "gemini": "frontier_gemini"}
 PILOT_IDS = [80, 200]
+STOP_AT = 60.0  # USD across every frontier reply so far (BASELINES.md, extension): no new request past it
 lock = threading.Lock()
+spent_total = [0.0]
 
 
 def problems():
@@ -49,6 +51,9 @@ def retryable(mod, e):
 
 
 def ask(mod, key, p):
+    with lock:
+        if spent_total[0] > STOP_AT:
+            return None
     t0 = time.time()
     for attempt in range(7):
         try:
@@ -74,8 +79,11 @@ def run(key, ids):
     with cf.ThreadPoolExecutor(WORKERS) as ex:
         for fut in cf.as_completed([ex.submit(ask, mod, key, p) for p in todo]):
             rec = fut.result()
+            if rec is None:
+                continue
             with lock, raw_path(key).open("a") as f:
                 f.write(json.dumps(rec) + "\n")
+                spent_total[0] += rec.get("cost") or 0
             spent += rec.get("cost") or 0
             tag = rec["error"] or f"{rec['tokens']} tok, cap {rec['hit_cap']}, {rec['finish_reason']}"
             print(f"  {key} id {rec['id']}: {tag}; spent ${spent:.2f}", flush=True)
@@ -106,6 +114,10 @@ if __name__ == "__main__":
     else:
         per = int(sys.argv[sys.argv.index("--per-cell") + 1]) if "--per-cell" in sys.argv else 20
         ids = {p["id"] for p in problems() if p["k"] < per}
+    for k in MODULES:  # spend already on record counts toward the stop
+        if raw_path(k).exists():
+            spent_total[0] += sum(json.loads(x).get("cost") or 0 for x in raw_path(k).read_text().splitlines() if x.strip())
+    print(f"spent so far ${spent_total[0]:.2f}; no new request past ${STOP_AT:.0f}", flush=True)
     with cf.ThreadPoolExecutor(len(keys)) as ex:
         list(ex.map(lambda k: run(k, ids), keys))
     cost()

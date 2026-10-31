@@ -265,3 +265,9 @@ size, so the tier is defined by access (open weights, free endpoint), not by siz
 | `kimi-k3` | 190 | 6 | 12 |
 | `glm-5.3` | 185 | 5 | 10 |
 | `gemma4:31b` | 120 | 0 | 1 |
+
+### Claude Opus 5.5 pilot (31 Oct 2026, before its full run)
+
++ 1,000 (id 80): 8,737 output tokens, $0.178; × 20 (id 200): 2,661 tokens, $0.053. Projection at 20 per length
+by the registered rule: 100 × 0.178 + 120 × 0.053 = **$24.2**. With GPT-6.1 Sol and Gemini 4 Argon at $18.6 on record
+and about $21 when their extension ends, the three total about **$45**, inside $75: Claude Opus 5.5 runs all 220.
