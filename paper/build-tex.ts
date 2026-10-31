@@ -6,7 +6,7 @@
  *
  * Node runs this file directly (type stripping); it imports only dependency-free modules.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,5 +33,7 @@ if (process.argv.includes('--pdf')) {
 		? '/opt/homebrew/bin/tectonic'
 		: 'tectonic';
 	execFileSync(tectonic, ['--keep-logs', 'main.tex'], { cwd: out, stdio: 'inherit' });
-	console.log(`main.pdf built in ${out}`);
+	// the site serves the same PDF beside the web version
+	copyFileSync(join(out, 'main.pdf'), join(out, '..', '..', 'static', 'sketchpad.pdf'));
+	console.log(`main.pdf built in ${out}, copied to static/sketchpad.pdf`);
 }

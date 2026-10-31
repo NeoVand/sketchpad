@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '@fontsource-variable/source-serif-4/opsz.css';
 	import '@fontsource-variable/source-serif-4/opsz-italic.css';
-	import { resolve } from '$app/paths';
+	import { asset, resolve } from '$app/paths';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -25,9 +25,15 @@
 	<header class="front">
 		<p class="kicker">{data.meta.date}</p>
 		<h1><span class="name">{parts[0]}:</span> {rest}</h1>
-		<p class="byline">{data.meta.authors}</p>
+		<p class="byline">
+			{data.meta.authors}{#if data.meta.affiliation}<span class="affil"
+					>, {data.meta.affiliation}</span
+				>{/if}
+		</p>
 		<p class="links">
 			<a href={resolve('/demo')}>Run it in your browser</a>
+			<span aria-hidden="true">·</span>
+			<a href={asset('/sketchpad.pdf')}>PDF</a>
 			<span aria-hidden="true">·</span>
 			<a href="https://huggingface.co/mohsenvand/sketchpad-0.8b-preview">The model</a>
 		</p>
