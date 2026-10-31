@@ -69,7 +69,11 @@ published model `mohsenvand/sketchpad-0.8b-preview` at `2df87172`, whose certifi
 | Wrong digits in GPT and Claude misses | 1 to 637 | Derived from `results.json` (answer against truth from the right): GPT ids 64, 71, 84 (4, 1, 523); Claude ids 64, 83, 90, 93 (263, 5, 2, 637) |
 | Frontier settings and IDs | `gpt-6.1-sol` (reasoning.effort high; created 2026-09-27); `claude-opus-5-5` (effort high; created_at 2026-09-21); `gemini-4-argon` (thinkingLevel high) | S `paper/BASELINES.md` "Frontier", "Ten comparison models" |
 | Frontier spend | $30.03 (GPT $4.56, Claude $9.17, Gemini $16.30), from usage at the registered prices | `python frontier_run.py cost` |
-| Open tier | registered, not run: Ollama `/api/chat` returns 402 (no usage credits) | S `paper/QUESTIONS.md` 14; `raw/frontier/ollama_*.jsonl` |
+| Open tier, 20 per length: DeepSeek-V4-Pro 199, Mistral-Large-4 168, Gemma 4 31B 156, GLM-5.3 152, gpt-oss-120b 149 of 220 | as stated | S `paper/BASELINES.md` "Open-tier result"; `paper/baselines/results.json` (systems `ollama/<model> high`) |
+| Open tier at + 1,000 and × 20 | DeepSeek 2, 20; Mistral 0, 7; Gemma 0, 5; GLM 0, 2; gpt-oss 0, 3 | same |
+| Open tier misses at the cap / with wrong digits | DeepSeek 17/4; Mistral 48/4; Gemma 18/46; GLM 63/5; gpt-oss 68/3 | Derived from `results.json` (`hit_cap` on misses) |
+| Open-tier usage | $27.25 recorded (DeepSeek $2.96, Mistral $6.72, Gemma $1.18, GLM $13.62, gpt-oss $2.18, Kimi pilot $0.60) at ollama.com/pricing rates | `python frontier_run.py cost`; S `paper/BASELINES.md` |
+| Kimi K3 dropped on cost, replaced by `mistral-large-4` | Neo's decision, 31 Oct 2026 | S `paper/BASELINES.md` "Kimi K3 replaced" |
 
 ## Algebra
 

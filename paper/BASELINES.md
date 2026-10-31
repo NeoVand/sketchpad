@@ -376,3 +376,25 @@ includes the $60 credit, so the run adds no spending.
 - **If the stop fires:** the problems not run are listed here, by model and id, and they are not scored.
 
 **Budget (31 Oct 2026, Neo):** "let's say 100 bucks total"; the open tier's budget is $100 in all, no projection rule applies, and the single running stop is $95 of recorded Ollama usage (Neo's dashboard showed $3.80 when this was written).
+
+### Open-tier result (31 Oct 2026, 07:3x–09:5x UTC; per problem in `results.json`, raw replies in `raw/frontier/ollama_*.jsonl`)
+
+Five open models, 20 per length, `num_predict` 32,768, highest reasoning setting; no request failed after retries
+(the 402 lines from before the subscription are kept and not scored). Usage recorded at the ollama.com/pricing rates,
+DeepSeek at its off-peak rate for the 218 calls made off-peak (Saturday) and at peak for its two pilot calls:
+
+| model | exact / 220 | + 1,000 / 20 | × 20 / 20 | misses at the cap | misses with wrong digits | usage |
+|---|---|---|---|---|---|---|
+| `deepseek-v4-pro:0813` | **199** | 2 | 20 | 17 | 4 | $2.96 |
+| `mistral-large-4` | **168** | 0 | 7 | 48 | 4 | $6.72 |
+| `gemma4:31b` | **156** | 0 | 5 | 18 | 46 | $1.18 |
+| `glm-5.3` | **152** | 0 | 2 | 63 | 5 | $13.62 |
+| `gpt-oss:120b` | **149** | 0 | 3 | 68 | 3 | $2.18 |
+
+Recorded Ollama usage in all: **$27.25** (these five $26.65, Kimi K3's pilot $0.60), inside the $100 budget; the $95
+stop never fired. Per length: `results.json` and `score.py`'s tables. Against the predictions: DeepSeek 199 (195
+predicted), GLM 152 (185), gpt-oss 149 (165), Gemma 156 (120), Mistral 168 (170).
+
+Failure modes: the open models fail by running out of budget on long sums and on 15- and 20-digit products (each
+answers every product up to 6 digits, and every model except Gemma every 10-digit one); Gemma 4 31B is the exception,
+most of its misses (46 of 64) are wrong digits in replies that finished.

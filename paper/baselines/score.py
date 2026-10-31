@@ -86,10 +86,16 @@ def main(sk_path, raw_paths):
         r = dict(r)
         r["system"], r["mode"] = "sketchpad", None
         out.append(r)
+    seen = set()
     for path in raw_paths:
         text = gzip.open(path, "rt").read() if str(path).endswith(".gz") else pathlib.Path(path).read_text()
         for line in text.splitlines():
             g = json.loads(line)
+            if g.get("error") is None and (g["model_key"], g["mode"], g["id"]) in seen:  # a second reply to one problem
+                notes.append(f"{g['model_key']} id {g['id']}: duplicate reply, the first one is scored")
+                continue
+            if g.get("error") is None:
+                seen.add((g["model_key"], g["mode"], g["id"]))
             if g.get("error"):  # an API error after the retries: reported, never scored
                 notes.append(f"{g['model_key']} id {g['id']}: not scored, {g['error'][:80]}")
                 continue
