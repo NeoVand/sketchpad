@@ -1187,6 +1187,17 @@ class Pad {
 		void this.certify(k);
 	}
 
+	/** development only: the batch check (worker.ts batchCheck), logged to the console as it goes */
+	batchCheck(sizes = [32, 4], seed = 1) {
+		const rid = ++this.rid;
+		const last: Record<number, unknown> = {};
+		return this.request<unknown>({ type: 'batch-check', rid, sizes, seed }, (m) => {
+			if (m.type !== 'batch-check') return;
+			last[m.size] = m.result;
+			console.log('[batch-check]', m.size, m.done, JSON.stringify(m.result));
+		}).then(() => last);
+	}
+
 	/** check every row of an operation's table on this device (again, if asked) */
 	async certify(k: Kind = this.op) {
 		const m = MODELS[k];
@@ -2024,6 +2035,8 @@ class Pad {
 }
 
 export const pad = new Pad();
+if (import.meta.env.DEV && typeof window !== 'undefined')
+	(window as unknown as { sketchpad: Pad }).sketchpad = pad;
 
 /**
  * Display only: the decimal point of a line asked to k places, on the sheet that computes it. A quotient to k places

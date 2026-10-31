@@ -32,7 +32,7 @@ check(sizes["ADD-FAST"] == 242 and sizes["MUL"] == 1553, "242 and 1,553 rows")
 cards = {
     "ADD-FAST": ("SUM", "add", r"$1+7+8=16$", ["g"], ["6, carry 1"]),
     "MUL": ("MUL", "multiply", r"$7\times 6+4=46$", ["6", "4", "A"], ["digit", "carry", "next"]),
-    "SUB": ("SUB", "subtract", r"$3-8-1=-6$", ["4", "1", "S"], ["digit", "borrow", "next"]),
+    "SUB": ("SUB", "subtract", r"$13-8-1=4$", ["4", "1", "S"], ["digit", "borrow", "next"]),
     "EST": ("EST", "estimate a quotient digit", r"$\lfloor 47/6 \rfloor = 7$", ["7", "–", "M"],
             ["guess", "", "next"]),
     "DEC": ("DEC", "lower the guess", r"$7-1=6$", ["6", "–", "C"], ["digit", "", "next"]),
@@ -64,7 +64,7 @@ for i, t in enumerate(S["tables"]):
                 cv.text(ax0 + k * 6.6 + 1.0, Y + 9.6, gl, fontsize=4.6, color=GREY, ha="center", va="top")
     cv.text(ax0, Y + 14.0, rule, fontsize=6.5, color=INK, ha="left", va="center")
     n = sizes[t["op"]]
-    cv.text(ax0, Y + sh, f"{n:,} views" + (" in five steps" if t["op"] == "MUL" else ""),
+    cv.text(ax0, Y + sh, f"{n:,} views" + (" in five tables" if t["op"] == "MUL" else ""),
             fontsize=4.6, color=SOFT, ha="left", va="bottom")
 letter(fig, 1.0, 3.0, "a")
 

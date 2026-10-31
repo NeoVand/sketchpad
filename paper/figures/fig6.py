@@ -5,9 +5,9 @@ a  the logit lens (final norm and output head applied to each layer's state at t
    E7 adder and multiplier tables (data/atlas_arithmetic-e7.json; inside_atlas.py)
 b  the state that writes the answer, on the page's 3D map (data/inside_e7.json = HF 2df87172 arithmetic/inside.json):
    every view of the add table and of the multiplier's MUL step, coloured by the answer it writes
-c  the push: adding the class-mean difference at the answer place, at each layer, and the share of steps whose answer
-   moves to the target (data/steer.json: the E5 union adapter, layer sweep; data/steer_digit.json: E7 at layer 20, the
-   page's push, 79/80 and 80/80)
+c  the push: adding the class-mean difference at the answer place after each depth 1-23, and the share of steps whose
+   answer moves to the target (data/steer_e7_sweep.json: E7; data/steer_digit.json: E7 at depth 20, the page's push,
+   79/80 and 80/80, which the sweep reproduces)
 """
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
@@ -18,7 +18,6 @@ from common import (COBALT, GREY, INK, MIST, ROSE, ROSE_L, SOFT, TINT, VIOLET, a
 setup()
 ATLAS = load("atlas_arithmetic-e7.json")
 INSIDE = load("inside_e7.json")
-STEER = load("steer.json")
 STEER7 = load("steer_digit.json")
 
 fig = figure(64)
@@ -49,7 +48,7 @@ for i, t in enumerate(tables):
 ax.set_yticks(range(len(tables)))
 ax.set_yticklabels(tables, fontsize=5.2)
 ax.set_xticks([0, 4, 8, 12, 16, 20, 24])
-ax.set_xlabel("layer", labelpad=1.5)
+ax.set_xlabel("depth", labelpad=1.5)
 for s in ax.spines.values():
     s.set_visible(False)
 ax.tick_params(length=0, pad=1.5)
@@ -67,7 +66,7 @@ cv.imshow(grad, extent=(rx + 20, rx + 40, ry + 1.2, ry), interpolation="bilinear
 cv.text(rx + 19, ry + 0.6, "share whose top guess is the answer", fontsize=4.6, color=SOFT, ha="right", va="center")
 cv.text(rx + 20, ry + 1.6, "0", fontsize=4.6, color=INK, ha="center", va="top")
 cv.text(rx + 40, ry + 1.6, "1", fontsize=4.6, color=INK, ha="center", va="top")
-cv.text(rx, ry + 5.0, "| median layer at which the answer leads for good", fontsize=4.6, color=SOFT, ha="left",
+cv.text(rx, ry + 5.0, "| median depth at which the answer leads for good", fontsize=4.6, color=SOFT, ha="left",
         va="center")
 check(share[tables.index("NXT")].min() == 1.0, "NXT's first token is decided from the start")
 cv.text(rx, ry + 8.0, "NXT's first token is always the unused “–”", fontsize=4.6, color=SOFT, ha="left",
@@ -151,9 +150,9 @@ a2, sep_mul, P2, v2 = cloud(104.0, 12.0, 38.0, 40.0, "MUL", "", 10, 0, 0)
 check(abs(sep_sum - 0.955) < 1e-9 and abs(sep_mul - 0.985) < 1e-9, "nearest-centre shares 95.5% and 98.5%")
 cv.text(70.0, 8.0, "add table: the sum it writes, 0 to 19", fontsize=5.5, color=INK, ha="left", va="center")
 cv.text(108.0, 8.0, "multiplier: the digit it writes", fontsize=5.5, color=INK, ha="left", va="center")
-cv.text(70.0, 53.0, f"nearest centre is the answer\nfor {sep_sum:.1%} of views".replace(".5%", ".5%"),
+cv.text(70.0, 53.0, f"nearest centre (3-D) is the answer\nfor {sep_sum:.1%} of views".replace(".5%", ".5%"),
         fontsize=4.8, color=SOFT, ha="left", va="top", linespacing=1.1)
-cv.text(108.0, 53.0, f"nearest centre is the answer\nfor {sep_mul:.1%} of views", fontsize=4.8, color=SOFT,
+cv.text(108.0, 53.0, f"nearest centre (3-D) is the answer\nfor {sep_mul:.1%} of views", fontsize=4.8, color=SOFT,
         ha="left", va="top", linespacing=1.1)
 # the carry splits the add table's states: sums 0-9 on one side, 10-19 on the other
 xs, ys = screen_mm(a1, P1)
@@ -166,28 +165,33 @@ for m_, lab in ((lo_, "0 to 9:\nno carry"), (hi_, "10 to 19:\na carry")):
 letter(fig, 62.0, 3.0, "b")
 
 # ---- c: the push ---------------------------------------------------------------------------------------------------
+# the arithmetic adapter (E7), pushed after every depth 1-23 (data/steer_e7_sweep.json, paper/review/CONTROLS.md);
+# depth 20 is also the published run (data/steer_digit.json)
+SWEEP = load("steer_e7_sweep.json")
 ax = axes(fig, 150.0, 12.0, 27.0, 34.0)
 clean(ax)
-L = [4, 8, 12, 14, 16, 18, 20, 22]
-s_sum = [STEER[f"SUM@{l}"] for l in L]
-s_mul = [STEER[f"MUL@{l}"] for l in L]
-check(abs(STEER["SUM@20"] - 75 / 80) < 1e-9 and max(s_mul) == 23 / 80, "E5: SUM 75/80 at 20, MUL at most 23/80")
-check(abs(STEER7["SUM@20"] - 79 / 80) < 1e-9 and STEER7["MUL@20"] == 1.0, "E7 at layer 20: 79/80 and 80/80")
-ax.axvline(19.5, color=VIOLET, lw=0.6, ls=(0, (1, 1.5)), zorder=0)
-ax.plot(L, s_sum, color=ROSE_L, lw=0.9, marker="o", ms=1.8, zorder=2)
-ax.plot(L, s_mul, color=ROSE_L, lw=0.9, ls=(0, (3, 1.5)), marker="o", ms=1.8, zorder=2)
-ax.scatter([20, 20], [STEER7["SUM@20"], STEER7["MUL@20"]], s=12, color=ROSE, lw=0, zorder=4)
-ax.set_xlim(3, 23)
+L = list(range(1, 24))
+s_sum = [SWEEP[f"SUM@{l}"] for l in L]
+s_mul = [SWEEP[f"MUL@{l}"] for l in L]
+check(abs(STEER7["SUM@20"] - 79 / 80) < 1e-9 and STEER7["MUL@20"] == 1.0, "depth 20: 79/80 and 80/80")
+check(abs(SWEEP["SUM@20"] - STEER7["SUM@20"]) <= 1 / 80 and abs(SWEEP["MUL@20"] - STEER7["MUL@20"]) <= 1 / 80,
+      "the sweep reproduces depth 20 to one view")
+# the fifth full-attention layer spans depth 19 -> 20
+ax.axvspan(19, 20, color=VIOLET, alpha=0.12, lw=0, zorder=0)
+for l in FULL[:-1]:
+    ax.plot([l], [1.10], marker="v", ms=2.4, color=SOFT, clip_on=False, lw=0)
+ax.plot(L, s_sum, color=ROSE, lw=0.9, marker="o", ms=1.6, zorder=2)
+ax.plot(L, s_mul, color=COBALT, lw=0.9, ls=(0, (3, 1.5)), marker="o", ms=1.6, zorder=2)
+ax.set_xlim(0.5, 23.5)
 ax.set_ylim(-0.03, 1.05)
-ax.set_xticks([4, 12, 20])
+ax.set_xticks([4, 8, 12, 16, 20])
 ax.set_yticks([0, 0.5, 1])
 ax.set_yticklabels(["0", "0.5", "1"])
-ax.set_xlabel("layer of the push", labelpad=1.5)
-ax.set_ylabel("share of steps moved", labelpad=1.5)
-ax.text(13.0, 0.62, "E5 add", fontsize=4.8, color=ROSE_L, ha="center", va="center")
-ax.text(13.0, 0.24, "E5 multiply", fontsize=4.8, color=ROSE_L, ha="center", va="center")
-ax.text(19.0, 0.97, "E7", fontsize=5, color=ROSE, ha="right", va="center")
-ax.text(19.3, 0.40, "layer 19:\nfull\nattention", fontsize=4.4, color=VIOLET, ha="right", va="center",
+ax.set_xlabel("depth of the intervention", labelpad=1.5)
+ax.set_ylabel("share of steps changed", labelpad=1.5)
+ax.text(2.0, 0.92, "add", fontsize=4.8, color=ROSE, ha="left", va="center")
+ax.text(2.0, 0.80, "multiply", fontsize=4.8, color=COBALT, ha="left", va="center")
+ax.text(18.6, 0.74, "fifth full-\nattention\nlayer", fontsize=4.4, color=VIOLET, ha="right", va="center",
         linespacing=1.0)
 letter(fig, 141.0, 3.0, "c")
 

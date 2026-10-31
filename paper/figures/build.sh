@@ -20,6 +20,10 @@
 #   inside_e7.json               e72030c2  HF 2df87172 arithmetic/inside.json
 #   steer.json                   da0d4bb2  polyformer research/sketch/steer.json (E5 union adapter, layer sweep)
 #   steer_digit.json             6ea57f76  polyformer research/sketch/steer_digit.json (E7, layer 20)
+#   steer_e7_sweep.json          E7 pushed after every depth 1-23 (paper/review/CONTROLS.md; polyformer
+#                                research/sketch/steer_sweep.py on Modal, 31 Oct)
+#   base_control.json            the base model on the 2,446 views, zero- and 8-shot (CONTROLS.md; base_control.py)
+#   batch_check_m4.json          every view alone and in random batches of 32 and 4 on the M4 (worker.ts batchCheck)
 #   e7_gate_identity_summary.json cdc202a3 polyformer research/sketch/e7_gate_identity_summary.json
 #   chat_runs.json               transcribed from polyformer-wt/chat research/sketch/chat/CHAT3.md at b392d24d
 #                                (lines named in the file)

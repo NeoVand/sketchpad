@@ -1,0 +1,21 @@
+name = "sketchpad"
+defaultTargets = ["Polyformer", "Sketchpad"]
+
+[leanOptions]
+pp.unicode.fun = true
+autoImplicit = false
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.35.0"
+
+# The five files of the polyformer package that the paper cites, copied unchanged.
+[[lean_lib]]
+name = "Polyformer"
+roots = ["Polyformer.Interp", "Polyformer.Pinned", "Polyformer.Compose", "Polyformer.Unpinned", "Polyformer.Policy"]
+
+# The sheet-machine forms and the paper-named aliases.
+[[lean_lib]]
+name = "Sketchpad"
+roots = ["Sheet", "Paper"]

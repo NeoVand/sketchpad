@@ -1096,6 +1096,89 @@ function info(spec: SketchModel, root: string, seconds: number, reused: boolean)
 /** the loaded program serves this kind */
 const serves = (k: Kind) => !!model && loadedId === MODELS[k].id;
 
+/** the answer-place logits of slotted rows, from one forward with the rows as one batch (as a wave step runs them) */
+async function answerLogits(items: { op: BatchOp; cells: string[]; ids: number[] }[]) {
+	const parts = await Promise.all(
+		items.map(async (it) => (await slotted(it.op, stripImage(it.cells).image)).inp)
+	);
+	const inputs: Inputs = {};
+	for (const k of Object.keys(parts[0])) {
+		const ts = parts.map((x) => x[k] as TTensor);
+		if (!ts[0]?.dims?.length) continue;
+		inputs[k] = tjs!.cat(ts as never, 0) as unknown as TTensor;
+	}
+	const L = (inputs.input_ids as TTensor).dims[1];
+	if (parts.some((x) => (x.input_ids as TTensor).dims[1] !== L))
+		throw new Error('batched prompts differ in length');
+	const logits = (await slottedForward(inputs)).logits;
+	const K = logits.dims[1];
+	return items.map((it, b) =>
+		it.ids.map((_, j) => Float32Array.from(logitsAt(logits, b * K + answerAt(logits, it.op, j))))
+	);
+}
+
+/**
+ * Development only (the paper's τ): every table row of the loaded program scored alone and inside a batch of `size`
+ * random other rows, as a wave step batches them, with the largest change of any logit and of the row's margin.
+ */
+async function batchCheck(rid: number, sizes: number[], seed: number) {
+	if (!slots() || !padSum()) throw new Error('this program does not batch every table');
+	const rows = [
+		...ADD_DOMAIN.map((cells) => ({
+			op: 'ADD-FAST' as BatchOp,
+			cells,
+			ans: [addCode(addRule(cells))]
+		})),
+		...[...MUL_DOMAIN, ...CALC_DOMAIN].map(([op, v]) => ({
+			op: op as BatchOp,
+			cells: v,
+			ans: answerChars(op as SlotOp, v)
+		}))
+	].map((r) => ({ op: r.op, cells: r.cells, ids: r.ans.map(tokenOf) }));
+	let s = seed >>> 0 || 1;
+	const rand = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+	const worst = (ls: Float32Array[], ids: number[]) =>
+		Math.min(...ids.map((t, j) => margin(ls[j], t).m));
+	for (const size of sizes) {
+		const t0 = performance.now();
+		const order = rows.map((_, i) => i);
+		for (let i = order.length - 1; i > 0; i--) {
+			const j = Math.floor(rand() * (i + 1));
+			[order[i], order[j]] = [order[j], order[i]];
+		}
+		const r = {
+			views: 0,
+			maxLogit: 0,
+			maxMargin: 0,
+			minAlone: Infinity,
+			minBatch: Infinity,
+			fails: 0,
+			seconds: 0
+		};
+		for (let at = 0; at < order.length; at += size) {
+			if (cancelled.has(rid)) throw new Cancelled();
+			const items = order.slice(at, at + size).map((i) => rows[i]);
+			const together = await exclusive(() => answerLogits(items));
+			for (let b = 0; b < items.length; b++) {
+				const alone = (await exclusive(() => answerLogits([items[b]])))[0];
+				for (let j = 0; j < alone.length; j++)
+					for (let v = 0; v < alone[j].length; v++)
+						r.maxLogit = Math.max(r.maxLogit, Math.abs(together[b][j][v] - alone[j][v]));
+				const mA = worst(alone, items[b].ids);
+				const mB = worst(together[b], items[b].ids);
+				r.maxMargin = Math.max(r.maxMargin, Math.abs(mB - mA));
+				r.minAlone = Math.min(r.minAlone, mA);
+				r.minBatch = Math.min(r.minBatch, mB);
+				if (mB <= 0) r.fails++;
+				r.views++;
+			}
+			r.seconds = (performance.now() - t0) / 1000;
+			post({ type: 'batch-check', rid, size, done: r.views, result: { ...r } });
+		}
+	}
+	post({ type: 'done', rid, ms: 0 });
+}
+
 async function certify(rid: number, k: Kind, only?: number[], from = 0) {
 	if (!serves(k)) throw new Error(`${MODELS[k].name} is not loaded`);
 	const born = generation;
@@ -1389,6 +1472,7 @@ self.onmessage = async (ev: MessageEvent<ToWorker>) => {
 	if (m.type === 'replay') return void startReplay(m);
 	try {
 		if (m.type === 'certify') await certify(m.rid, m.kind, m.rows, m.from);
+		else if (m.type === 'batch-check') await batchCheck(m.rid, m.sizes, m.seed);
 		else if (m.type === 'tick') await tick(m);
 		else if (m.type === 'tick-batch') await tickBatch(m);
 		else if (m.type === 'chat') await chat(m);

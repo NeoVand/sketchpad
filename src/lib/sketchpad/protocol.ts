@@ -58,6 +58,8 @@ export type ToWorker =
 	 * after the GPU was reset)
 	 */
 	| { type: 'certify'; rid: number; kind: Kind; rows?: number[]; from?: number }
+	/** development only: every table row's logits alone and inside random batches of other rows (the paper's τ) */
+	| { type: 'batch-check'; rid: number; sizes: number[]; seed: number }
 	/**
 	 * `push`: an answer code to push the stream entering the steer layer toward, on this tick only (an adder tick, or a
 	 * multiply step with a digit of a)
@@ -132,6 +134,7 @@ export type FromWorker =
 			got: (string | null)[];
 	  }
 	| { type: 'cert-done'; rid: number; seconds: number }
+	| { type: 'batch-check'; rid: number; size: number; done: number; result: BatchCheck }
 	| {
 			type: 'tick';
 			rid: number;
@@ -161,3 +164,18 @@ export type FromWorker =
 	| { type: 'device-lost'; reason: string; message: string }
 	| { type: 'done'; rid: number; ms: number }
 	| { type: 'failed'; rid: number; error: string; cancelled: boolean };
+
+/** one batch size of the batch check: the largest change of any logit, and of any row's margin, from batching */
+export interface BatchCheck {
+	views: number;
+	/** max over rows, answer places and the whole vocabulary of |logit in the batch − logit alone| */
+	maxLogit: number;
+	/** max over rows of |margin in the batch − margin alone| */
+	maxMargin: number;
+	/** smallest margin alone and in the batch */
+	minAlone: number;
+	minBatch: number;
+	/** rows that fail in the batch */
+	fails: number;
+	seconds: number;
+}

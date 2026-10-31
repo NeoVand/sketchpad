@@ -1,0 +1,7 @@
+{
+  "about": "Batch check (paper review, 31 Oct 2026): every one of the 2,446 table rows of the dialogue adapter (E8, chat/ fe9d599a, the program the demo runs), scored alone and inside a random batch of the given size, in the slotted padded prompt form a wave step uses. Apple M4, Chrome, WebGPU, ONNX Runtime Web via transformers.js, 16-bit decoder. maxLogit: max over rows, answer positions and the full vocabulary of |logit in batch - logit alone|; maxMargin: max over rows of |margin in batch - margin alone|. Seed 1 (LCG shuffle). Code: src/lib/sketchpad/worker.ts batchCheck; run from the dev page with sketchpad.batchCheck([32, 4], 1).",
+  "result": {
+    "32": {"views": 2446, "maxLogit": 1.024505615234375, "maxMargin": 0.59375, "minAlone": 4.5625, "minBatch": 4.40625, "fails": 0, "seconds": 295.3},
+    "4": {"views": 2446, "maxLogit": 1.046875, "maxMargin": 0.625, "minAlone": 4.5625, "minBatch": 4.40625, "fails": 0, "seconds": 326.1}
+  }
+}

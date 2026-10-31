@@ -199,8 +199,6 @@ off = {"SUM": (0.4, -0.2, "left"), "MUL": (-0.4, 0.3, "right"), "EST": (0.4, -0.
 for x, y, n in pts7:
     dx, dy, ha = off[n]
     ax.text(x + dx, y + dy, n, fontsize=4.6, color=ROSE, ha=ha, va="center")
-for x, y, n in q4:
-    ax.text(x + 0.4, y - 0.1, n, fontsize=4.6, color=GREY, ha="left", va="center")
 ax.set_xlim(*lim)
 ax.set_ylim(*lim)
 ax.set_xticks([0, 5, 10, 15])
@@ -208,11 +206,11 @@ ax.set_yticks([0, 5, 10, 15])
 ax.set_xlabel("lowest margin, server (PyTorch)", labelpad=1.5)
 ax.set_ylabel("lowest margin, browser (WebGPU)", labelpad=1.5)
 ax.scatter([0.9], [14.2], s=9, color=ROSE, lw=0)
-ax.text(1.5, 14.2, "E7, fp16 decoder", fontsize=5, color=ROSE, ha="left", va="center")
+ax.text(1.5, 14.2, "arithmetic adapter, 16-bit", fontsize=5, color=ROSE, ha="left", va="center")
 ax.scatter([0.9], [13.0], s=9, facecolor="white", edgecolor=ROSE, lw=0.7)
-ax.text(1.5, 13.0, "E6, fp16 decoder", fontsize=5, color=ROSE, ha="left", va="center")
+ax.text(1.5, 13.0, "multiplication adapter, 16-bit", fontsize=5, color=ROSE, ha="left", va="center")
 ax.scatter([0.9], [11.8], s=9, color=GREY, marker="s", lw=0)
-ax.text(1.5, 11.8, "E2, E2b, 4-bit (q4) decoder", fontsize=5, color=GREY, ha="left", va="center")
+ax.text(1.5, 11.8, "earlier adapters, 4-bit", fontsize=5, color=GREY, ha="left", va="center")
 letter(fig, 116.0, 69.0, "d")
 
 save(fig, "fig3")

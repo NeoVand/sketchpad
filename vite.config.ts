@@ -5,6 +5,17 @@ import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
 	worker: { format: 'es' },
+	// the Lean package (with its mathlib link), figure data and review notes are not part of the site
+	server: {
+		watch: {
+			ignored: [
+				'**/paper/lean/**',
+				'**/paper/figures/**',
+				'**/paper/review/**',
+				'**/paper/arxiv/**'
+			]
+		}
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit({

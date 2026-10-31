@@ -132,3 +132,27 @@ published model `mohsenvand/sketchpad-0.8b-preview` at `2df87172`, whose certifi
 | Lewandowski et al. checked rules | 1,857 | P `research/audit/priorart_all/out.md` 121–125 |
 | References verified | 100 entries, 31 Oct 2026 | S `paper/refs_verified.md` |
 | Algebra measured on the M4 (light check): 8 of 11 under 12 s; (x+2)^5 9.5 s, (2x−3)^4 10.4 s, (x+1)^10 17.1 s, factor 16.0 s, 3×3 21.5 s | as stated | `paper/figures/data/algebra_m4.json` (demo agent, 31 Oct, sketchpad `7f82207`) |
+
+## Revision after the deep review (31 Oct 2026)
+
+| Claim | Value | Source |
+|---|---|---|
+| Paired standard errors, final adapter | IFEval ±2.0 (62/54 flips of 541), GSM8K ±3.4 (39/35 of 250), MMLU ±1.6 (35/28 of 500) | C `research/sketch/chat/CHAT3.md` report table; derived √(n₊+n₋)/n |
+| GSM8K at g = 1 executed by the stand-in, not the model | as stated | C `CHAT3.md` "Left over" and line 464 |
+| Every dialogue stage keeps table rows and replay | 16 rows + 6 replayed per step (P1); "every P6 term kept: … the E7 rows" (P7–P9) | C `CHAT3.md` P1 recipe; P7 plan |
+| Sheet protocol: ```sheet block, ≤ 2 blocks per reply | as stated | C `CHAT3.md` "E8 shipped" page contract |
+| Adapter targets: q, k, v, o; in_proj_qkv, in_proj_z, out_proj; gate, up, down | 24 + 54 + 72 = 150 | P `research/sketch/modal/out/e7_s3_4000_h4.0_stop3.0_fast/files/e7_adapter_s3_h4_v2_cont/adapter_config.json` |
+| EST view cells: r at x+m, r at x+m−1, b at x+m−1; blank r₁ laid as 0 | 400 = 10 Σ_{d=5}^{9} (d+1) | S `src/lib/sketchpad/calc-sheet.ts` `divide` |
+| Square-root scale thresholds | c = 4, 2, 1, 5 for the first six pair-aligned digits < 15625, 62500, 250000, else | S `calc-sheet.ts` `sqrtScale` |
+| Square-root starting guesses | first digit 4; second 9 when the trial divisor's leading digit < 5 | S `calc-sheet.ts` `squareRoot` |
+| Division scale f and unscaling | f = ⌊10/(d₀+1)⌋ ∈ {1,2,3,5}; remainder × 10/f drop one digit, or ÷ 3 | S `calc-sheet.ts` `divScale`, `divide` |
+| Radical reduction | trial primes ≤ 47; fully reduced below 53² = 2,809 | S `src/lib/sketchpad/program/radicals.ts` |
+| Expansion check points | default x = 1; strict x = −1, 0, 1, 2 | S `program/textbook.ts` `textbookExpand` |
+| Fig. 6b projection | final norm, table mean removed, 3 Fisher directions, covariance shrunk 90%; nearest centre measured in 3-D | P `research/sketch/inside_assets.py` |
+| Intervention trials | 80 per table, seed 0, halting and blank-multiplicand views excluded, target uniform over other outputs | P `research/sketch/inside_steer.py` |
+| Lean: Theorems 1, 3b, 4 for the sheet machine; 26 paper aliases; no sorryAx | as stated | S `paper/lean/Sheet.lean`, `paper/lean/Paper.lean` (`lake env lean Paper.lean`) |
+| Batching on the M4 (final adapter): max logit change 1.05 (batch 4) / 1.02 (batch 32), max margin change 0.63 / 0.59, smallest margin 4.56 alone, 4.41 batched, 0 failures | as stated | S `paper/figures/data/batch_check_m4.json` |
+| Base model, zero-shot: 12 / 2,446 views (all SUM), 1.1% of positions | as stated | S `paper/figures/data/base_control.json` `zs`; `paper/review/CONTROLS.md` |
+| Base model, 8-shot: 35 / 2,380 at the slots; 158 / 2,380 teacher-forced (45.8% of positions); no table complete | as stated | same, `fs` and `fs_tf`, block `queries` |
+| Intervention by depth (E7): none changed to depth 15; SUM 31/80 at 18, 38/80 at 19, 79/80 at 20; MUL 0/80 to 19, 80/80 at 20 | as stated | S `paper/figures/data/steer_e7_sweep.json`; CONTROLS.md |
+| Controls spend | $1.00 (Modal) | CONTROLS.md |
