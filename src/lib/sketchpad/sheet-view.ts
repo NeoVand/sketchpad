@@ -239,6 +239,8 @@ export class SheetView {
 				row.push(g);
 				prow.push(p);
 				t[c] = g === p ? -1e9 : now;
+				// a sheet that says who wrote each cell (a calculator sheet shown part way through a run)
+				if (src!.mine && g !== ' ') this.wrote[r][c] = src!.mine(r, c) ? 1 : 0;
 			}
 			this.shown.push(row);
 			this.prev.push(prow);
@@ -268,8 +270,10 @@ export class SheetView {
 					this.shown[r][c] = g;
 					this.changedAt[r][c] = now;
 					// a glyph that appears during the run is the model's, unless a visitor just changed it
-					this.wrote[r][c] = g !== ' ' && !this.edited.has(`${r},${c}`) ? 1 : 0;
+					if (!src.mine) this.wrote[r][c] = g !== ' ' && !this.edited.has(`${r},${c}`) ? 1 : 0;
 				}
+				// a sheet that says who wrote each cell: the layout can move the model's digits, and lay its own
+				if (src.mine) this.wrote[r][c] = g !== ' ' && src.mine(r, c) ? 1 : 0;
 			}
 		this.placeFovea(now, false);
 		this.follow(now);
@@ -501,6 +505,23 @@ export class SheetView {
 					this.glyph(g, sy, x, y, color);
 				}
 			}
+		}
+		ctx.globalAlpha = 1;
+
+		// decimal points: layout, in ink, on the line between the units digit and the first decimal
+		ctx.fillStyle = this.palette.ink;
+		for (const p of src.points?.() ?? []) {
+			if (p.c < c0 - 1 || p.c >= c1 || p.r >= m.rowY.length) continue;
+			ctx.globalAlpha = src.rows[p.r].dim ? DIM_INK : 1;
+			ctx.beginPath();
+			ctx.arc(
+				x0 + (p.c + 1) * cs,
+				m.rowY[p.r] + cs * 0.8,
+				Math.max(1.4, cs * 0.065),
+				0,
+				Math.PI * 2
+			);
+			ctx.fill();
 		}
 		ctx.globalAlpha = 1;
 

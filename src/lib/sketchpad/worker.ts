@@ -854,6 +854,30 @@ async function watchDevice() {
 const GPU_GONE = /external Instance reference|device (is |was )?lost|GPUDevice/i;
 
 /**
+ * transformers.js logs a failed model run (and its inputs) before it throws. On a lost device that failure is expected
+ * and handled (the page reloads the model and redoes the step), so it is noted once, quietly, instead of as an error;
+ * any other failure is logged as it was.
+ */
+const consoleError = console.error.bind(console);
+const RUN_FAILED = /An error occurred during model execution|Inputs given to model/;
+let quietUntil = 0;
+console.error = (...args: unknown[]) => {
+	const text = args.map((a) => String(a)).join(' ');
+	if (!device || !RUN_FAILED.test(text)) return consoleError(...args);
+	void Promise.race([
+		device.lost.then(() => true),
+		new Promise<boolean>((r) => setTimeout(() => r(deviceLost), 800))
+	]).then((gone) => {
+		if (!gone) return consoleError(...args);
+		if (performance.now() < quietUntil) return;
+		quietUntil = performance.now() + 5000;
+		console.info(
+			'sketchpad: a model run stopped because the GPU was lost; the page reloads the model and redoes it'
+		);
+	});
+};
+
+/**
  * A job failed because the device went: it is lost, or goes within a moment (a failed GPU call can come just before
  * the loss is reported), or the error is the one Chrome gives on a lost device.
  */

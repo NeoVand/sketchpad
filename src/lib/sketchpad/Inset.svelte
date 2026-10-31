@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { MODELS, kindOf } from './models.ts';
-	import { explain, type TickView } from './pad.svelte.ts';
+	import { STEP, explain, type TickView } from './pad.svelte.ts';
 	import type { TickOp } from './protocol.ts';
 	import { B, CELL, GLYPHS } from './sprites.ts';
 
@@ -55,42 +55,48 @@
 	}
 
 	const tokens = $derived(last ? last.out.map((t) => (t === B ? '_' : t)) : []);
+	/** the view on show: the last one answered, or the next one before a run */
+	const shown = $derived(last ?? next);
 </script>
 
 <figure class="sp-panel eye">
 	<figcaption class="sp-cap">
-		<span class="sp-title">One tick</span>
-		<span class="sp-sub">what the model sees, and what it writes</span>
+		<span class="sp-title">One view</span>
+		<span class="sp-sub">what the model reads, and what it writes</span>
 	</figcaption>
 	<div class="sp-body">
-		<div class="tick">
-			<div class="sees">
-				<!-- the frame is a real border around the strip, inside this panel, so nothing can clip it -->
+		{#if shown}
+			<div class="tick">
+				<!-- the strip on white needs its edge: one hairline, inside the panel so nothing clips it -->
 				<div class="frame">
 					<canvas {@attach paint} width={CELL} height={3 * CELL}></canvas>
 				</div>
-				<code class="prompt">
-					{#if last || next}{showOp((last ?? next)!.op)} ▢ ={/if}
-				</code>
-			</div>
-			<div class="writes">
-				{#if last}
-					<div class="tokens">
-						{#each tokens as t, i (i)}<span>{t}</span>{/each}
-					</div>
-					<p class="means">{explain(last.op, last.out)}</p>
-					<p class="meta num">
-						{#if last.margin !== null}margin {last.margin.toFixed(2)} ·
-						{/if}{last.ms.toFixed(0)} ms
+				<div class="writes">
+					<p class="asked">
+						<code>{showOp(shown.op)}</code><span>{STEP[shown.op]}</span>
 					</p>
-				{:else}
-					<p class="means idle">Its answer appears here at each tick.</p>
-				{/if}
+					{#if last}
+						<div class="tokens" aria-label="The model's answer">
+							{#each tokens as t, i (i)}<span>{t}</span>{/each}
+						</div>
+						<p class="means">{explain(last.op, last.out)}</p>
+						<p class="meta num">
+							{last.margin !== null ? `margin ${last.margin.toFixed(2)} · ` : ''}{last.ms.toFixed(
+								0
+							)} ms
+						</p>
+					{:else}
+						<p class="means idle">Its answer appears here when it runs.</p>
+					{/if}
+				</div>
 			</div>
-		</div>
+		{:else}
+			<p class="empty">The view the model reads appears here.</p>
+		{/if}
 	</div>
 	<p class="sp-foot">
-		<span class="sp-dim">The model's input pixels, exactly as it reads them.</span>
+		{#if shown}Left: the model’s input pixels, exactly as it reads them, between the step’s word and
+			“=”.{/if}
 	</p>
 </figure>
 
@@ -100,11 +106,12 @@
 		grid-template-columns: auto minmax(0, 1fr);
 		column-gap: 18px;
 		align-content: start;
+		align-items: start;
 	}
 	/* a white strip on a white page needs its edge: one hairline, the only frame on the page */
 	.frame {
 		width: fit-content;
-		box-shadow: 0 0 0 1px var(--color-mist);
+		border: 1px solid var(--color-mist);
 		border-radius: 2px;
 		overflow: hidden;
 		line-height: 0;
@@ -115,19 +122,32 @@
 		height: 144px;
 		image-rendering: pixelated;
 	}
-	.prompt {
-		display: block;
-		margin-top: 6px;
-		font-family: var(--font-mono);
-		font-size: var(--text-2xs);
-		line-height: 16px;
-		color: var(--color-blue-grey);
-		white-space: nowrap;
-	}
 	.writes {
 		min-width: 0;
 	}
+	/* the step: the word the model reads, then what it means */
+	.asked {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+		min-width: 0;
+		font-size: var(--text-xs);
+		line-height: 16px;
+		color: var(--color-ink-soft);
+	}
+	.asked code {
+		font-family: var(--font-mono);
+		font-size: var(--text-xs);
+		color: var(--color-ink);
+	}
+	.asked span {
+		min-width: 0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 	.tokens {
+		margin-top: 8px;
 		height: 28px;
 		display: flex;
 		gap: 10px;
@@ -147,13 +167,17 @@
 		transition: color var(--hover) ease;
 	}
 	.means.idle {
-		color: var(--color-blue-grey);
+		margin-top: 8px;
 	}
 	.meta {
 		margin-top: 4px;
 		font-size: var(--text-2xs);
 		line-height: 16px;
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
+	}
+	.empty {
+		font-size: var(--text-xs);
+		color: var(--color-ink-soft);
 	}
 	.sp-foot {
 		font-size: var(--text-2xs);

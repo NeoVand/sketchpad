@@ -10,6 +10,8 @@
  *
  * Roles: rose is ours (the model's writing on the sheet, certified); cobalt the alternative or stock Qwen; violet
  * references and theory only. Everything else is ink on white, with the tint for quiet fills and the mist for hairlines.
+ * Text is ink or ink_soft (6.8:1 on white, 6.3:1 on the tint); blue_grey (3.4:1) and mist are for marks, never text,
+ * except a disabled control.
  */
 @theme {
 	--color-paper: #ffffff;
@@ -31,7 +33,7 @@
 	--color-edge: #dde3ee;
 	--color-rule: var(--color-mist);
 	--color-ink-2: var(--color-ink-soft);
-	--color-ink-3: var(--color-blue-grey);
+	--color-ink-3: var(--color-ink-soft);
 
 	--font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Geist Mono Variable', ui-monospace, monospace;
@@ -153,12 +155,12 @@ a:hover {
 		color: var(--color-blue-grey);
 		cursor: default;
 	}
-	/* text buttons: tone and weight, never a box */
+	/* text buttons: tone and weight, never a box (ink_soft is the lightest text tone: 6.8:1 on white) */
 	.plain {
 		border: 0;
 		padding: 0;
 		background: none;
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 		font: inherit;
 		cursor: pointer;
 		transition: color var(--hover) ease;
@@ -168,6 +170,7 @@ a:hover {
 	}
 	.plain[aria-pressed='true'] {
 		color: var(--color-ink);
+		font-weight: 500;
 	}
 	.plain:disabled {
 		cursor: default;
@@ -175,6 +178,6 @@ a:hover {
 	}
 	.hint {
 		font-size: var(--text-xs);
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 	}
 }

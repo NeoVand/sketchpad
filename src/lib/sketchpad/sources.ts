@@ -5,6 +5,7 @@
 import { AddSheet } from './adder.ts';
 import { Grid } from './calc-sheet.ts';
 import { MulSheet, MulWave, type Row } from './multiplier.ts';
+import { B } from './sprites.ts';
 
 export interface SheetRow {
 	key: string;
@@ -29,6 +30,13 @@ export interface SheetSource {
 	editable(r: number, c: number): boolean;
 	/** the runtime's own name and index for a cell (for pad.bump) */
 	address(r: number, c: number): [string, number];
+	/**
+	 * who wrote a cell's glyph: true the model, false the layout. Without it the page takes every glyph that appears
+	 * during a run to be the model's.
+	 */
+	mine?(r: number, c: number): boolean;
+	/** decimal points to draw, each after the cell at (r, c) */
+	points?(): { r: number; c: number }[];
 }
 
 const ADD_ROWS: SheetRow[] = [
@@ -101,7 +109,12 @@ export function waveSource(s: MulWave): SheetSource {
 	};
 }
 
-/** A calculator sheet (calc-sheet.ts): its rows as laid out, an eye for every view of the step under way. */
+/**
+ * A calculator sheet (calc-sheet.ts): its rows as laid out, an eye for every view of the step under way. What the
+ * page draws differs from the grid only as a reader writes numbers: no leading zeros where a row asks for that (unless
+ * a view is reading the cell), and a decimal point where the line asked for places. The views the model reads are
+ * built from the grid itself, never from this.
+ */
 export function gridSource(g: Grid): SheetSource {
 	const rows: SheetRow[] = g.specs.map((s, i) => ({
 		key: s.key,
@@ -112,10 +125,33 @@ export function gridSource(g: Grid): SheetSource {
 	}));
 	const index = new Map(g.specs.map((s, i) => [s.key, i]));
 	const x = (c: number) => g.W - 1 - c;
+	const reading = (key: string, at: number) =>
+		!g.done &&
+		g.fovea.some((cells) => cells.some((cell) => !!cell && cell[0] === key && cell[1] === at));
+	/** a leading zero of a row that drops them: every cell above it blank or zero, and above the units digit */
+	const leadingZero = (key: string, at: number) => {
+		const row = g.rows[key];
+		if (row[at] !== '0' || at <= (g.points[key] ?? 0)) return false;
+		for (let i = at + 1; i < g.W; i++) if (row[i] !== B && row[i] !== '0') return false;
+		return !reading(key, at);
+	};
 	return {
 		rows,
 		cols: g.W,
-		glyph: (r, c) => g.rows[g.specs[r].key][x(c)],
+		glyph: (r, c) => {
+			const spec = g.specs[r];
+			const at = x(c);
+			const trim = spec.trim === 'always' || (spec.trim === 'done' && g.done);
+			return trim && leadingZero(spec.key, at) ? B : g.rows[spec.key][at];
+		},
+		mine: (r, c) => !g.laid(g.specs[r].key, x(c)),
+		points: () =>
+			Object.entries(g.points).flatMap(([key, k]) => {
+				const r = index.get(key);
+				const row = g.rows[key];
+				// a point only once the row holds its units digit
+				return r === undefined || k <= 0 || !row || row[k] === B ? [] : [{ r, c: x(k) }];
+			}),
 		fovea: () =>
 			g.done
 				? []

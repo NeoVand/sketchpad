@@ -30,7 +30,7 @@
 }
 .sp-sub {
 	font-size: var(--text-xs);
-	color: var(--color-blue-grey);
+	color: var(--color-ink-soft);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -51,19 +51,26 @@
 	color: var(--color-ink-soft);
 }
 .sp-foot .sp-dim {
-	color: var(--color-blue-grey);
+	color: var(--color-ink-soft);
 }
 .sp-empty {
 	align-self: center;
 	justify-self: center;
 	font-size: var(--text-xs);
-	color: var(--color-blue-grey);
+	color: var(--color-ink-soft);
 }
 
-/* a phone stacks the panels and gives every row the height it needs: captions may wrap */
+/* a phone stacks the panels and gives every row the height it needs: captions may wrap, and a figure (`.sp-fig`)
+   keeps a fixed height while an empty panel takes only its line */
 @media (max-width: 719px) {
 	.sp-title,
 	.sp-sub {
 		white-space: normal;
+	}
+	.sp-body.sp-fig {
+		height: 300px;
+	}
+	.sp-empty {
+		justify-self: start;
 	}
 }

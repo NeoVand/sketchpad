@@ -11,11 +11,15 @@
 		canCheck: boolean;
 		/** the rows a run has read and the one it read last: the run's walk on the table */
 		walk?: { current: number; visited: Set<number> } | null;
+		/** the other tables this part's runs read, said once under the grid */
+		also?: string;
 	}
 
-	let { cert, device, oncheck, canCheck, walk = null }: Props = $props();
+	let { cert, device, oncheck, canCheck, walk = null, also = '' }: Props = $props();
 
 	let canvas: HTMLCanvasElement | null = null;
+	/** the room the line under the grid takes (two lines of text and their margin) */
+	const LINE = 44;
 	/** the room the grid has: its box in the panel, which the canvas never sizes */
 	let width = $state(240);
 	let height = $state(200);
@@ -46,7 +50,7 @@
 			calc
 				? Math.ceil(242 / cols) + Math.ceil(400 / cols) + Math.ceil(9 / cols)
 				: Math.ceil(1100 / cols) + 2 * Math.ceil(220 / cols) + Math.ceil(14 / cols);
-		let pitch = 6;
+		let pitch = 8;
 		while (pitch > 3) {
 			const cols = Math.floor((width + 1) / pitch);
 			if (lines(cols) * pitch + 12 <= height) break;
@@ -84,13 +88,17 @@
 	function measure(box: HTMLDivElement) {
 		const ro = new ResizeObserver(() => {
 			width = box.clientWidth;
-			height = box.clientHeight;
+			// the line under the grid sits in the same box, right below it
+			height = Math.max(0, box.clientHeight - LINE);
 		});
 		ro.observe(box);
 		return () => ro.disconnect();
 	}
 
-	/** one cell per row: rose when it passes (certified), hollow when it fails, pale until checked */
+	/**
+	 * one cell per row: rose when it passes (deeper with a larger margin), hollow when it fails, neutral until checked;
+	 * during a run, the rows it has read keep their rose and the rest step back to the neutral
+	 */
 	/** bumps when the browser gives a canvas back after a GPU reset (it comes back blank) */
 	let restored = $state(0);
 
@@ -121,12 +129,11 @@
 		const w = walk && walk.visited.size ? walk : null;
 		for (let i = 0; i < cert.rows; i++) {
 			const m = cert.margins[i];
-			ctx.globalAlpha = w && !w.visited.has(i) ? 0.3 : 1;
-			if (Number.isNaN(m)) {
+			if (Number.isNaN(m) || (w && m > 0 && !w.visited.has(i))) {
 				ctx.fillStyle = tone.idle;
 				ctx.fillRect(g.x[i], g.y[i], s, s);
 			} else if (m > 0) {
-				ctx.fillStyle = i === h || (w && w.visited.has(i)) ? tone.hot : tone.pass;
+				ctx.fillStyle = w ? tone.read : tone.pass(m);
 				ctx.fillRect(g.x[i], g.y[i], s, s);
 			} else {
 				// a failing row is a hole: hollow, and ringed when pointed at
@@ -137,18 +144,11 @@
 				if (i === h) ctx.strokeRect(g.x[i] - 1.5, g.y[i] - 1.5, s + 3, s + 3);
 			}
 		}
-		ctx.globalAlpha = 1;
-		if (w && w.current >= 0 && w.current < cert.rows) {
-			const i = w.current;
-			ctx.strokeStyle = tone.hot;
-			ctx.lineWidth = 1;
-			ctx.strokeRect(g.x[i] - 1.5, g.y[i] - 1.5, s + 3, s + 3);
-		}
-		if (h !== null && Number.isNaN(cert.margins[h])) {
-			ctx.fillStyle = tone.pass;
-			ctx.globalAlpha = 0.5;
-			ctx.fillRect(g.x[h], g.y[h], s, s);
-		}
+		// the row read last, and the one pointed at: an ink ring
+		ctx.strokeStyle = tone.ring;
+		ctx.lineWidth = 1;
+		for (const i of [w ? w.current : -1, h ?? -1])
+			if (i >= 0 && i < cert.rows) ctx.strokeRect(g.x[i] - 1.5, g.y[i] - 1.5, s + 3, s + 3);
 	}
 
 	function onpointermove(e: PointerEvent) {
@@ -212,7 +212,7 @@
 		<span class="sp-sub">every view the model can meet, each one checked</span>
 	</div>
 
-	<div class="sp-body">
+	<div class="sp-body sp-fig">
 		<div class="stack">
 			<div class="headline">
 				<span
@@ -224,11 +224,13 @@
 					{cert.checked ? fmtMargin(cert.minMargin) : '–'}
 				</span>
 				<span class="cap"
-					>{cert.status === 'running'
-						? 'lowest margin so far'
-						: cert.status === 'shipped'
-							? 'lowest margin'
-							: 'lowest margin on this device'}</span
+					><span
+						>{cert.status === 'running'
+							? 'lowest margin so far'
+							: cert.status === 'shipped'
+								? 'lowest margin'
+								: 'lowest margin on this device'}</span
+					><span class="sub">the right answer’s lead over the next, in logits</span></span
 				>
 			</div>
 
@@ -240,24 +242,24 @@
 					onpointerleave={() => (hover = null)}
 					aria-label="One cell per table row; filled when it passes, hollow when it fails"
 				></canvas>
+				<p class="line num">
+					{#if readout}
+						<span class="mono">{readout.label}</span><br /><span class="dim">{readout.margin}</span>
+					{:else if walk && walk.visited.size}
+						This run has read {fmt(walk.visited.size)} of the {fmt(cert.rows)} views.
+					{:else if cert.status === 'none'}
+						{fmt(cert.rows)} views, every one this table can show the model.
+					{:else}
+						{fmt(cert.pass)} of {fmt(cert.status === 'running' ? cert.checked : cert.rows)} pass{#if cert.status !== 'shipped'}
+							· {cert.seconds.toFixed(0)} s{/if}
+					{/if}
+				</p>
 			</div>
-
-			<p class="line num">
-				{#if readout}
-					<span class="mono">{readout.label}</span><br /><span class="dim">{readout.margin}</span>
-				{:else if walk && walk.visited.size}
-					This run has read {fmt(walk.visited.size)} of the {fmt(cert.rows)} views.
-				{:else if cert.status === 'none'}
-					{fmt(cert.rows)} views: every strip the model can meet.
-				{:else}
-					{fmt(cert.pass)} of {fmt(cert.status === 'running' ? cert.checked : cert.rows)} pass{#if cert.status !== 'shipped'}
-						· {cert.seconds.toFixed(0)} s{/if}
-				{/if}
-			</p>
 		</div>
 	</div>
 
 	<div class="sp-foot">
+		{#if also}<p class="also">{also}</p>{/if}
 		{#if cert.status === 'cached' || cert.status === 'done'}
 			<p>
 				Every view checked on this device{when ? `, ${when}` : ''}{device ? ` (${device})` : ''}.
@@ -310,7 +312,7 @@
 	.state {
 		margin-left: 8px;
 		font-weight: 400;
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 	}
 	.stack {
 		position: absolute;
@@ -321,8 +323,8 @@
 	.headline {
 		flex: none;
 		display: flex;
-		align-items: baseline;
-		gap: 10px;
+		align-items: center;
+		gap: 12px;
 		margin-bottom: 12px;
 	}
 	.big {
@@ -333,12 +335,20 @@
 		color: var(--color-ink);
 		transition: color var(--hover) ease;
 	}
+	/* large text: the blue_grey (3.4:1) is enough for a placeholder dash */
 	.big.dim {
-		color: var(--color-mist);
-	}
-	.cap {
-		font-size: var(--text-xs);
 		color: var(--color-blue-grey);
+	}
+	/* what the number is, and in one line what a margin means */
+	.cap {
+		display: grid;
+		min-width: 0;
+		font-size: var(--text-xs);
+		line-height: 1.35;
+		color: var(--color-ink-soft);
+	}
+	.cap .sub {
+		font-size: var(--text-2xs);
 	}
 	.grid {
 		flex: 1 1 0;
@@ -362,7 +372,10 @@
 		white-space: pre;
 	}
 	.dim {
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
+	}
+	.also {
+		margin-bottom: 2px;
 	}
 	.k {
 		color: var(--color-ink-soft);
@@ -387,6 +400,7 @@
 	}
 	.link:disabled {
 		color: var(--color-blue-grey);
+		text-decoration-color: var(--color-mist);
 		cursor: default;
 	}
 	.fails {
@@ -406,5 +420,11 @@
 	}
 	.small {
 		font-size: var(--text-2xs);
+	}
+	/* a phone: the grid needs less height than a figure */
+	@media (max-width: 719px) {
+		.sp-body.sp-fig {
+			height: 270px;
+		}
 	}
 </style>

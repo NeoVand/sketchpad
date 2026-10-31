@@ -35,10 +35,10 @@
 				Language models still get long arithmetic wrong, and the usual fix hands the work to a tool
 				outside the model. Here we teach Qwen3.5-0.8B, through one small adapter, to do the work
 				itself on a sheet it reads with its own eyes, three cells at a time: every digit comes from
-				one forward pass, and the sheet is its only memory. It adds, subtracts, multiplies, divides
-				and takes square roots of whole numbers of any length exactly. We certify every one of the
-				2,446 views it can ever meet, and each visitor’s GPU checks the weakest of them again before
-				a run.
+				one forward pass, and the sheet is its only memory. It adds, subtracts, multiplies and
+				divides signed whole numbers of any length, takes square roots and finds greatest common
+				divisors, all exactly. We certify every one of the 2,446 views it can ever meet, and each
+				visitor’s GPU checks the weakest of them again before a run.
 			</p>
 			<p class="waits">
 				Waiting on: the published model’s 200 on-device runs (under way); algebra by evaluation
@@ -87,7 +87,7 @@
 		padding-top: 12px;
 		font-size: var(--text-xs);
 		line-height: 1.5;
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 	}
 	h1 {
 		font-family: var(--font-serif);
@@ -113,7 +113,7 @@
 		padding-top: 3px;
 		font-size: var(--text-xs);
 		font-weight: 500;
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 	}
 	h2 {
 		margin: 0 0 8px;
@@ -132,7 +132,7 @@
 	.waits {
 		font-size: var(--text-xs);
 		line-height: 1.5;
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 	}
 	.waits.inline {
 		display: none;
@@ -151,7 +151,7 @@
 		padding-top: 1px;
 		font-size: var(--text-lg);
 		font-weight: 500;
-		color: var(--color-mist);
+		color: var(--color-ink-soft);
 	}
 	.side {
 		margin-top: 6px;

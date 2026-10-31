@@ -25,8 +25,20 @@
 	let metrics = $state.raw<Metrics | null>(null);
 	let win = $state.raw({ from: 0, to: 1 });
 	let cursor = $state('default');
-	/** a compact sheet keeps its row labels inside the paper, beside the problem (LABEL_ROOM is kept for them) */
-	const LABEL_ROOM = 64;
+	/**
+	 * a compact sheet keeps its row labels inside the paper, beside the problem: room for the longest of them (at least
+	 * LABEL_ROOM), so a long name never runs off the paper
+	 */
+	const LABEL_ROOM = 44;
+	let measurer: CanvasRenderingContext2D | null = null;
+	function labelRoom(s: SheetSource | null) {
+		if (!s) return LABEL_ROOM;
+		measurer ??= document.createElement('canvas').getContext('2d');
+		if (!measurer) return 64;
+		measurer.font = `${getComputedStyle(paper).getPropertyValue('--text-xs').trim() || '12px'} ${getComputedStyle(paper).fontFamily}`;
+		const w = Math.max(0, ...s.rows.map((r) => measurer!.measureText(r.label).width));
+		return Math.max(LABEL_ROOM, Math.ceil(w) + 20);
+	}
 	const inline = $derived(compact && !!metrics);
 	let drag: { x: number; id: number } | null = null;
 
@@ -61,6 +73,7 @@
 	});
 
 	$effect(() => {
+		if (view && compact) view.reserve = labelRoom(source);
 		view?.setSource(source);
 	});
 
@@ -174,7 +187,7 @@
 		right: 0;
 		transform: translateY(-50%);
 		font-size: var(--text-xs);
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 		white-space: nowrap;
 		transition: top var(--move) var(--ease);
 	}

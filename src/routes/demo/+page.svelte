@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { asset } from '$app/paths';
+	import { goto } from '$app/navigation';
+	import { asset, resolve } from '$app/paths';
 	import { AddSheet } from '#lib/sketchpad/adder.ts';
 	import { Grid } from '#lib/sketchpad/calc-sheet.ts';
 	import { MulWave } from '#lib/sketchpad/multiplier.ts';
@@ -9,6 +10,7 @@
 	import Inset from '#lib/sketchpad/Inset.svelte';
 	import Lens from '#lib/sketchpad/Lens.svelte';
 	import Machine from '#lib/sketchpad/Machine.svelte';
+	import Procedure from '#lib/sketchpad/Procedure.svelte';
 	import StateSpace from '#lib/sketchpad/StateSpace.svelte';
 	import WorkOrder from '#lib/sketchpad/WorkOrder.svelte';
 	import '#lib/sketchpad/panel.css';
@@ -115,7 +117,7 @@
 		void pad.probe(modelsBase);
 		pad.stage(a, b);
 		const fromHash = PARTS.find((p) => `#${p.id}` === location.hash);
-		if (fromHash) void setPart(fromHash.id);
+		if (fromHash) void setPart(fromHash.id, false);
 		// local checks and the screenshot script drive the page through this handle
 		if (import.meta.env.DEV) Object.assign(globalThis, { sketchpad: pad });
 		void costs();
@@ -134,15 +136,26 @@
 	}
 	const secondsOf = (o: string) => modelled[`${pad.checkMode}:${o}`];
 
-	async function setPart(p: Part) {
+	/** this page's path; a part adds only its hash */
+	const DEMO = resolve('/demo');
+	async function setPart(p: Part, write = true) {
 		if (p === part) return;
 		part = p;
-		history.replaceState(history.state, '', `#${p}`);
+		// the part shown is in the address, so a link (or a reload) opens it
+		if (write) void goto(`${DEMO}#${p}` as typeof DEMO, { replace: true, shallow: true });
 		if (p === 'machine') await setOp(machineOp);
 		else if ((p === 'calc' || p === 'algebra') && HAS_CALC) {
 			await setOp('calc');
 			pad.clearRun();
+			if (p === 'calc') pad.stageCalc(line);
 		}
+	}
+
+	/** the line typed in Calculate is laid out on its sheet a moment after typing stops */
+	let staging = 0;
+	function retype() {
+		clearTimeout(staging);
+		staging = window.setTimeout(() => part === 'calc' && pad.stageCalc(line), 250);
 	}
 
 	const source = $derived(
@@ -154,7 +167,8 @@
 		void pad.version;
 		const s = pad.sheet;
 		if (!s || s.done || calcOff) return null;
-		if (s instanceof Grid) return null;
+		// a calculator sheet laid out but not run: its first view
+		if (s instanceof Grid) return pad.last ? null : pad.preview;
 		if (s instanceof MulWave) {
 			const q = s.active()[0];
 			return q ? { op: q.op, cells: s.view(q) } : null;
@@ -165,7 +179,7 @@
 		void pad.version;
 		const s = pad.sheet;
 		if (!s) return '';
-		if (s instanceof Grid) return s.title;
+		if (s instanceof Grid) return GRID_NAMES[s.title] ?? `one-digit multiplication, ${s.title}`;
 		if (s instanceof AddSheet) return `${fmt(s.columnsDone)} of ${fmt(s.n)} columns`;
 		if (s instanceof MulWave) {
 			const on = s.active().map((q) => q.j + 1);
@@ -175,6 +189,12 @@
 		}
 		return `digit ${Math.min(s.j + 1, s.m)} of ${s.m} of b`;
 	});
+	/** a calculator sheet's procedure, as the running line names it */
+	const GRID_NAMES: Record<string, string> = {
+		'a − b': 'subtraction',
+		'a ÷ b': 'long division',
+		'√a': 'square root'
+	};
 	/** the procedure the algebra run is on: the title of the sheet it works on */
 	const working = $derived.by(() => {
 		void pad.version;
@@ -218,6 +238,8 @@
 
 	/** a calculator line or work order asked for while the tables are being checked starts when the check passes */
 	async function calc(text: string, algebra = false) {
+		// a run replaces the layout still to come from typing
+		clearTimeout(staging);
 		const start = () => (algebra ? pad.runAlgebra(text) : pad.runCalc(text));
 		if (pad.canCalc) return void start();
 		if (!certBusy && !pad.certifying) return;
@@ -309,7 +331,9 @@
 			onclick={() => calc(algebra ? order : line, algebra)}>Run</button
 		>
 		{#if queued}<span class="hint">starts when the check ends</span>
-		{:else if pad.ready && pad.certifying}<span class="hint">after the certificates</span>{/if}
+		{:else if pad.ready && pad.certifying && !pad.canCalc}<span class="hint"
+				>after the certificates</span
+			>{/if}
 	{:else}
 		<button
 			class="primary"
@@ -325,13 +349,21 @@
 {/snippet}
 
 {#snippet pace()}
-	<button
-		class="plain pace"
-		aria-pressed={pad.pace > 0}
-		onclick={() => (pad.pace = pad.pace > 0 ? 0 : 900)}
-		title="Pause between ticks so the inside of the model can be followed"
-		>{pad.pace > 0 ? 'Slow' : 'Fast'}</button
-	>
+	<span class="opts" role="group" aria-label="Pace">
+		<span class="hint">Pace</span>
+		<button
+			class="plain"
+			aria-pressed={pad.pace === 0}
+			onclick={() => (pad.pace = 0)}
+			title="As fast as the GPU goes">fast</button
+		>
+		<button
+			class="plain"
+			aria-pressed={pad.pace > 0}
+			onclick={() => (pad.pace = 900)}
+			title="A pause between steps, so the inside views can follow each one">slow</button
+		>
+	</span>
 {/snippet}
 
 <main class="demo">
@@ -339,8 +371,13 @@
 		<div class="title">
 			<h1>Sketchpad</h1>
 			<p class="lede">
-				Qwen3.5-0.8B computes exactly on a sheet it reads with its own eyes, three cells at a time.
-				Every digit is the model’s; the page only paints and moves.
+				Qwen3.5-0.8B adds, subtracts, multiplies, divides, takes square roots and finds gcds
+				exactly, on a sheet it reads with its own eyes. Every digit is the model’s; the page only
+				paints and moves.
+			</p>
+			<p class="terms">
+				A <em>view</em> is three cells of the sheet, read as one image; a <em>step</em> is one forward
+				pass of the model, which answers one view or several at once.
 			</p>
 		</div>
 		<div class="model" aria-live="polite">
@@ -462,6 +499,7 @@
 				<input
 					class="line"
 					bind:value={line}
+					oninput={retype}
 					onkeydown={(e) => e.key === 'Enter' && calc(line)}
 					autocomplete="off"
 					spellcheck="false"
@@ -477,6 +515,7 @@
 						disabled={pad.running || calcOff}
 						onclick={() => {
 							line = p;
+							pad.stageCalc(p);
 							calc(p);
 						}}>{p}</button
 					>
@@ -499,15 +538,17 @@
 			</div>
 			<div class="actions">{@render runButton(true)}</div>
 			<div class="toggles">
-				<span class="hint">Check</span>
-				{#each MODES as m (m)}
-					<button
-						class="plain"
-						aria-pressed={pad.checkMode === m}
-						disabled={pad.running}
-						onclick={() => (pad.checkMode = m)}>{m}</button
-					>
-				{/each}
+				<span class="opts" role="group" aria-label="Check">
+					<span class="hint">Check</span>
+					{#each MODES as m (m)}
+						<button
+							class="plain"
+							aria-pressed={pad.checkMode === m}
+							disabled={pad.running}
+							onclick={() => (pad.checkMode = m)}>{m}</button
+						>
+					{/each}
+				</span>
 				{@render pace()}
 			</div>
 			<div class="beats">
@@ -540,8 +581,7 @@
 	{#if calcOff}
 		<p class="off">
 			{part === 'calc' ? 'Calculate' : 'Algebra'} reads three tables more than the sheet machine: subtract,
-			guess a quotient digit, and lower the guess. They come with the next model, E7, which is being published;
-			the model on this page today, E6, adds and multiplies.
+			guess a quotient digit, and lower the guess. The program loaded here has not learned them.
 		</p>
 	{/if}
 
@@ -583,13 +623,13 @@
 					</dl>
 				</div>
 				<p class="sp-foot">
-					<span class="sp-dim">The inside views below follow the last tick.</span>
+					<span class="sp-dim">The inside views below follow the last view the sheet ran.</span>
 				</p>
 			</section>
 		</div>
 	{:else}
 		<!-- the top row: the sheet (the model's only memory), one tick, and the machine; panels on one grid -->
-		<div class="band" class:tall={calcPart}>
+		<div class="band" class:tall={calcPart} class:calc={part === 'calc'}>
 			<figure class="sp-panel sheet-panel">
 				<figcaption class="sp-cap">
 					<span class="sp-title">The sheet</span>
@@ -602,14 +642,14 @@
 				<div class="sp-body sheet-body">
 					<Sheet {source} version={pad.version} {tickMs} sprites={SPRITES} onedit={edit} compact />
 				</div>
-				<!-- two fixed lines: what happened, then the facts behind it -->
+				<!-- two fixed lines: the answer, then the facts behind it -->
 				<div class="sp-foot status num" aria-live="polite">
 					{#if calcOff}
 						<p>&nbsp;</p>
 					{:else if pad.running}
-						<p>
-							<span>tick {fmt(pad.ticks)}</span><span
-								>{(pad.computeMs / Math.max(1, pad.ticks)).toFixed(0)} ms per tick</span
+						<p class="verdict">
+							<span>{fmt(pad.ticks)} {pad.ticks === 1 ? 'view' : 'views'}</span><span
+								>{(pad.computeMs / Math.max(1, pad.ticks)).toFixed(0)} ms a view</span
 							><span>{progress}</span>
 						</p>
 						<p>
@@ -617,7 +657,7 @@
 								>{/if}{#if pad.sheet && !(pad.sheet instanceof Grid) && pad.sheet.edits}<span
 									>{pad.sheet.edits} {pad.sheet.edits === 1 ? 'digit' : 'digits'} changed</span
 								>{/if}{#if pad.pushes}<span
-									>{pad.pushes} {pad.pushes === 1 ? 'tick' : 'ticks'} pushed</span
+									>{pad.pushes} {pad.pushes === 1 ? 'view' : 'views'} pushed</span
 								>{/if}
 						</p>
 					{:else if part === 'algebra' && pad.algebra}
@@ -629,8 +669,8 @@
 						</p>
 						<p>
 							<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span><span
-								>{#if r.certified}certified on this device{:else if r.unchecked === 0}every view it
-									read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
+								>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every
+									view it read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
 										? 'view'
 										: 'views'}{/if}</span
 							>
@@ -646,8 +686,8 @@
 						</p>
 						<p>
 							<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span><span
-								>{#if r.certified}certified on this device{:else if r.unchecked === 0}every view it
-									read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
+								>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every
+									view it read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
 										? 'view'
 										: 'views'}{/if}</span
 							>
@@ -664,52 +704,66 @@
 								{:else}
 									All {fmt(r.got.length)} digits of the {pad.op === 'add' ? 'sum' : 'product'} match.
 								{/if}
+							{:else if r.pushes}
+								Pushed off course: the sheet says <span class="got"
+									>{r.got.length > 30 ? `${r.got.slice(0, 30)}…` : r.got}</span
+								>, not
+								<span class="ref">{r.want.length > 30 ? `${r.want.slice(0, 30)}…` : r.want}</span>.
 							{:else}
 								The sheet says {r.got.length > 30 ? `${r.got.slice(0, 30)}…` : r.got}.
 							{/if}
 						</p>
 						<p>
 							<span
-								>{fmt(r.ticks)} ticks{r.steps ? ` in ${fmt(r.steps)} steps` : ''}, {duration(
+								>{fmt(r.ticks)} views in {fmt(r.steps ?? r.ticks)} steps, {duration(
 									r.seconds
 								)}</span
 							><span
-								>{#if r.certified && r.certSource === 'shipped'}certified (shipped, rechecked here){:else if r.certified}certified
-									on this device{:else if r.unchecked === 0}every view it read passed{:else}{r.unchecked}
+								>{#if r.certified && r.certSource === 'shipped'}certified (shipped, checked again
+									here){:else if r.certified}certified on this device{:else if r.unchecked === 0}every
+									view it read passed{:else}{r.unchecked}
 									unchecked {r.unchecked === 1 ? 'view' : 'views'}{/if}</span
 							>{#if r.pushes}<span>{r.pushes} pushed</span>{/if}{#if r.edits}<span
 									>{r.edits} changed</span
 								>{/if}
 						</p>
 					{:else if pad.runError}
-						<p>{pad.runError === 'stopped' ? 'Stopped.' : pad.runError}</p>
+						<p class="verdict">{pad.runError === 'stopped' ? 'Stopped.' : pad.runError}</p>
+						{#if part === 'calc' && pad.runError !== 'stopped'}<p>
+								Try a + b, a − b, a × b, a ÷ b to k places, √a to k places or gcd(a, b).
+							</p>{/if}
 					{:else if part === 'calc' && pad.ready}
-						<p>
+						<p class="verdict">
 							{pad.certifying
 								? 'Checking the three tables it reads on this device first.'
 								: 'Every digit is the model’s; signs and decimal points are layout.'}
 						</p>
-						<p class="dim">a + b, a − b, a × b, a ÷ b to k places, √a to k places, gcd(a, b)</p>
+						<p>a + b, a − b, a × b, a ÷ b to k places, √a to k places, gcd(a, b)</p>
 					{:else if part === 'algebra' && pad.ready}
-						<p>
+						<p class="verdict">
 							{pad.certifying
 								? 'Checking the three tables it reads on this device first.'
 								: 'The runtime plans; every digit of every evaluation is the model’s.'}
 						</p>
-						<p class="dim">an expression, solve … (up to three unknowns), expand …, factor …</p>
+						<p>an expression, solve … (up to three unknowns), expand …, factor …</p>
 					{:else if part === 'machine' && pad.ready && !certBusy}
-						<p>
+						<p class="verdict">
 							{pad.op === 'add'
 								? 'Run, then click an unread digit to change it,'
 								: 'Run, then click a later digit of b to change it,'}
 						</p>
 						<p>
 							{pad.op === 'add'
-								? 'or a number in the state space to push a tick.'
+								? 'or a number in the state space to push the next view.'
 								: 'or a digit on the multiply map to push a step.'}
 						</p>
 					{:else if !pad.ready}
-						<p class="dim">Load the model to run it.</p>
+						<p class="verdict">Load the model to run it.</p>
+						<p>
+							{part === 'calc'
+								? 'a + b, a − b, a × b, a ÷ b to k places, √a to k places, gcd(a, b)'
+								: 'It downloads once; this browser keeps it.'}
+						</p>
 					{/if}
 				</div>
 			</figure>
@@ -720,6 +774,14 @@
 					result={pad.algebra}
 					running={pad.running}
 					{working}
+				/>
+			{:else if part === 'calc'}
+				<Procedure
+					sheet={pad.sheet}
+					version={pad.version}
+					last={pad.last}
+					preview={pad.preview}
+					{line}
 				/>
 			{:else}
 				<Machine last={pad.last} kind={panelKind} />
@@ -734,6 +796,7 @@
 			kind={panelKind}
 			ready={!!pad.insideMeta}
 			slow={pad.pace > 0}
+			unseen={!!pad.last && !pad.last.inside}
 		/>
 		<StateSpace
 			seen={pad.last?.inside ?? null}
@@ -752,6 +815,9 @@
 			canCheck={pad.ready && !pad.running && !certBusy && !spotBusy}
 			oncheck={() => pad.certify()}
 			walk={pad.walk}
+			also={calcPart
+				? `${part === 'calc' ? 'Calculate' : 'Algebra'} also reads the adder’s 242 views and the multiplier’s 1,553: 2,446 in all, each checked.`
+				: ''}
 		/>
 	</div>
 
@@ -760,27 +826,27 @@
 		<h2 id="how" class="label">How it works</h2>
 		<div class="prose">
 			<p>
-				Each tick the runtime crops three cells of the sheet, a 32 × 96 pixel image, and the model
+				At each step the runtime crops three cells of the sheet, a 32 × 96 pixel view, and the model
 				answers in tokens: for addition the column’s sum code; for every other step two glyphs and
 				the name of its next step, all three from one forward pass (the prompt ends in two
 				placeholder slots). The runtime stamps the glyphs and moves the window; nothing else carries
-				over between ticks. The passes of a multiplication overlap, two columns apart, and their
-				ticks run as one batch.
+				over between steps. The passes of a multiplication overlap, two columns apart, and their
+				views go through the model as one batch.
 			</p>
 			<p>
-				The model can only ever see 242 strips in addition and 1,553 in multiplication{HAS_CALC
-					? ', and 651 in the calculator’s three tables'
+				The model can only ever meet {HAS_CALC ? '2,446' : '1,795'} views: 242 in addition, 1,553 in multiplication{HAS_CALC
+					? ' and 651 in the calculator’s three tables (subtract, guess a quotient digit, lower the guess)'
 					: ''}. Every one was checked on a reference device; your device checks the weakest tenth
 				again before a run (or all of them, on request), so a run of any length is a chain of
-				checked steps.
+				checked steps. A view’s margin is how far the right answer’s logit leads the next best.
 			</p>
 			<p>
 				Calculate lays long subtraction, long division (Knuth’s Algorithm D), square roots digit by
-				digit and gcd over three more tables: subtract, guess a quotient digit, lower the guess.
-				Signs and decimal points are layout. Algebra goes one level up: the runtime evaluates both
-				sides of a typed equation at a few numbers on the sheet and reads the polynomial off the
-				values. Every arithmetic step is the model’s and certified; the work order, the choice of
-				procedure and the layout are not.
+				digit and gcd (Euclid’s algorithm, one division after another) over those five tables. Signs
+				and decimal points are layout. Algebra goes one level up: the runtime evaluates both sides
+				of a typed equation at a few numbers on the sheet and reads the polynomial off the values.
+				Every arithmetic step is the model’s and certified; the work order, the choice of procedure
+				and the layout are not.
 			</p>
 			<p>
 				Inside, the program’s graph also returns the state at every layer. The lens reads each layer
@@ -831,6 +897,18 @@
 		font-size: var(--text-ui);
 		color: var(--color-ink-soft);
 	}
+	/* the two words the page counts in, said once */
+	.terms {
+		margin-top: 4px;
+		max-width: 120ch;
+		font-size: var(--text-xs);
+		color: var(--color-ink-soft);
+	}
+	.terms em {
+		font-style: normal;
+		font-weight: 500;
+		color: var(--color-ink);
+	}
 	.model {
 		display: grid;
 		justify-items: end;
@@ -841,7 +919,7 @@
 	}
 	.note {
 		font-size: var(--text-xs);
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 	}
 	.loading {
 		display: grid;
@@ -880,13 +958,13 @@
 		background: none;
 		font: inherit;
 		font-size: var(--text-ui);
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 		cursor: pointer;
 		transition: color var(--hover) ease;
 	}
 	.part .n {
 		font-size: var(--text-xs);
-		color: var(--color-mist);
+		color: var(--color-ink-soft);
 		transition: color var(--hover) ease;
 	}
 	.part:hover {
@@ -897,7 +975,7 @@
 		font-weight: 500;
 	}
 	.part[aria-current='true'] .n {
-		color: var(--color-rose);
+		color: var(--color-ink);
 	}
 	.part::after {
 		content: '';
@@ -943,7 +1021,7 @@
 	}
 	.sign {
 		font-family: var(--font-mono);
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 	}
 	.nums input {
 		flex: 1 1 0;
@@ -984,9 +1062,15 @@
 	.toggles {
 		display: flex;
 		align-items: baseline;
-		gap: 14px;
+		gap: 22px;
 		margin-left: auto;
 		font-size: var(--text-xs);
+	}
+	/* a named choice: its name, then the options */
+	.opts {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 10px;
 	}
 	.toggles .plain {
 		font-size: var(--text-xs);
@@ -1016,11 +1100,7 @@
 	}
 	.secs {
 		font-size: var(--text-2xs);
-		color: var(--color-mist);
-		transition: color var(--hover) ease;
-	}
-	.beat:hover:not(:disabled) .secs {
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 	}
 	.off {
 		margin-top: 12px;
@@ -1036,13 +1116,13 @@
 	.band {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 250px 300px;
-		grid-template-rows: auto 188px 40px;
+		grid-template-rows: auto 188px 44px;
 		gap: 10px var(--col-gap);
 		margin-top: 22px;
 	}
 	/* the calculator's sheets have up to ten rows: a taller (still fixed) sheet row */
 	.band.tall {
-		grid-template-rows: auto 272px 40px;
+		grid-template-rows: auto 272px 44px;
 	}
 	.sheet-body {
 		align-content: start;
@@ -1050,8 +1130,8 @@
 	/* two fixed lines under the sheet; a line that is too long ends in an ellipsis instead of pushing anything */
 	.status {
 		display: grid;
-		grid-template-rows: 20px 20px;
-		height: 40px;
+		grid-template-rows: 24px 20px;
+		height: 44px;
 	}
 	.status p {
 		min-width: 0;
@@ -1062,12 +1142,11 @@
 	}
 	.status span + span::before {
 		content: ' · ';
-		color: var(--color-mist);
 	}
-	.status .dim {
-		color: var(--color-blue-grey);
-	}
+	/* the answer: a size up from the facts under it */
 	.verdict {
+		font-size: var(--text-ui);
+		line-height: 24px;
 		color: var(--color-ink);
 	}
 	.verdict strong {
@@ -1149,7 +1228,7 @@
 		padding-top: 2px;
 		font-size: var(--text-xs);
 		font-weight: 500;
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 		text-align: right;
 	}
 	.prose {
@@ -1162,10 +1241,10 @@
 	@media (max-width: 1279px) {
 		.band {
 			grid-template-columns: minmax(0, 1fr) 250px;
-			grid-template-rows: auto 188px 40px auto 188px 40px;
+			grid-template-rows: auto 188px 44px auto 188px auto;
 		}
 		.band.tall {
-			grid-template-rows: auto 272px 40px auto 272px 40px;
+			grid-template-rows: auto 272px 44px auto 272px auto;
 		}
 		.band > :global(:nth-child(3)) {
 			grid-column: 1 / -1;
@@ -1220,20 +1299,25 @@
 			width: 100%;
 		}
 		/* stacked, the sheet takes the height it draws (a phone can scroll); the other figures keep theirs */
+		/* the view (a strip, or one line before there is one) and the procedure are as tall as they are */
 		.band,
 		.band.tall {
 			grid-template-columns: minmax(0, 1fr);
-			grid-template-rows: auto auto auto auto 188px auto auto 188px auto;
+			grid-template-rows: auto auto auto auto auto auto auto 188px auto;
 		}
 		.band.tall {
-			grid-template-rows: auto auto auto auto 188px auto auto 272px auto;
+			grid-template-rows: auto auto auto auto auto auto auto 272px auto;
+		}
+		.band.calc {
+			grid-template-rows: repeat(9, auto);
 		}
 		.chat-band {
 			grid-template-rows: auto minmax(160px, auto) auto auto auto auto;
 		}
+		/* each figure keeps its height (the panels set it); an empty one takes only its line */
 		.instruments {
 			grid-template-columns: minmax(0, 1fr);
-			grid-template-rows: repeat(3, auto 300px auto);
+			grid-template-rows: repeat(3, auto auto auto);
 		}
 		.more {
 			grid-template-columns: minmax(0, 1fr);

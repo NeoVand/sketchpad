@@ -37,13 +37,13 @@
 		}
 		if (push)
 			return kind === 'add'
-				? `The next tick is pushed toward ${show(push)} at layer ${meta?.steerLayer}.`
+				? `The next view is pushed toward ${show(push)} at layer ${meta?.steerLayer}.`
 				: `The next multiply step is pushed toward ${push} at layer ${meta?.steerLayer}.`;
-		if (kind === 'add' && canPush && meta) return 'Click a number to push the next tick toward it.';
+		if (kind === 'add' && canPush && meta) return 'Click a number to push the next view toward it.';
 		if (kind === 'mul' && canPush && meta)
 			return 'Click a digit on the multiply map to push the next multiply step toward it.';
 		if (kind === 'mul' && meta)
-			return 'Each tick lights the map of its step; the carry and halt steps write no digit.';
+			return 'Each view lights the map of its step; the other steps (the last carry, the next digit, and the calculator’s subtract, guess and lower) have no map.';
 		return '';
 	});
 </script>
@@ -53,7 +53,7 @@
 		<span class="sp-title">State space</span>
 		<span class="sp-sub">the state that writes the answer, in a 3D slice · drag to turn</span>
 	</figcaption>
-	<div class="sp-body">
+	<div class="sp-body" class:sp-fig={!!meta} class:pair={maps.length === 2}>
 		{#if meta}
 			<div class="maps" style:grid-template-columns="repeat({maps.length}, minmax(0, 1fr))">
 				{#each maps as m (m.family)}
@@ -80,7 +80,7 @@
 	<p class="sp-foot">
 		{note}
 		{#if meta}<span class="sp-dim dots"
-				>Dots: the table's views at the last layer. Line: the last tick, from layer 0 at the ring.</span
+				>Dots: the table’s views at the last layer. Line: the last view, from layer 0 at the ring.</span
 			>{/if}
 	</p>
 </figure>
@@ -104,7 +104,7 @@
 	}
 	.name {
 		font-size: var(--text-2xs);
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 		text-align: center;
 		transition: color var(--hover) ease;
 	}
@@ -114,5 +114,11 @@
 	.dots {
 		display: block;
 		font-size: var(--text-2xs);
+	}
+	/* a phone: two maps side by side are squares half the width wide, so the pair needs less height */
+	@media (max-width: 719px) {
+		.sp-body.sp-fig.pair {
+			height: 200px;
+		}
 	}
 </style>

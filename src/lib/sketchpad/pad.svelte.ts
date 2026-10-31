@@ -4,7 +4,7 @@
  * only memory; the worker only reads the strips it is sent and answers.
  */
 import { ADD_DOMAIN, AddSheet, addCode, addDecode, addRule } from './adder.ts';
-import { Grid, type CalcSheet, type Policy } from './calc-sheet.ts';
+import { Grid, type CalcSheet, type Policy, type View } from './calc-sheet.ts';
 import {
 	describe as describeTask,
 	expected,
@@ -419,6 +419,8 @@ class Pad {
 	algebra = $state.raw<AlgebraRun | null>(null);
 	/** how work orders check their roots: light (the default) or strong (program/NOTES.md) */
 	checkMode = $state<CheckMode>('light');
+	/** the first view of a calculator line laid out but not run (the One view panel shows it before a run) */
+	preview = $state.raw<View | null>(null);
 	/** one quiet line about GPU resets this session (null: none) */
 	gpuNote = $state<string | null>(null);
 	/** the model is being loaded again after the GPU was lost; the step in flight waits for it */
@@ -733,8 +735,55 @@ class Pad {
 		this.algebra = null;
 		this.runError = null;
 		this.last = null;
-		if (this.sheet instanceof Grid) this.sheet = null;
+		this.preview = null;
+		// Calculate and Algebra show the sheets of their own runs only
+		if (this.sheet instanceof Grid || this.op === 'calc') this.sheet = null;
 		this.version++;
+	}
+
+	private stageToken = 0;
+
+	/**
+	 * Lay a calculator line out on the first sheet its run would use, without running it: the operands in place and the
+	 * eye on the first view. The procedure stops at its first question to the model, so nothing reaches the model.
+	 */
+	stageCalc(text: string) {
+		if (this.running || this.op !== 'calc') return;
+		const token = ++this.stageToken;
+		this.calcResult = null;
+		this.algebra = null;
+		this.runError = null;
+		this.last = null;
+		const task = parseTask(text);
+		if (typeof task === 'string') {
+			this.sheet = null;
+			this.preview = null;
+			this.version++;
+			return;
+		}
+		let first: View | null = null;
+		let shown: CalcSheet | null = null;
+		const staged = new Error('staged');
+		const calc = new SheetCalc(
+			(views) => {
+				first ??= views[0];
+				throw staged;
+			},
+			{
+				onShow: (sheet) => {
+					shown ??= sheet;
+					decorate(sheet, task);
+				}
+			}
+		);
+		void solve(calc, task)
+			.catch(() => {})
+			.finally(() => {
+				if (token !== this.stageToken || this.running || this.op !== 'calc') return;
+				this.sheet = shown;
+				this.preview = first;
+				this.version++;
+			});
 	}
 
 	load(root: string, sprites: string) {
@@ -1330,7 +1379,13 @@ class Pad {
 	 * A fresh run on the calculator's sheets: the counters reset, and an arithmetic unit whose every step goes to the
 	 * model, the sheet shown being the one the procedure works on. `read` collects every table row the run reads.
 	 */
-	private sheetCalc(read: Record<string, { kind: Kind; row: number; ok: boolean }>, t0: number) {
+	private sheetCalc(
+		read: Record<string, { kind: Kind; row: number; ok: boolean }>,
+		t0: number,
+		task: CalcTask | null = null
+	) {
+		this.stageToken++;
+		this.preview = null;
 		this.running = true;
 		this.stopRun = false;
 		this.result = null;
@@ -1389,6 +1444,7 @@ class Pad {
 		};
 		const calc = new SheetCalc(policy, {
 			onShow: (sheet: CalcSheet) => {
+				if (task) decorate(sheet, task);
 				this.sheet = sheet;
 				this.version++;
 			},
@@ -1421,6 +1477,8 @@ class Pad {
 		if (this.running || this.op !== 'calc') return null;
 		const task: CalcTask | string = parseTask(text);
 		if (typeof task === 'string') {
+			// the line cannot be read: say so in place of the last answer
+			this.calcResult = null;
 			this.runError = task;
 			return null;
 		}
@@ -1430,7 +1488,7 @@ class Pad {
 		const t0 = performance.now();
 		// every table row read, by table, and whether it passed on this device
 		const read: Record<string, { kind: Kind; row: number; ok: boolean }> = {};
-		const calc = this.sheetCalc(read, t0);
+		const calc = this.sheetCalc(read, t0, task);
 		try {
 			const got = await solve(calc, task);
 			const want = expected(task);
@@ -1543,6 +1601,32 @@ class Pad {
 }
 
 export const pad = new Pad();
+
+/**
+ * Display only: the decimal point of a line asked to k places, on the sheet that computes it. A quotient to k places
+ * is the integer quotient of the dividend times 10^k, so its units digit is cell k (and the dividend's too); a root to
+ * k places is the integer root of the number times 10^2k, whose units digit sits above pair k, cell 2k.
+ */
+function decorate(sheet: CalcSheet, task: CalcTask) {
+	if (!(sheet instanceof Grid)) return;
+	if (task.op === '÷' && task.places > 0 && sheet.title === 'a ÷ b')
+		sheet.points = { q: task.places, a: task.places };
+	if (task.op === '√' && task.places > 0 && sheet.title === '√a')
+		sheet.points = { root: 2 * task.places, a: 2 * task.places };
+}
+
+/** A step in plain words: the word the model reads before the image, and what that step does. */
+export const STEP: Record<TickOp, string> = {
+	'ADD-FAST': 'add one column',
+	MUL: 'multiply one digit',
+	ADD: 'add it to the total',
+	ADZ: 'add the last product digit',
+	FLS: 'add the last carry',
+	NXT: 'move to the next digit',
+	SUB: 'subtract one column',
+	EST: 'guess the next digit',
+	DEC: 'lower the guess'
+};
 
 /** What one answer means, in words, for the inset. */
 export function explain(op: TickOp, out: string[]): string {

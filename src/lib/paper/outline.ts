@@ -19,14 +19,14 @@ export const SECTIONS: Section[] = [
 		id: 'intro',
 		title: 'Introduction',
 		holds:
-			'Language models get long arithmetic wrong, and tools move the work out of the model. We keep it inside: the model reads a rendered sheet three cells at a time and writes every digit, one forward pass per step, and a fixed runtime only paints and moves. The opening figure shows the sheet, one tick and the certificate.',
+			'Language models get long arithmetic wrong, and tools move the work out of the model. We keep it inside: the model reads a rendered sheet three cells at a time and writes every digit, one forward pass per step, and a fixed runtime only paints and moves. The opening figure shows the sheet, one view and the certificate.',
 		waits: null
 	},
 	{
 		id: 'machine',
 		title: 'The sheet machine',
 		holds:
-			'Views, ticks and the runtime. Placeholder slots read a multiply step in one forward pass; waves run the passes of a multiplication as one batch. The sheet is the only state.',
+			'Views, steps and the runtime. Placeholder slots read a multiply step in one forward pass; waves run the passes of a multiplication as one batch. The sheet is the only state.',
 		waits: null
 	},
 	{

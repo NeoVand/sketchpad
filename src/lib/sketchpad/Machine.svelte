@@ -24,27 +24,38 @@
 		if (add.to === 'halt') return 'Nothing left to add: halt.';
 		if (add.sum === null) return `It wrote ${last.out[0]}.`;
 		const [c, t, b] = last.cells;
-		const parts = [t, b, c].filter((g) => g !== B);
-		const sum = parts.reduce((x, g) => x + Number(g), 0);
+		const digits = [t, b].filter((g) => g !== B);
+		const sum = digits.reduce((x, g) => x + Number(g), 0) + (c === '1' ? 1 : 0);
 		const s = add.sum;
 		const write = `write ${s % 10}${s >= 10 ? ', carry 1' : ''}`;
-		const lhs = parts.length ? parts.join(' + ') : '0';
+		const terms = [...digits, ...(c === '1' ? ['carry 1'] : [])];
+		const lhs = terms.length ? terms.join(' + ') : '0';
 		// a pushed tick can write a sum that is not the column's
 		return s === sum ? `${lhs} = ${s}: ${write}.` : `${lhs} = ${sum}, but it wrote ${s}: ${write}.`;
 	});
 
-	/** the multiplier's steps; the model names the next one with its third token */
 	/**
-	 * The multiplier's steps: the inner loop (MUL, ADD) on the left, the end of a pass (ADZ, FLS, NXT) along the bottom,
-	 * halt above NXT, and the return to MUL as an arc underneath, so no arrow crosses another or a letter.
+	 * The multiplier's steps, by what they do (the word the model reads for each is in the One view panel): the inner
+	 * loop (multiply, add) on the left, the end of a pass (add the last product digit, add the last carry, move to the
+	 * next digit) along the bottom, halt above, and the return to multiply as an arc underneath, so no arrow crosses
+	 * another or a letter. The model names the next step with its third token, the letter on each arrow.
 	 */
-	const NODES: Record<string, { x: number; y: number; word: string }> = {
-		MUL: { x: 40, y: 92, word: 'MUL' },
-		ADD: { x: 40, y: 24, word: 'ADD' },
-		ADZ: { x: 115, y: 92, word: 'ADZ' },
-		FLS: { x: 190, y: 92, word: 'FLS' },
-		NXT: { x: 265, y: 92, word: 'NXT' },
-		H: { x: 265, y: 24, word: 'halt' }
+	const R = 21;
+	const NODES: Record<string, { x: number; y: number; words: string[] }> = {
+		MUL: { x: 38, y: 100, words: ['multiply'] },
+		ADD: { x: 38, y: 26, words: ['add'] },
+		ADZ: { x: 114, y: 100, words: ['add last', 'digit'] },
+		FLS: { x: 190, y: 100, words: ['add last', 'carry'] },
+		NXT: { x: 266, y: 100, words: ['next', 'digit'] },
+		H: { x: 266, y: 26, words: ['halt'] }
+	};
+	const STEP_WORDS: Record<string, string> = {
+		MUL: 'multiply',
+		ADD: 'add',
+		ADZ: 'add the last product digit',
+		FLS: 'add the last carry',
+		NXT: 'next digit',
+		H: 'halt'
 	};
 	const LETTER: Record<string, string> = {
 		M: 'MUL',
@@ -71,11 +82,12 @@
 		if (!mul) return '';
 		// a calculator step (SUB, EST, DEC) is not on the multiplier's diagram: say what it did
 		if (!(mul.from in NODES) && last) return `${mul.from}: ${explain(last.op, last.out)}.`;
-		return `${mul.from}, then it wrote ${mul.letter}: ${mul.to === 'H' ? 'halt' : `next step ${mul.to}`}.`;
+		const to = mul.to ? STEP_WORDS[mul.to] : null;
+		return `It took “${STEP_WORDS[mul.from]}”, then wrote ${mul.letter}: ${to ? (mul.to === 'H' ? 'halt' : `next, ${to}`) : 'no step'}.`;
 	});
 
 	/** an arrow between two states, bent by `bend`, and where its letter goes: off the curve's middle, outside the bend */
-	function arc(x1: number, y1: number, x2: number, y2: number, bend: number, r = 16) {
+	function arc(x1: number, y1: number, x2: number, y2: number, bend: number, r = R) {
 		const dx = x2 - x1;
 		const dy = y2 - y1;
 		const d = Math.hypot(dx, dy) || 1;
@@ -215,17 +227,24 @@
 					>
 				{/each}
 				{#each Object.entries(NODES) as [k, n] (k)}
-					<circle class="node" class:on={mul?.from === k} cx={n.x} cy={n.y} r="16" />
-					<text class="node-t" class:on={mul?.from === k} x={n.x} y={n.y + 4} text-anchor="middle"
-						>{n.word}</text
+					<circle class="node" class:on={mul?.from === k} cx={n.x} cy={n.y} r={R} />
+					<text
+						class="node-t"
+						class:on={mul?.from === k}
+						x={n.x}
+						y={n.y + 3.5 - (n.words.length - 1) * 5}
+						text-anchor="middle"
 					>
+						{#each n.words as w, i (i)}<tspan x={n.x} dy={i ? 10 : 0}>{w}</tspan>{/each}
+					</text>
 				{/each}
 			</svg>
 		{/if}
 	</div>
 	<p class="sp-foot num">
-		{#if kind === 'add'}{addWords || 'Each view the model reads is one arrow.'}{:else}{mulWords ||
-				'The model names its next step with its third token.'}{/if}
+		{#if kind === 'add'}{addWords ||
+				'Each view the model reads is one arrow; the carry on the sheet is the state.'}{:else}{mulWords ||
+				'Each view is one arrow: its third token, the letter, names the next step.'}{/if}
 	</p>
 </figure>
 
@@ -243,7 +262,7 @@
 	/* the step the model just took is rose; the rest of the machine stays in quiet ink */
 	.edge {
 		fill: none;
-		stroke: var(--color-mist);
+		stroke: var(--color-blue-grey);
 		stroke-width: 1;
 		transition:
 			stroke var(--hover) ease,
@@ -254,14 +273,14 @@
 		stroke-width: 1.6;
 	}
 	.head {
-		fill: var(--color-mist);
+		fill: var(--color-blue-grey);
 	}
 	.head.on {
 		fill: var(--color-rose);
 	}
 	.elab {
 		font-size: 10px;
-		fill: var(--color-blue-grey);
+		fill: var(--color-ink-soft);
 		transition: fill var(--hover) ease;
 	}
 	.elab.on {
@@ -269,7 +288,7 @@
 	}
 	.node {
 		fill: var(--color-paper);
-		stroke: var(--color-mist);
+		stroke: var(--color-blue-grey);
 		stroke-width: 1;
 		transition:
 			stroke var(--hover) ease,
@@ -280,21 +299,20 @@
 		fill: var(--color-tint);
 	}
 	.node-t {
-		font-size: 10px;
-		fill: var(--color-blue-grey);
-		font-family: var(--font-mono);
+		font-size: 9px;
+		fill: var(--color-ink-soft);
 	}
 	.node-t.on {
 		fill: var(--color-ink);
 	}
 	.state-k {
-		font-size: 8.5px;
-		fill: var(--color-blue-grey);
+		font-size: 9px;
+		fill: var(--color-ink-soft);
 	}
 	.state-v {
 		font-family: var(--font-mono);
 		font-size: 16px;
-		fill: var(--color-blue-grey);
+		fill: var(--color-ink-soft);
 	}
 	.state-k.on,
 	.state-v.on {

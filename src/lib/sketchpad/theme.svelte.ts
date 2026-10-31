@@ -50,10 +50,22 @@ export const SHEET: SheetPalette = {
 	mark: PALETTE.blueGrey
 };
 
-/** The certificate grid's tones: unchecked, passed (certified: rose), failed (a hollow ring), and pointed at. */
+/**
+ * The certificate grid's tones. A passing row is rose on a white-ended ramp by its margin (a larger margin, a deeper
+ * rose; `pass(m)`); a row not checked yet, or one a run has not read, is a quiet neutral; a failing row is a hollow ink
+ * square; the row read last, or pointed at, is ringed in ink.
+ */
 export const GRID = {
-	idle: '#E3E8F1',
-	pass: PALETTE.roseLight,
+	idle: '#E6EAF2',
 	fail: PALETTE.ink,
-	hot: PALETTE.rose
+	ring: PALETTE.ink,
+	read: PALETTE.rose,
+	/** the margin at which the ramp reaches full rose */
+	full: 12,
+	pass(m: number) {
+		const t = 0.3 + 0.7 * Math.max(0, Math.min(1, m / GRID.full));
+		const mix = (c: number) => Math.round(255 + (c - 255) * t);
+		const [r, g, b] = [0xd6, 0x33, 0x6c].map(mix);
+		return `rgb(${r} ${g} ${b})`;
+	}
 };

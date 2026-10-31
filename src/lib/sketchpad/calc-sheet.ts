@@ -54,7 +54,19 @@ export interface GridRowSpec {
 	dim?: boolean;
 	/** a ruled line above this row */
 	rule?: boolean;
+	/**
+	 * display only: leading zeros the page leaves out, as a reader writes a number ('always': an answer row, unless a
+	 * view reads the cell; 'done': a working row, once the procedure has ended)
+	 */
+	trim?: 'always' | 'done';
 }
+
+/**
+ * The step a procedure is on, for the page's procedure panel (display only): scaling, a quotient or root digit's
+ * guess, the multiply-subtract, lowering a guess, adding the divisor back, extending a root's trial divisor, a
+ * subtraction's columns, or a multiplication by one digit.
+ */
+export type Phase = 'scale' | 'guess' | 'mulsub' | 'lower' | 'addback' | 'extend' | 'sub' | 'times';
 
 /** A sheet of named rows. Cell x of a row is the digit of 10^x; the page draws column W - 1 - x. */
 export class Grid {
@@ -65,6 +77,15 @@ export class Grid {
 	/** the cells the current step reads, per view (null: a strip cell that is always blank) */
 	fovea: ([string, number] | null)[][] = [];
 	done = false;
+	/** display only: the step the procedure is on */
+	phase: Phase | null = null;
+	/** display only: decimal places of a row's number (the page draws a point after its units digit) */
+	points: Record<string, number> = {};
+	/**
+	 * display only: cells the runtime laid out (an operand, a digit brought down, a scale factor, a zero above the
+	 * window), drawn in ink. Every other digit on a grid was written by the model.
+	 */
+	private laidOut = new Set<string>();
 
 	constructor(title: string, W: number, specs: GridRowSpec[]) {
 		this.title = title;
@@ -77,17 +98,44 @@ export class Grid {
 		return x >= 0 && x < this.W ? this.rows[row][x] : B;
 	}
 
+	/** a cell the model wrote */
 	set(row: string, x: number, g: string) {
-		if (x >= 0 && x < this.W) this.rows[row][x] = g;
+		if (x < 0 || x >= this.W) return;
+		this.rows[row][x] = g;
+		this.laidOut.delete(`${row}:${x}`);
 	}
 
-	/** write a number (most significant digit first) so that its last digit sits at x0 */
-	put(row: string, digits: string, x0 = 0) {
-		[...digits].reverse().forEach((d, i) => this.set(row, x0 + i, d));
+	/** a cell the runtime lays out */
+	lay(row: string, x: number, g: string) {
+		if (x < 0 || x >= this.W) return;
+		this.rows[row][x] = g;
+		this.laidOut.add(`${row}:${x}`);
+	}
+
+	/** a cell copied from another (a digit brought down): its glyph, and who wrote it */
+	copy(row: string, x: number, from: string, fx: number) {
+		if (this.laid(from, fx)) this.lay(row, x, this.get(from, fx));
+		else this.set(row, x, this.get(from, fx));
+	}
+
+	/** whether the runtime laid the cell out (display only) */
+	laid(row: string, x: number) {
+		return this.laidOut.has(`${row}:${x}`);
+	}
+
+	/**
+	 * write a number (most significant digit first) so that its last digit sits at x0: laid out by the runtime, or
+	 * (`laid` false) digits the model computed, moved into place
+	 */
+	put(row: string, digits: string, x0 = 0, laid = true) {
+		[...digits]
+			.reverse()
+			.forEach((d, i) => (laid ? this.lay(row, x0 + i, d) : this.set(row, x0 + i, d)));
 	}
 
 	clear(row: string) {
 		this.rows[row].fill(B);
+		for (let x = 0; x < this.W; x++) this.laidOut.delete(`${row}:${x}`);
 	}
 
 	/** the digits of cells x0 .. x1 - 1, most significant first (blanks as they are) */
@@ -311,12 +359,13 @@ async function mulPasses(
 /** a × d for a single digit d, on its own small sheet */
 async function mulByDigit(run: Run, a: string, d: string, title: string): Promise<string> {
 	const g = new Grid(title, a.length + 2, [
-		{ key: 'a', label: 'a' },
-		{ key: 'by', label: '× d' },
+		{ key: 'a', label: 'number', trim: 'done' },
+		{ key: 'by', label: '× digit' },
 		{ key: 'c', label: 'carry', dim: true, rule: true }
 	]);
 	g.put('a', a);
-	g.set('by', 0, d);
+	g.lay('by', 0, d);
+	g.phase = 'times';
 	run.show(g);
 	await mulPasses(run, g, [{ row: 'a', x0: 0, n: a.length, by: ['by', 0], carry: 'c' }]);
 	g.done = true;
@@ -345,12 +394,13 @@ export async function subOnce(
 	const n = Math.max(a.length, b.length);
 	const g = new Grid('a − b', n + 2, [
 		{ key: 'w', label: 'borrow', dim: true },
-		{ key: 'a', label: 'a' },
-		{ key: 'b', label: '− b' },
-		{ key: 'd', label: 'a − b', rule: true }
+		{ key: 'a', label: '' },
+		{ key: 'b', label: '−' },
+		{ key: 'd', label: 'difference', rule: true, trim: 'always' }
 	]);
 	g.put('a', a);
 	g.put('b', b);
+	g.phase = 'sub';
 	run.show(g);
 	for (let x = 0; x <= n; x++) {
 		const cells = [g.get('w', x), g.get('a', x), g.get('b', x)];
@@ -430,21 +480,22 @@ export async function divide(
 	const n0 = Math.max(a.length, b.length) + 1;
 	const W = n0 + 2;
 	const g = new Grid('a ÷ b', W, [
-		{ key: 'q', label: 'quotient' },
-		{ key: 'a', label: 'a', rule: true },
+		{ key: 'q', label: 'quotient', trim: 'always' },
+		{ key: 'a', label: 'dividend', rule: true },
 		{ key: 'cA', label: 'carry', dim: true },
-		{ key: 'b', label: 'b' },
-		{ key: 'cB', label: 'carry ×', dim: true },
-		{ key: 'by', label: '× f', dim: true },
-		{ key: 'p', label: 'guess × b' },
+		{ key: 'b', label: 'divisor' },
+		{ key: 'cB', label: 'carry', dim: true },
+		{ key: 'by', label: 'scale', dim: true },
+		{ key: 'p', label: 'guess × divisor' },
 		{ key: 'w', label: 'borrow', dim: true },
-		{ key: 'r', label: 'remainder', rule: true }
+		{ key: 'r', label: 'remainder', rule: true, trim: 'done' }
 	]);
 	g.put('a', a);
 	g.put('b', b);
 	run.show(g);
 	if (f > 1) {
-		g.set('by', 0, String(f));
+		g.phase = 'scale';
+		g.lay('by', 0, String(f));
 		await mulPasses(run, g, [
 			{ row: 'a', x0: tz, n: a.length - tz, by: ['by', 0], carry: 'cA' },
 			{ row: 'b', x0: 0, n: b.length, by: ['by', 0], carry: 'cB' }
@@ -459,21 +510,24 @@ export async function divide(
 	// the dividend at least as long as the divisor, so there is a quotient digit to find
 	const U = A.padStart(m, '0');
 	const n = U.length;
+	// the scaled numbers are the model's (a factor of 1 leaves them as typed)
+	const scaled = f > 1;
 	g.clear('a');
 	g.clear('b');
-	g.put('a', U);
+	g.put('a', U, 0, !scaled);
 	// the first m - 1 digits come down at once (fewer digits than the divisor: the quotient there is 0)
-	g.put('r', '0' + U.slice(0, m - 1), n - m + 1);
+	g.put('r', '0' + U.slice(0, m - 1), n - m + 1, !scaled);
 	for (let j = m - 1; j < n; j++) {
 		const x = n - 1 - j;
+		g.phase = 'guess';
 		// bring the next digit down; the remainder's old top cell (a 0) leaves the window; the divisor slides along
-		g.set('r', x, g.get('a', x));
+		g.copy('r', x, 'a', x);
 		if (g.get('r', x + m + 1) !== B && g.get('r', x + m + 1) !== '0')
 			throw new SheetError('the remainder was not below the divisor');
 		g.set('r', x + m + 1, B);
-		if (g.get('r', x + m) === B) g.set('r', x + m, '0');
+		if (g.get('r', x + m) === B) g.lay('r', x + m, '0');
 		g.clear('b');
-		g.put('b', D, x);
+		g.put('b', D, x, !scaled);
 		const [guess, , nx] = await one(
 			run,
 			'EST',
@@ -489,11 +543,14 @@ export async function divide(
 		if ((nx === 'N') !== (guess === '0'))
 			throw new SheetError('the guess and its next step disagree');
 		if (nx === 'N') continue;
+		g.phase = 'mulsub';
 		let borrow = await mulSub(run, g, x, m, { by: ['q', x], from: 'r', into: 'r' });
 		while (borrow) {
+			g.phase = 'lower';
 			const [lower, , c] = await one(run, 'DEC', [['q', x], null, null], g);
 			next(c, 'C', 'a lowered guess');
 			g.set('q', x, digit(lower, 'a quotient digit'));
+			g.phase = 'addback';
 			borrow = !(await addBack(run, g, x, m));
 		}
 	}
@@ -657,16 +714,17 @@ export async function squareRoot(
 	const tz = a.length - a.replace(/0+$/, '').length;
 	const W0 = a.length + 3;
 	const g = new Grid('√a', W0 + 2, [
-		{ key: 'root', label: 'root' },
-		{ key: 'a', label: 'a', rule: true },
+		// the root of the scaled number is c times the root; the page divides by c on its own sheet at the end
+		{ key: 'root', label: c === 1 ? 'root' : `root × ${c}`, trim: 'always' },
+		{ key: 'a', label: 'number', rule: true },
 		{ key: 'cA', label: 'carry', dim: true },
-		{ key: 'by', label: '× c²', dim: true },
-		{ key: 'T', label: 'trial' },
-		{ key: 'cB', label: 'carry ×', dim: true },
-		{ key: 'p', label: 'y × trial' },
+		{ key: 'by', label: 'scale', dim: true },
+		{ key: 'T', label: 'trial divisor' },
+		{ key: 'cB', label: 'carry', dim: true },
+		{ key: 'p', label: 'digit × trial' },
 		{ key: 'w', label: 'borrow', dim: true },
-		{ key: 'r', label: 'remainder', rule: true },
-		{ key: 'r2', label: 'new remainder' }
+		{ key: 'r', label: 'remainder', rule: true, trim: 'done' },
+		{ key: 'r2', label: 'new remainder', trim: 'done' }
 	]);
 	g.put('a', a);
 	run.show(g);
@@ -674,17 +732,18 @@ export async function squareRoot(
 	const factors = c === 1 ? [] : c === 2 ? ['4'] : c === 4 ? ['4', '4'] : ['5', '5'];
 	for (const fct of factors) {
 		const len = trim(g.read('a', 0, g.W)).length;
-		g.set('by', 0, fct);
+		g.phase = 'scale';
+		g.lay('by', 0, fct);
 		await mulPasses(run, g, [{ row: 'a', x0: tz, n: len - tz, by: ['by', 0], carry: 'cA' }]);
 		g.clear('by');
 		const s = trim(g.read('a', 0, g.W));
 		g.clear('a');
-		g.put('a', s);
+		g.put('a', s, 0, false);
 	}
 	let M = trim(g.read('a', 0, g.W));
 	if (M.length % 2) M = '0' + M;
 	const pairs = M.length / 2;
-	g.put('a', M);
+	g.put('a', M, 0, c === 1);
 	let m = 1; // the trial divisor's length
 	/** the next digit's guess, read beside the last step of the trial divisor */
 	let guessed: string[] | null = null;
@@ -709,21 +768,25 @@ export async function squareRoot(
 		}
 	});
 	const tensAlone = async (col: number) => {
+		g.phase = 'extend';
 		const v = tensStep(col);
 		v.apply(await run.step(v.views, v.fovea));
 	};
 	for (let k = 0; k < pairs; k++) {
 		const x = 2 * (pairs - 1 - k);
 		// bring the pair down; the remainder's cells above the new window are zeros and leave it
-		g.set('r', x + 1, g.get('a', x + 1));
-		g.set('r', x, g.get('a', x));
+		g.phase = 'guess';
+		g.copy('r', x + 1, 'a', x + 1);
+		g.copy('r', x, 'a', x);
 		for (let i = x + m + 1; i < g.W; i++) {
 			if (g.get('r', i) !== B && g.get('r', i) !== '0')
 				throw new SheetError('the remainder was larger than the root allows');
 			g.set('r', i, B);
 		}
-		for (let i = x + 2; i <= x + m; i++) if (g.get('r', i) === B) g.set('r', i, '0');
+		for (let i = x + 2; i <= x + m; i++) if (g.get('r', i) === B) g.lay('r', i, '0');
 		let y: string;
+		// the first two digits are the layout's guesses (the scale makes them the largest possible), later ones the model's
+		let guessedByModel = false;
 		if (k === 0) y = '4';
 		else if (Number(g.get('T', x + m - 1)) < 5) y = '9';
 		else {
@@ -732,12 +795,19 @@ export async function squareRoot(
 			if ((nx === 'N') !== (guess === '0'))
 				throw new SheetError('the guess and its next step disagree');
 			y = digit(guess, 'a root digit');
+			guessedByModel = true;
 		}
 		guessed = null;
-		g.set('root', x, y);
-		g.set('T', x, y);
+		if (guessedByModel) {
+			g.set('root', x, y);
+			g.set('T', x, y);
+		} else {
+			g.lay('root', x, y);
+			g.lay('T', x, y);
+		}
 		if (y !== '0') {
 			for (;;) {
+				g.phase = 'mulsub';
 				const col = tens;
 				const borrow = await mulSub(
 					run,
@@ -748,6 +818,7 @@ export async function squareRoot(
 					col === null ? undefined : () => tensStep(col)
 				);
 				if (!borrow) break;
+				g.phase = 'lower';
 				const [lower, , cc] = await one(run, 'DEC', [['root', x], null, null], g);
 				next(cc, 'C', 'a lowered root digit');
 				g.set('root', x, digit(lower, 'a root digit'));
@@ -766,7 +837,8 @@ export async function squareRoot(
 		const m2 = m + 1;
 		const twice = g.read('T', x, x + m);
 		g.clear('T');
-		g.put('T', twice, x - 1);
+		g.put('T', twice, x - 1, false);
+		g.phase = 'extend';
 		if (y !== '0') {
 			const unit: View = { op: 'ADD', cells: [B, g.get('T', x - 1), y] };
 			const views = [unit];

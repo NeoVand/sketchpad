@@ -24,7 +24,6 @@
 
 	let { family, seen, wrote, meta, runKey, slow, push, canPush, onpush }: Props = $props();
 
-	let box: HTMLDivElement;
 	let canvas = $state<HTMLCanvasElement>();
 	let grabbing = $state(false);
 	let size = $state(320);
@@ -79,12 +78,12 @@
 		const cs = getComputedStyle(el);
 		const v = (k: string, d: string) => cs.getPropertyValue(k).trim() || d;
 		return {
-			cloud: v('--cloud', '#bac5d9'),
-			hot: v('--hot', '#f1a3bc'),
-			trail: v('--trail', '#7d8ba8'),
+			cloud: v('--cloud', '#7d8ba8'),
+			hot: v('--hot', '#d6336c'),
+			trail: v('--trail', '#4c5b78'),
 			ink: v('--color-ink', '#1f2a44'),
 			ink2: v('--color-ink-soft', '#4c5b78'),
-			ink3: v('--color-blue-grey', '#7d8ba8'),
+			ink3: v('--color-ink-soft', '#4c5b78'),
 			rose: v('--color-rose', '#d6336c'),
 			push: v('--color-cobalt', '#2557a7'),
 			halo: v('--color-paper', '#fff')
@@ -126,16 +125,16 @@
 			return { x: S / 2 + x1 * p * R, y: S / 2 - y1 * p * R, z: z2, p };
 		};
 
-		// the table at layer 24; the views that share this tick's answer are brighter
+		// the table at layer 24, nearer views darker (a white-ended ramp); the views that share this tick's answer in rose
 		const here = live ? wrote : null;
 		for (let i = 0; i < f.cloud.length; i++) {
 			const [x, y, z] = f.cloud[i];
 			const q = proj(x, y, z);
 			const same = here !== null && f.cloudLabels[i] === here;
-			ctx.globalAlpha = Math.max(0.35, Math.min(1, 0.7 + q.z * 0.3));
+			ctx.globalAlpha = Math.max(0.3, Math.min(0.85, 0.55 + q.z * 0.3));
 			ctx.fillStyle = same ? t.hot : t.cloud;
 			ctx.beginPath();
-			ctx.arc(q.x, q.y, (same ? 2.1 : 1.7) * q.p, 0, Math.PI * 2);
+			ctx.arc(q.x, q.y, (same ? 2.2 : 1.8) * q.p, 0, Math.PI * 2);
 			ctx.fill();
 		}
 		ctx.globalAlpha = 1;
@@ -234,13 +233,25 @@
 		}
 	}
 
-	onMount(() => {
-		// the canvas is the largest square the box allows; it is positioned inside the box, so it never sizes it
+	/** the canvas is the largest square the box allows; it is positioned inside the box, so it never sizes it */
+	function fit(box: HTMLDivElement) {
 		const ro = new ResizeObserver(() => {
 			const side = Math.floor(Math.min(box.clientWidth, box.clientHeight));
 			if (side > 0) size = side;
 		});
 		ro.observe(box);
+		return () => ro.disconnect();
+	}
+
+	/** the canvas, for drawing and pointing */
+	function hold(el: HTMLCanvasElement) {
+		canvas = el;
+		return () => {
+			if (canvas === el) canvas = undefined;
+		};
+	}
+
+	onMount(() => {
 		let raf = 0;
 		let prev = performance.now();
 		const frame = (now: number) => {
@@ -251,10 +262,7 @@
 			raf = requestAnimationFrame(frame);
 		};
 		raf = requestAnimationFrame(frame);
-		return () => {
-			cancelAnimationFrame(raf);
-			ro.disconnect();
-		};
+		return () => cancelAnimationFrame(raf);
 	});
 
 	function labelAt(e: PointerEvent) {
@@ -292,6 +300,8 @@
 			return;
 		}
 		hover = pushable ? labelAt(e) : null;
+		// the map holds still while the pointer is over it, so a label can be aimed at
+		lastTouch = performance.now();
 	}
 	function onpointerup(e: PointerEvent) {
 		if (!drag || drag.id !== e.pointerId) return;
@@ -306,10 +316,10 @@
 	}
 </script>
 
-<div class="box" class:dim={!live} bind:this={box}>
+<div class="box" class:dim={!live} {@attach fit}>
 	{#if fam}
 		<canvas
-			bind:this={canvas}
+			{@attach hold}
 			style:width="{size}px"
 			style:height="{size}px"
 			style:cursor={hover ? 'pointer' : grabbing ? 'grabbing' : 'grab'}
@@ -333,13 +343,13 @@
 		height: 100%;
 		min-width: 0;
 		min-height: 0;
-		--cloud: var(--color-mist);
-		--hot: var(--color-rose-light);
-		--trail: var(--color-blue-grey);
+		--cloud: var(--color-blue-grey);
+		--hot: var(--color-rose);
+		--trail: var(--color-ink-soft);
 		transition: opacity var(--move) var(--ease);
 	}
 	.box.dim {
-		opacity: 0.45;
+		opacity: 0.55;
 	}
 	canvas {
 		position: absolute;
