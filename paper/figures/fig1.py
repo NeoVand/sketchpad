@@ -150,14 +150,19 @@ ax.text(100, 1.045, f"sums, 10 to 1,000 digits: {tally['sums']} of {tally['sums'
         ha="center", va="bottom")
 ax.text(1400, 0.95, "certified at\nevery length", fontsize=5, color=ROSE, ha="left", va="top", linespacing=1.1)
 ax.text(4.0, 0.80, "Sketchpad", fontsize=6.5, color=ROSE, ha="left", va="top")
+# baselines (paper/BASELINES.md, the writer's registered run), once they exist, as
+# {"series": [{"name": ..., "role": "strongest" | "baseline", "dashed": bool, "points": [[digits, share], ...]}]}
 bl = DATA / "baselines.json"
 if bl.exists():
     import json
-    styles = {"strongest": dict(color=COBALT, lw=1.0), "baseline": dict(color=GREY, lw=0.8, ls=(0, (3, 1.5)))}
     for ser in json.loads(bl.read_text())["series"]:
+        col = COBALT if ser["role"] == "strongest" else GREY
+        ls = (0, (3, 1.5)) if ser.get("dashed", False) else "-"
         xs_, ys_ = zip(*ser["points"])
-        ax.plot(xs_, ys_, marker="o", ms=2.2, **styles[ser["role"]])
-        ax.text(xs_[-1] * 1.15, ys_[-1], ser["name"], fontsize=5, color=styles[ser["role"]]["color"], va="center")
+        check(all(0 <= y <= 1 for y in ys_), f"{ser['name']}: shares in [0, 1]")
+        ax.plot(xs_, ys_, color=col, lw=0.9 if ser["role"] == "strongest" else 0.8, ls=ls, marker="o", ms=2.0,
+                zorder=2)
+        ax.text(xs_[-1] * 1.15, ys_[-1], ser["name"], fontsize=5, color=col, va="center")
 
 # ---- d: the certificate --------------------------------------------------------------------------------------------
 kinds = CERT["kinds"]
