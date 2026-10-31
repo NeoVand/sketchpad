@@ -1,0 +1,21 @@
+{
+  "source": "polyformer-wt/chat research/sketch/chat/CHAT3.md at b392d24d (the chat stream, still running): the T4 tables (P1 lines 202-213, P2 243-255, P3 283-292, P4 328-339), option 2 (lines 418-428) and P5 (lines 558-570). Stock is zero-shot for IFEval, GSM8K and MMLU and few-shot for opening the sheet; every run is gate 1 zero-shot. GSM8K scores the sheet with a Python stand-in.",
+  "ifeval_n": 541,
+  "gsm8k_n": 250,
+  "bar_points": -2.0,
+  "open_bar": 0.95,
+  "stock": {"ifeval": 290, "gsm8k": 129, "precision": 0.971, "recall": 0.809},
+  "runs": [
+    {"name": "P1", "from": "E6", "precision": 0.957, "recall": 0.996, "ifeval_rate": 0.488, "gsm8k": null},
+    {"name": "P2", "from": "E7", "precision": 1.000, "recall": 0.998, "ifeval": 287, "gsm8k_rate": 0.204},
+    {"name": "P3", "from": "E7", "precision": 1.000, "recall": 0.994, "ifeval": 275, "gsm8k": 94},
+    {"name": "P4", "from": "E7", "precision": 1.000, "recall": 0.994, "ifeval": 266, "gsm8k": 113},
+    {"name": "P5", "from": "E7", "on_policy": true, "precision": 1.000, "recall": 0.946, "ifeval": 282, "gsm8k": 124}
+  ],
+  "switch": [
+    {"name": "switch, P4 writes", "precision": 0.975, "recall": 0.809, "ifeval_rate": 0.497, "gsm8k_rate": 0.148},
+    {"name": "switch, P2 writes", "precision": 0.973, "recall": 0.809, "ifeval_rate": 0.486, "gsm8k_rate": 0.172}
+  ],
+  "reported_points": {"P2": [-0.55, -31.2], "P3": [-2.8, -14.0], "P4": [-4.44, -6.4], "P5": [-1.48, -2.0],
+                      "switch, P4 writes": [-3.9, -36.8], "switch, P2 writes": [-5.0, -34.4]}
+}
