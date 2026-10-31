@@ -201,3 +201,67 @@ Sol and Gemini 4 Argon now run the other 10 problems of every cell (`frontier_ru
 already answered are not asked again), making every baseline 20 per length. Expected cost: about the first half's,
 $10–12, for a total near $21, inside the same $75 cap; the run stops if the running total passes $60, leaving room
 for Claude Opus 5.5. Same models, settings, prompt, cap and scorer. Claude Opus 5.5 waits for a working key.
+
+## Ten comparison models (registered 31 Oct 2026, before any further generation call)
+
+Neo, 31 Oct 2026: "just do 10 models in total, use a barchart maybe? like the ones ppl use in benchmarks". The
+comparison is Sketchpad against ten models, every one on the same 220 problems (20 per length), prompt, scorer and
+32,768-token cap including reasoning:
+
+| tier | model | setting |
+|---|---|---|
+| frontier | GPT-6.1 Sol (`gpt-6.1-sol`) | reasoning effort high (above) |
+| frontier | Claude Opus 5.5 (`claude-opus-5-5`) | effort high (above) |
+| frontier | Gemini 4 Argon (`gemini-4-argon`) | thinking level high (above) |
+| Qwen | Qwen3.5-27B (FP8 release) | thinking (done) |
+| Qwen | Qwen3.5-0.8B | its better setting, no thinking (23/220, done); the thinking run (3/220) stays in Extended Data |
+| open, Ollama cloud | `gpt-oss:120b`, `deepseek-v4-pro:0813`, `kimi-k3`, `glm-5.3`, `gemma4:31b` | highest reasoning (below) |
+
+`nemotron-3-super` and `mistral-large-4`, suggested earlier, are dropped by Neo's choice; neither has been called.
+
+### Claude Opus 5.5 (the key now works: `/v1/models/claude-opus-5-5` returns 200, `created_at` 2026-09-21)
+
+Its own two-problem pilot first (ids 80 and 200), then 20 per length if the three frontier models' total projects
+within $75: spend on record (GPT-6.1 Sol and Gemini 4 Argon at 20 per length when their extension ends) plus Claude's
+projection by the registered rule (100 × its + 1,000 cost + 120 × its × 20 cost). Else 10 per length, and the
+paper's comparison says so for Claude. The runner refuses new requests past $60 of frontier spend in all.
+
+### The open tier through Ollama cloud
+
+API `https://ollama.com/api/chat` with `Authorization: Bearer $OLLAMA_API_KEY`, through the official `ollama` Python
+package (`Client(host="https://ollama.com")`), `stream=False`, the registered user turn, no system prompt, provider
+default sampling, `options.num_predict = 32768` (Ollama counts every generated token, thinking included, in
+`eval_count`). The answer is scored on `message.content`; `message.thinking` is kept in the raw file. A reply with
+`done_reason: "length"` is at the cap. Concurrency 2 per model; exponential backoff on 429 and 5xx, up to 6 retries; a
+request that still fails is recorded as an error and not scored. Cost $0 on the free tier; `prompt_eval_count` and
+`eval_count` are recorded.
+
+The 25 models in `https://ollama.com/api/tags` on 31 Oct 2026: `beam`, `muse-spark-open`, `glm-5.3`,
+`deepseek-v4-pro:0813`, `deepseek-v4.1-flash`, `gemma4:31b`, `nemotron-3-ultra`, `glm-5.3-flash`, `kimi-k3`,
+`kimi-k2.7-code`, `minimax-m3.1-flash`, `nemotron-3-super`, `nemotron-3-nano:30b`, `mimo-v2.6-flash`,
+`mistral-large-4`, `clef:27b`, `mimo-v2.6-pro`, `gpt-oss:120b`, `gpt-oss:20b`, `glm-5.2`, `minimax-m2.7`, `minimax-m3`,
+`deepseek-v4.1-flash:1017`, `kimi-k2.6`, `mistral-large-3:675b`.
+
+The five, from `https://ollama.com/api/show` (no generation):
+
+| model | parameters (Ollama) | weights | capabilities | reasoning setting | Ollama `modified_at` |
+|---|---|---|---|---|---|
+| `gpt-oss:120b` (OpenAI) | 116.8 B (mixture of experts) | MXFP4 | completion, tools, thinking | `think: "high"` | 2025-08-05 |
+| `deepseek-v4-pro:0813` (DeepSeek) | 1,650 B | FP8 | completion, tools, thinking | `think: true` | 2026-08-13 |
+| `kimi-k3` (Moonshot AI) | 2,812 B | MXFP4 | vision, thinking, completion, tools | `think: true` | 2026-07-27 |
+| `glm-5.3` (Z.ai) | 753 B | FP8 | completion, thinking, tools | `think: true` | 2026-08-28 |
+| `gemma4:31b` (Google) | 32.7 B dense | BF16 | completion, thinking, tools, vision | `think: true` | 2026-04-02 |
+
+These are "open" by weights; three of them (DeepSeek, Kimi, GLM) are larger than any frontier model's published
+size, so the tier is defined by access (open weights, free endpoint), not by size.
+
+### Predictions (before any reply from these six)
+
+| model | exact / 220 | + 1,000 (of 20) | × 20 (of 20) |
+|---|---|---|---|
+| Claude Opus 5.5 (high) | 200 | 4 | 12 |
+| `gpt-oss:120b` (high) | 165 | 1 | 6 |
+| `deepseek-v4-pro:0813` | 195 | 8 | 14 |
+| `kimi-k3` | 190 | 6 | 12 |
+| `glm-5.3` | 185 | 5 | 10 |
+| `gemma4:31b` | 120 | 0 | 1 |
