@@ -35,5 +35,24 @@
    "fc05daec18b0a78c049392ed2e771dde82bdf654"
   ],
   "spawned": "2026-10-30 22:14:31 CDT"
+ },
+ "probe_27b_2217": {
+  "call_id": "fc-01M67ZDJQWQ90KXNX945MPNEF8",
+  "args": [
+   "probe",
+   "27b"
+  ],
+  "spawned": "2026-10-30 22:17:58 CDT"
+ },
+ "stock_27b_fp8": {
+  "call_id": "fc-01M67ZQAPZ6K0AN9AGR0JJ0YW6",
+  "args": [
+   "stock",
+   "stock_27b_fp8",
+   "27b-fp8",
+   "thinking",
+   "9000"
+  ],
+  "spawned": "2026-10-30 22:23:17 CDT"
  }
 }

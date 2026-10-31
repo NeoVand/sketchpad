@@ -39,3 +39,13 @@ The adapter is the published file (`mohsenvand/sketchpad-0.8b-preview` at `2df87
 sha256 `453ae613…`), downloaded in the job and checked, on the base whose weights hash to `04b1c301…` (= Qwen3.5-0.8B,
 the same file the stock 0.8B runs use). fp32 PyTorch as in the polyformer E7 evaluation; flash-linear-attention kernels
 as in the E7 training and evaluation image. The certificate (2,446 rows) is recomputed in the job before any problem.
+
+## The probe and the choice (31 Oct, UTC 03:23, before any reply was scored)
+
+`probe_27b_2217` (call `fc-01M67ZDJQWQ90KXNX945MPNEF8`): bf16 Qwen3.5-27B loads on one H100 under vLLM 0.31.0
+(50.2 GiB of weights on the GPU, 154 s to load). vLLM's KV cache: 19.67 GiB, **297,080 tokens; maximum concurrency at
+36,864 tokens per request 8.06**. Decoding a synthetic prompt: 356 tokens/s at batch 8, 1,239 at batch 32, 2,347 at
+batch 96 (1,024 new tokens each, short context). The KV cache holds 8 replies at the full context, so the bound uses
+batch 8: 7.21 M ÷ 356 tokens/s = 20,250 s = 5.6 h of H100, about **$22**, against about $10.5 left under the stop line.
+bf16 is therefore not used; the 27B slot is **`Qwen/Qwen3.5-27B-FP8`** (revision `97f5941b`), the registration's
+fallback, with a deadline of 9,000 s (about $9.9) on the job (`stock_27b_fp8`, call `fc-01M67ZQAPZ6K0AN9AGR0JJ0YW6`).
