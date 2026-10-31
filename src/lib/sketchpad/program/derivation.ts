@@ -30,6 +30,7 @@ export interface NumberSpan {
 	displayed: string;
 	signFlipped: boolean;
 	decimalPlaces: number;
+	discardedDigits?: number;
 }
 export interface DerivationLine {
 	tex: string;
@@ -101,6 +102,7 @@ export class DerivationBuilder {
 	readonly derivation: Derivation;
 	private sources = new WeakMap<Expr, NumberSource>();
 	private scales = new WeakMap<Expr, number>();
+	private discarded = new WeakMap<Expr, number>();
 	constructor(
 		readonly trace: TraceCalc,
 		readonly mode: CheckMode,
@@ -166,15 +168,19 @@ export class DerivationBuilder {
 		if (q.d) this.sources.set(d, q.d);
 		return binary('/', n, d);
 	}
-	decimalExpr(q: Quantity, places: number): Expr {
+	decimalExpr(q: Quantity, places: number, shownPlaces = places): Expr {
 		const digits = magnitude(q.value.n)
 			.toString()
 			.padStart(places + 1, '0');
 		const e = num(
-			(q.value.n < 0n ? '-' : '') + digits.slice(0, -places) + '.' + digits.slice(-places)
+			(q.value.n < 0n ? '-' : '') +
+				digits.slice(0, -places) +
+				'.' +
+				digits.slice(-places).slice(0, shownPlaces)
 		);
 		if (q.n) this.sources.set(e, q.n);
-		this.scales.set(e, places);
+		this.scales.set(e, shownPlaces);
+		if (places > shownPlaces) this.discarded.set(e, places - shownPlaces);
 		return e;
 	}
 	private render(e: Expr, spans: NumberSpan[], line: number, parent = 0): string {
@@ -190,7 +196,9 @@ export class DerivationBuilder {
 				field: source.field,
 				value: String(source.value),
 				displayed: e.text,
-				signFlipped: BigInt(e.text.replace('.', '')) !== source.value,
+				signFlipped:
+					e.text.startsWith('-') !== source.value < 0n && BigInt(e.text.replace('.', '')) !== 0n,
+				...(this.discarded.has(e) ? { discardedDigits: this.discarded.get(e) } : {}),
 				decimalPlaces: this.scales.get(e) ?? 0
 			});
 			const text = `\\htmlId{${id}}{${e.text}}`;
