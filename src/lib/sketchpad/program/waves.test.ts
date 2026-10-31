@@ -149,7 +149,7 @@ describe('wave accounting and round-two boundaries', () => {
 				'solve x^2-x-6=0'
 			]) {
 				const c = new RefCalc(),
-					result = await run(source, c, { checkMode: mode });
+					result = await run(source, c, { checkMode: mode, path: 'evaluation' });
 				expect(result.results[0].status, source).toBe('ok');
 				expect(c.total.seconds, `${mode}: ${source}`).toBeLessThan(12);
 			}

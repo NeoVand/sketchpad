@@ -51,7 +51,7 @@ function integerSyntax(e: Expr, env: Environment): boolean {
 		e.kind === 'binary' && e.op !== '/' && integerSyntax(e.left, env) && integerSyntax(e.right, env)
 	);
 }
-function assertIntegerPolynomial(e: Expr, env: Environment): void {
+export function assertIntegerPolynomial(e: Expr, env: Environment): void {
 	if (!integerSyntax(e, env))
 		throw new Error('expand and factor require integer coefficients, with no division');
 	for (const name of names(e))
@@ -250,7 +250,7 @@ async function clearDenominators(a: Arithmetic, cs: Rational[]): Promise<bigint[
 	while (result.length > 1 && result.at(-1) === 0n) result.pop();
 	return result;
 }
-async function bracket(
+export async function bracket(
 	a: Arithmetic,
 	eq: Equation,
 	candidate: Rational,
