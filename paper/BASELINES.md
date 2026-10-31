@@ -192,3 +192,12 @@ fixed with a lock); they cost nothing and were asked again, and every problem ha
 
 Against the predictions: both are better than predicted on long sums and products (GPT 0.9 at + 300 and + 1,000
 against 0.6 and 0.1 predicted; both 1.0 on every product length against 0.3–0.9).
+
+### Extension to 20 per length (31 Oct 2026, before the run)
+
+The 110-problem run cost $10.46 against the projection's $27.4 upper bound for these two models (the three-model
+projection at 10 per length was $67.6). The cut rule allows extending by asking only the missing problems, so GPT-6.1
+Sol and Gemini 4 Argon now run the other 10 problems of every cell (`frontier_run.py full gpt gemini`; the 110
+already answered are not asked again), making every baseline 20 per length. Expected cost: about the first half's,
+$10–12, for a total near $21, inside the same $75 cap; the run stops if the running total passes $60, leaving room
+for Claude Opus 5.5. Same models, settings, prompt, cap and scorer. Claude Opus 5.5 waits for a working key.
