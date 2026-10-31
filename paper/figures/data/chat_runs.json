@@ -1,21 +1,28 @@
 {
-  "source": "polyformer-wt/chat research/sketch/chat/CHAT3.md at b392d24d (the chat stream, still running): the T4 tables (P1 lines 202-213, P2 243-255, P3 283-292, P4 328-339), option 2 (lines 418-428) and P5 (lines 558-570). Stock is zero-shot for IFEval, GSM8K and MMLU and few-shot for opening the sheet; every run is gate 1 zero-shot. GSM8K scores the sheet with a Python stand-in.",
-  "ifeval_n": 541,
-  "gsm8k_n": 250,
-  "bar_points": -2.0,
-  "open_bar": 0.95,
-  "stock": {"ifeval": 290, "gsm8k": 129, "precision": 0.971, "recall": 0.809},
+  "source": "The dialogue fine-tunes of the chat stream (polyformer-wt/chat research/sketch/chat/CHAT3.md at 621940ab). Every value is recomputed by fig5.py from the eval files copied unchanged into data/chat/ (out/p1..p9/eval_p*.json, out/eval_stock*.json, out/sw/switch_p4p2.json) and checked against the reported values below (CHAT3.md; the paper's Extended Data Table 'Dialogue fine-tuning'). Points are against the base model zero-shot (IFEval strict prompt-level, GSM8K 250 with the sheet run by a Python stand-in, MMLU 500); invocation is on the 780 held-out items, the base model with four examples.",
+  "criterion": {"points": -2.0, "invocation": 0.95},
+  "base": {"name": "base model, four examples", "eval": "chat/eval_stock.json", "fewshot": "chat/eval_stock_fewshot.json"},
   "runs": [
-    {"name": "P1", "from": "E6", "precision": 0.957, "recall": 0.996, "ifeval_rate": 0.488, "gsm8k": null},
-    {"name": "P2", "from": "E7", "precision": 1.000, "recall": 0.998, "ifeval": 287, "gsm8k_rate": 0.204},
-    {"name": "P3", "from": "E7", "precision": 1.000, "recall": 0.994, "ifeval": 275, "gsm8k": 94},
-    {"name": "P4", "from": "E7", "precision": 1.000, "recall": 0.994, "ifeval": 266, "gsm8k": 113},
-    {"name": "P5", "from": "E7", "on_policy": true, "precision": 1.000, "recall": 0.946, "ifeval": 282, "gsm8k": 124}
+    {"id": "P1", "recipe": "synthetic dialogues, self-distillation (multiplier adapter)", "eval": "chat/eval_p1.json",
+     "reported": {"precision": 0.957, "recall": 0.996, "ifeval": -4.8, "gsm8k": null, "mmlu": -6.6}},
+    {"id": "P2", "recipe": "synthetic dialogues, self-distillation", "eval": "chat/eval_p2.json",
+     "reported": {"precision": 1.000, "recall": 0.998, "ifeval": -0.55, "gsm8k": -31.2, "mmlu": -5.4}},
+    {"id": "P3", "recipe": "+ human multi-step solutions", "eval": "chat/eval_p3.json",
+     "reported": {"precision": 1.000, "recall": 0.994, "ifeval": -2.8, "gsm8k": -14.0, "mmlu": -2.4}},
+    {"id": "P4", "recipe": "+ base-model multi-step solutions", "eval": "chat/eval_p4.json",
+     "reported": {"precision": 1.000, "recall": 0.994, "ifeval": -4.4, "gsm8k": -6.4, "mmlu": -3.4}},
+    {"id": "P5", "recipe": "+ on-policy distillation", "eval": "chat/eval_p5.json",
+     "reported": {"precision": 1.000, "recall": 0.946, "ifeval": -1.5, "gsm8k": -2.0, "mmlu": -2.2}},
+    {"id": "P6", "recipe": "+ wider word-problem data", "eval": "chat/eval_p6.json",
+     "reported": {"precision": 1.000, "recall": 0.991, "ifeval": 0.2, "gsm8k": -2.4, "mmlu": -2.2}},
+    {"id": "P7", "recipe": "+ GRPO", "eval": "chat/eval_p7.json",
+     "reported": {"precision": 1.000, "recall": 0.981, "ifeval": -2.0, "gsm8k": -4.8, "mmlu": -0.6}},
+    {"id": "P8", "recipe": "+ GRPO, strict reward and task mix", "eval": "chat/eval_p8.json",
+     "reported": {"precision": 1.000, "recall": 0.794, "ifeval": -2.2, "gsm8k": -0.8, "mmlu": -1.0}},
+    {"id": "P9", "recipe": "+ GRPO anchored to the supervised checkpoint", "final": true, "eval": "chat/eval_p9.json",
+     "reported": {"precision": 0.994, "recall": 0.989, "ifeval": -1.5, "gsm8k": -1.6, "mmlu": -1.4}}
   ],
-  "switch": [
-    {"name": "switch, P4 writes", "precision": 0.975, "recall": 0.809, "ifeval_rate": 0.497, "gsm8k_rate": 0.148},
-    {"name": "switch, P2 writes", "precision": 0.973, "recall": 0.809, "ifeval_rate": 0.486, "gsm8k_rate": 0.172}
-  ],
-  "reported_points": {"P2": [-0.55, -31.2], "P3": [-2.8, -14.0], "P4": [-4.44, -6.4], "P5": [-1.48, -2.0],
-                      "switch, P4 writes": [-3.9, -36.8], "switch, P2 writes": [-5.0, -34.4]}
+  "switch": {"name": "switching the gate within a reply", "eval": "chat/switch_p4p2.json", "writers": ["p4", "p2"],
+             "reported": {"p4": {"precision": 0.975, "recall": 0.809, "ifeval": -3.9, "gsm8k": -36.8},
+                          "p2": {"precision": 0.973, "recall": 0.809, "ifeval": -5.0, "gsm8k": -34.4}}}
 }

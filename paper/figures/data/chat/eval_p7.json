@@ -1,0 +1,105 @@
+{
+ "tag": "p7",
+ "adapter": "p7",
+ "fewshot": false,
+ "ppl": 18.538495273354016,
+ "ppl_stock": 18.463935674928077,
+ "ppl_ratio": 1.004038120568584,
+ "rows": {
+  "cert": 2446,
+  "of": 2446,
+  "by_op": {
+   "SUM": 242,
+   "MUL": 1100,
+   "ADD": 220,
+   "ADZ": 220,
+   "FLS": 2,
+   "NXT": 11,
+   "SUB": 242,
+   "EST": 400,
+   "DEC": 9
+  },
+  "min_margin": {
+   "SUM": 6.620994567871094,
+   "MUL": 6.543283462524414,
+   "ADD": 7.0103912353515625,
+   "ADZ": 6.329833984375,
+   "FLS": 10.59971809387207,
+   "NXT": 9.465476989746094,
+   "SUB": 5.376853942871094,
+   "EST": 4.393917083740234,
+   "DEC": 8.735027313232422
+  },
+  "fails": []
+ },
+ "seconds": 1198,
+ "open_precision": 1.0,
+ "open_recall": 0.9814814814814815,
+ "open_counts": {
+  "tp": 530,
+  "fp": 0,
+  "fn": 10
+ },
+ "families": {
+  "calc": {
+   "n": 120,
+   "opened": 117,
+   "line_right": 116,
+   "quotes_value": 108,
+   "line_rate": 0.9666666666666667
+  },
+  "prose": {
+   "n": 120,
+   "opened": 119,
+   "line_right": 119,
+   "quotes_value": 104,
+   "line_rate": 0.9916666666666667
+  },
+  "word": {
+   "n": 180,
+   "opened": 175,
+   "line_right": 155,
+   "quotes_value": 172,
+   "line_rate": 0.8611111111111112
+  },
+  "equation": {
+   "n": 120,
+   "opened": 119,
+   "line_right": 115,
+   "quotes_value": 94,
+   "line_rate": 0.9583333333333334
+  },
+  "distract": {
+   "n": 240,
+   "opened": 0,
+   "line_right": 50,
+   "quotes_value": 0,
+   "single_right": 50,
+   "single_n": 50,
+   "line_rate": 0.20833333333333334
+  }
+ },
+ "ifeval": {
+  "n": 541,
+  "prompt_strict": 0.5157116451016636,
+  "prompt_loose": 0.5489833641404805,
+  "inst_strict": 0.6223021582733813,
+  "opened_sheet": 0
+ },
+ "mmlu": {
+  "n": 500,
+  "acc": 0.47
+ },
+ "gsm8k": {
+  "n": 250,
+  "acc": 0.468,
+  "opened_sheet": 147,
+  "note": "sheet blocks run on sheet_ref.py, the host stand-in for the exact sheet"
+ },
+ "ifbench": {
+  "n": 300,
+  "prompt_strict": 0.19,
+  "prompt_loose": 0.23,
+  "inst_strict": 0.19186046511627908
+ }
+}

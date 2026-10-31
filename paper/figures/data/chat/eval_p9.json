@@ -1,0 +1,105 @@
+{
+ "tag": "p9",
+ "adapter": "p9",
+ "fewshot": false,
+ "ppl": 18.579619571713916,
+ "ppl_stock": 18.463935674928077,
+ "ppl_ratio": 1.0062653975199298,
+ "rows": {
+  "cert": 2446,
+  "of": 2446,
+  "by_op": {
+   "SUM": 242,
+   "MUL": 1100,
+   "ADD": 220,
+   "ADZ": 220,
+   "FLS": 2,
+   "NXT": 11,
+   "SUB": 242,
+   "EST": 400,
+   "DEC": 9
+  },
+  "min_margin": {
+   "SUM": 6.540775299072266,
+   "MUL": 6.613674163818359,
+   "ADD": 7.319589614868164,
+   "ADZ": 6.613819122314453,
+   "FLS": 10.402515411376953,
+   "NXT": 9.352445602416992,
+   "SUB": 5.255916595458984,
+   "EST": 4.510580062866211,
+   "DEC": 8.931063652038574
+  },
+  "fails": []
+ },
+ "seconds": 1210,
+ "open_precision": 0.994413407821229,
+ "open_recall": 0.9888888888888889,
+ "open_counts": {
+  "tp": 534,
+  "fp": 3,
+  "fn": 6
+ },
+ "families": {
+  "calc": {
+   "n": 120,
+   "opened": 117,
+   "line_right": 115,
+   "quotes_value": 117,
+   "line_rate": 0.9583333333333334
+  },
+  "prose": {
+   "n": 120,
+   "opened": 120,
+   "line_right": 118,
+   "quotes_value": 120,
+   "line_rate": 0.9833333333333333
+  },
+  "word": {
+   "n": 180,
+   "opened": 179,
+   "line_right": 167,
+   "quotes_value": 179,
+   "line_rate": 0.9277777777777778
+  },
+  "equation": {
+   "n": 120,
+   "opened": 118,
+   "line_right": 116,
+   "quotes_value": 118,
+   "line_rate": 0.9666666666666667
+  },
+  "distract": {
+   "n": 240,
+   "opened": 3,
+   "line_right": 50,
+   "quotes_value": 0,
+   "single_right": 50,
+   "single_n": 50,
+   "line_rate": 0.20833333333333334
+  }
+ },
+ "ifeval": {
+  "n": 541,
+  "prompt_strict": 0.5212569316081331,
+  "prompt_loose": 0.5508317929759704,
+  "inst_strict": 0.6187050359712231,
+  "opened_sheet": 0
+ },
+ "mmlu": {
+  "n": 500,
+  "acc": 0.462
+ },
+ "gsm8k": {
+  "n": 250,
+  "acc": 0.5,
+  "opened_sheet": 141,
+  "note": "sheet blocks run on sheet_ref.py, the host stand-in for the exact sheet"
+ },
+ "ifbench": {
+  "n": 300,
+  "prompt_strict": 0.19333333333333333,
+  "prompt_loose": 0.23666666666666666,
+  "inst_strict": 0.19767441860465115
+ }
+}

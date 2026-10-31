@@ -26,7 +26,9 @@ import sys
 HERE = pathlib.Path(__file__).parent
 SEP = re.compile(r"(?<=\d)(?:\\,|\{,\}|[,   ])(?=\d)")
 DIGITS = re.compile(r"\d+")
-SYSTEMS = [("sketchpad", None), ("0.8b", "thinking"), ("0.8b", "nothink"), ("27b", "thinking")]
+SYSTEMS = [("sketchpad", None), ("0.8b", "thinking"), ("0.8b", "nothink"), ("27b", "thinking"),
+           ("gpt", "high"), ("claude", "high"), ("gemini", "high")]
+FRONTIER = {"gpt", "claude", "gemini"}  # BASELINES.md, "Frontier": reasoning hidden, the visible reply is the reply
 
 
 def clean(s):
@@ -84,25 +86,39 @@ def main(sk_path, raw_paths):
         r = dict(r)
         r["system"], r["mode"] = "sketchpad", None
         out.append(r)
+    seen = set()
     for path in raw_paths:
         text = gzip.open(path, "rt").read() if str(path).endswith(".gz") else pathlib.Path(path).read_text()
         for line in text.splitlines():
             g = json.loads(line)
+            if g.get("error") is None and (g["model_key"], g["mode"], g["id"]) in seen:  # a second reply to one problem
+                notes.append(f"{g['model_key']} id {g['id']}: duplicate reply, the first one is scored")
+                continue
+            if g.get("error") is None:
+                seen.add((g["model_key"], g["mode"], g["id"]))
+            if g.get("error"):  # an API error after the retries: reported, never scored
+                notes.append(f"{g['model_key']} id {g['id']}: not scored, {g['error'][:80]}")
+                continue
             p = probs[g["id"]]
-            key = "27b" if g["model_key"] != "0.8b" else "0.8b"
+            mk = g["model_key"]
+            key = mk if (mk in FRONTIER or mk.startswith("ollama/")) else ("27b" if mk != "0.8b" else "0.8b")
+            if key in FRONTIER or key.startswith("ollama/"):
+                g = dict(g, mode="high")
             ans, how, closed, loose = parse(g["text"], g["mode"])
             exact = (not g["hit_cap"]) and norm(ans) == p["truth"]
             if loose is not None and ((not g["hit_cap"]) and norm(loose) == p["truth"]) != exact:
                 notes.append(f"{key} {g['mode']} id {g['id']}: the left-cut tail run would change exactness")
             reply = g["text"].rsplit("</think>", 1)[1] if "</think>" in g["text"] else g["text"]
             out.append({"system": f"{key} {g['mode']}", "model": g["model"], "mode": g["mode"], "id": g["id"],
+                        "reasoning_tokens": g.get("reasoning_tokens"), "cost": g.get("cost"),
                         "family": p["family"], "n": p["n"], "a": p["a"], "b": p["b"], "truth": p["truth"],
                         "answer": ans, "exact": exact, "tokens": g["tokens"], "hit_cap": g["hit_cap"],
                         "finish_reason": g["finish_reason"], "parsed_from": how, "think_closed": closed,
                         "no_answer": ans is None, "prompt_tokens": g["prompt_tokens"], "seed": g["seed"],
                         "reply_tail": reply[-400:]})
-    out.sort(key=lambda r: ([s for s, _ in SYSTEMS].index(r["system"].split()[0]),
-                            r.get("mode") != "thinking", r["id"]))
+    order = [s for s, _ in SYSTEMS]
+    out.sort(key=lambda r: (order.index(r["system"].split()[0]) if r["system"].split()[0] in order else len(order),
+                            r["system"], r.get("mode") != "thinking", r["id"]))
     (HERE / "results.json").write_text(json.dumps(out, indent=1) + "\n")
     return out, notes
 
@@ -111,8 +127,8 @@ def tables(out):
     cells = [("add", n) for n in (10, 30, 100, 300, 1000)] + [("mul", n) for n in (2, 4, 6, 10, 15, 20)]
     head = "| system | " + " | ".join(f"{'+' if f == 'add' else '×'} {n:,}" for f, n in cells) + " |"
     sep = "|---|" + "---|" * len(cells)
-    systems = sorted({r["system"] for r in out}, key=lambda s: ["sketchpad", "0.8b thinking", "0.8b nothink",
-                                                                  "27b thinking"].index(s))
+    known = ["sketchpad", "0.8b thinking", "0.8b nothink", "27b thinking", "gpt high", "claude high", "gemini high"]
+    systems = sorted({r["system"] for r in out}, key=lambda s: (known.index(s) if s in known else len(known), s))
     lines = {"exact": [head, sep], "cap": [head, sep], "tokens": [head, sep], "noans": [head, sep]}
     for s in systems:
         rows = {k: [] for k in lines}

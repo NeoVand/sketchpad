@@ -1,0 +1,105 @@
+{
+ "tag": "p8",
+ "adapter": "p8",
+ "fewshot": false,
+ "ppl": 18.562696868494076,
+ "ppl_stock": 18.463935674928077,
+ "ppl_ratio": 1.0053488701057438,
+ "rows": {
+  "cert": 2446,
+  "of": 2446,
+  "by_op": {
+   "SUM": 242,
+   "MUL": 1100,
+   "ADD": 220,
+   "ADZ": 220,
+   "FLS": 2,
+   "NXT": 11,
+   "SUB": 242,
+   "EST": 400,
+   "DEC": 9
+  },
+  "min_margin": {
+   "SUM": 6.604887008666992,
+   "MUL": 6.338232040405273,
+   "ADD": 7.0496826171875,
+   "ADZ": 6.638933181762695,
+   "FLS": 10.602827072143555,
+   "NXT": 9.224592208862305,
+   "SUB": 5.033588409423828,
+   "EST": 4.484003067016602,
+   "DEC": 8.77637767791748
+  },
+  "fails": []
+ },
+ "seconds": 1259,
+ "open_precision": 1.0,
+ "open_recall": 0.7944444444444444,
+ "open_counts": {
+  "tp": 429,
+  "fp": 0,
+  "fn": 111
+ },
+ "families": {
+  "calc": {
+   "n": 120,
+   "opened": 117,
+   "line_right": 115,
+   "quotes_value": 83,
+   "line_rate": 0.9583333333333334
+  },
+  "prose": {
+   "n": 120,
+   "opened": 119,
+   "line_right": 117,
+   "quotes_value": 95,
+   "line_rate": 0.975
+  },
+  "word": {
+   "n": 180,
+   "opened": 78,
+   "line_right": 68,
+   "quotes_value": 49,
+   "line_rate": 0.37777777777777777
+  },
+  "equation": {
+   "n": 120,
+   "opened": 115,
+   "line_right": 112,
+   "quotes_value": 111,
+   "line_rate": 0.9333333333333333
+  },
+  "distract": {
+   "n": 240,
+   "opened": 0,
+   "line_right": 50,
+   "quotes_value": 0,
+   "single_right": 50,
+   "single_n": 50,
+   "line_rate": 0.20833333333333334
+  }
+ },
+ "ifeval": {
+  "n": 541,
+  "prompt_strict": 0.5138632162661737,
+  "prompt_loose": 0.5545286506469501,
+  "inst_strict": 0.617505995203837,
+  "opened_sheet": 0
+ },
+ "mmlu": {
+  "n": 500,
+  "acc": 0.466
+ },
+ "gsm8k": {
+  "n": 250,
+  "acc": 0.508,
+  "opened_sheet": 170,
+  "note": "sheet blocks run on sheet_ref.py, the host stand-in for the exact sheet"
+ },
+ "ifbench": {
+  "n": 300,
+  "prompt_strict": 0.19,
+  "prompt_loose": 0.23,
+  "inst_strict": 0.19476744186046513
+ }
+}

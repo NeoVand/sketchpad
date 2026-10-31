@@ -1,0 +1,52 @@
+{
+ "tag": "stock_fewshot",
+ "adapter": "none",
+ "fewshot": true,
+ "open_precision": 0.9711111111111111,
+ "open_recall": 0.8092592592592592,
+ "open_counts": {
+  "tp": 437,
+  "fp": 13,
+  "fn": 103
+ },
+ "families": {
+  "calc": {
+   "n": 120,
+   "opened": 70,
+   "line_right": 50,
+   "quotes_value": 68,
+   "line_rate": 0.4166666666666667
+  },
+  "prose": {
+   "n": 120,
+   "opened": 80,
+   "line_right": 80,
+   "quotes_value": 80,
+   "line_rate": 0.6666666666666666
+  },
+  "word": {
+   "n": 180,
+   "opened": 176,
+   "line_right": 142,
+   "quotes_value": 176,
+   "line_rate": 0.7888888888888889
+  },
+  "equation": {
+   "n": 120,
+   "opened": 111,
+   "line_right": 70,
+   "quotes_value": 88,
+   "line_rate": 0.5833333333333334
+  },
+  "distract": {
+   "n": 240,
+   "opened": 13,
+   "line_right": 50,
+   "quotes_value": 0,
+   "single_right": 50,
+   "single_n": 50,
+   "line_rate": 0.20833333333333334
+  }
+ },
+ "seconds": 326
+}

@@ -130,3 +130,20 @@ Per-job costs are estimates from container wall time at $3.95/h. No frontier mod
 - `raw/`: every job's output as written on the volume (`raw.jsonl.gz` holds every full reply), so `python score.py
   raw/sketchpad_e7/results.json raw/stock_0.8b/raw.jsonl.gz raw/stock_27b_fp8/raw.jsonl.gz` rebuilds `results.json`.
 - `DECISIONS.md`: what was fixed before scoring, and the bf16 probe.
+
+## Frontier models (added 31 Oct 2026; registration and result in `paper/BASELINES.md`, "Frontier" and "Ten comparison models")
+
+GPT-6.1 Sol (`gpt-6.1-sol`, reasoning effort high), Claude Opus 5.5 (`claude-opus-5-5`, effort high) and Gemini 4
+Argon (`gemini-4-argon`, thinking level high), the same prompt, scorer and 32,768-token cap including reasoning, 20
+per length: **217**, **216** and **207 / 220** exact; cap hits 0, 0 and 9; every miss a sum of 300 or 1,000 digits.
+Runner `frontier_run.py` with one module per provider; raw replies `raw/frontier/*.jsonl`; `python score.py
+raw/sketchpad_e7/results.json raw/stock_0.8b/raw.jsonl.gz raw/stock_27b_fp8/raw.jsonl.gz raw/frontier/gpt.jsonl
+raw/frontier/claude.jsonl raw/frontier/gemini.jsonl` rebuilds `results.json`. Spend $30.03 (API, from usage). The
+open tier (five models through Ollama cloud) is registered and not run: its key returns 402 on generation.
+
+## Open models through Ollama cloud (added 31 Oct 2026; `paper/BASELINES.md`, "Open-tier result")
+
+`deepseek-v4-pro:0813` 199, `mistral-large-4` 168, `gemma4:31b` 156, `glm-5.3` 152, `gpt-oss:120b` 149 of 220, at
+their highest reasoning setting with the same prompt, scorer and cap. Kimi K3 was dropped on cost (Neo) and replaced
+by `mistral-large-4`; its two pilot replies stay in `raw/frontier/ollama_kimi-k3.jsonl`. Usage $27.25 at
+ollama.com/pricing rates. Add the five raw files to the `score.py` call above to rebuild `results.json`.

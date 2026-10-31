@@ -76,3 +76,325 @@ only 8 replies at full length; the registered worst case would have cost about $
 
 Sketchpad read 64,700 views, all of them certified rows, in 1,001 batched forward passes. Replies at the token cap:
 0.8B thinking 217/220, 0.8B no thinking 174/220, 27B-FP8 93/220; of the 27B's 127 finished replies, 121 were exact.
+
+## Frontier (registered 31 Oct 2026, before any generation call)
+
+Neo, 31 Oct 2026: "yes, add all 3: GPT 6.1 Sol (high), Claude Opus 5.5 (high) and Gemini 4 Argon (high)". Only the
+providers' model-list endpoints have been called so far (no generation, no cost), to read the exact IDs.
+
+### Models and settings
+
+| system | API model ID | how it was found | reasoning "high" | cap (output incl. reasoning) | API |
+|---|---|---|---|---|---|
+| GPT-6.1 Sol | `gpt-6.1-sol` (no dated snapshot; `created` 2026-09-27 in `/v1/models`) | OpenAI `/v1/models`; model page developers.openai.com/api/docs/models/gpt-6.1-sol | `reasoning.effort = "high"` (values low, medium default, high, xhigh, max) | `max_output_tokens = 32768`; reasoning tokens count toward it (developers.openai.com/api/docs/guides/reasoning) | Responses API, official `openai` Python SDK |
+| Claude Opus 5.5 | `claude-opus-5-5` | Anthropic model table (claude-api skill, platform.claude.com/docs/en/about-claude/pricing) | `output_config.effort = "high"`; thinking is always on for this model (adaptive); no `thinking` parameter sent | `max_tokens = 32768`; thinking tokens count toward it | Messages API, streamed, official `anthropic` Python SDK |
+| Gemini 4 Argon | `gemini-4-argon` (model `version` 3.0 in the model list) | Gemini `/v1beta/models` (`outputTokenLimit` 32768, `thinking: true`); ai.google.dev/gemini-api/docs/models | `thinkingConfig.thinkingLevel = "high"` (values low, medium default, high) | `maxOutputTokens = 32768`; thought tokens count toward it (ai.google.dev/gemini-api/docs/thinking) | `generateContent`, official `google-genai` Python SDK |
+
+- **Problems, prompt, scorer:** the same 220 problems (`problems.json`, seed 20261031), the same user turn, no system
+  prompt; scored by `score.py` exactly as registered above (the last `\boxed{}` in the visible reply, else the last
+  digit run in the final 300 characters, separators removed). Reasoning is hidden by these APIs, so the visible reply
+  is the whole reply.
+- **The cap:** 32,768 output tokens including reasoning, as for Qwen3.5-27B. A reply that stops at the cap (OpenAI
+  `status: incomplete`, reason `max_output_tokens`; Anthropic `stop_reason: max_tokens`; Gemini `finishReason:
+  MAX_TOKENS`) is wrong and counted.
+- **Sampling:** each provider's defaults; one sample per problem; no sampling parameters are sent (these reasoning
+  models reject or ignore them).
+- **No fallback model:** Anthropic's server-side refusal fallback is not enabled, because a fallback model would
+  answer in Claude Opus 5.5's place. A refusal (`stop_reason: refusal`) counts as no answer and is reported.
+- **Names in the paper:** the model's product name and the API ID, "accessed 31 October 2026"; GPT-6.1 Sol also with
+  its listed creation date.
+
+### Prices (per million tokens, standard tier, read 31 Oct 2026)
+
+| model | input | output (incl. reasoning) | source |
+|---|---|---|---|
+| GPT-6.1 Sol | $2.00 | $10.00 | developers.openai.com/api/docs/pricing; developers.openai.com/api/docs/models/gpt-6.1-sol |
+| Claude Opus 5.5 | $4.00 | $20.00 | platform.claude.com/docs/en/about-claude/pricing |
+| Gemini 4 Argon | $2.00 | $10.00 (through 30 Nov 2026) | ai.google.dev/gemini-api/docs/pricing |
+
+Worst case, every reply at the cap: 220 × 32,768 = 7.2 M output tokens per model, about $72 (GPT), $144 (Claude), $72
+(Gemini), $288 in all, over the **$75 cap** for the three together.
+
+### Pilot, projection and the cut rule
+
+1. Pilot: 2 problems per model at the hardest lengths, the first + 1,000 problem (id 80) and the first × 20 problem
+   (id 200). Tokens from the usage fields.
+2. Projection: every one of the 220 problems is costed at the pilot's mean tokens per reply for its family (sums at
+   the + 1,000 mean, products at the × 20 mean), an upper bound since shorter problems need fewer tokens.
+3. If the projection for all three is at most $75, run all 220. If not, run 10 problems per length (the first 10 of
+   each cell, 110 problems) if that projection is at most $75, and record the cut here before running. If neither
+   fits, stop and write it in `QUESTIONS.md`.
+4. Concurrency at most 8 requests per provider, exponential backoff on rate limits and server errors (up to 6
+   retries); a reply that still fails is recorded as an error, not scored as wrong without saying so.
+5. Actual cost from the usage fields at the prices above; raw replies kept in `baselines/raw/frontier/`.
+
+### Predictions (share exact, before any reply)
+
+| system | + 10 | + 30 | + 100 | + 300 | + 1,000 | × 2 | × 4 | × 6 | × 10 | × 15 | × 20 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| GPT-6.1 Sol (high) | 1 | 1 | 1 | 0.6 | 0.1 | 1 | 1 | 1 | 0.9 | 0.6 | 0.4 |
+| Claude Opus 5.5 (high) | 1 | 1 | 0.95 | 0.5 | 0.05 | 1 | 1 | 1 | 0.85 | 0.5 | 0.3 |
+| Gemini 4 Argon (high) | 1 | 1 | 0.95 | 0.5 | 0.05 | 1 | 1 | 1 | 0.85 | 0.5 | 0.3 |
+
+The frontier models will likely solve the short problems; they fail, if at all, by the length of the work against a
+32,768-token budget. Sketchpad's claim is the certificate at every length, not a win on short problems.
+
+### Credential note (at registration)
+
+`ANTHROPIC_API_KEY` in `~/.polyformer_keys` returns `401 authentication_error: invalid x-api-key` on `/v1/models`. The
+OpenAI and Gemini keys work. Claude Opus 5.5 runs only after the key is replaced; until then its row stays "not run".
+
+### Pilot result and the cut (31 Oct 2026, before the full run)
+
+Pilot replies (`raw/frontier/*.jsonl`), usage fields, at the registered prices:
+
+| model | + 1,000 (id 80): output tokens (reasoning), cost | × 20 (id 200): output tokens (reasoning), cost |
+|---|---|---|
+| GPT-6.1 Sol | 11,984 (11,640), $0.121 | 2,093 (2,070), $0.021 |
+| Gemini 4 Argon | 28,517 (27,509), $0.289 | 9,358 (7,756), $0.094 |
+| Claude Opus 5.5 | not run (key fails) | not run |
+
+Projection by the registered rule (sums at the + 1,000 cost, products at the × 20 cost): GPT 100 × 0.121 + 120 × 0.021
+= **$14.6**; Gemini 100 × 0.289 + 120 × 0.094 = **$40.2**. Claude Opus 5.5 could not be piloted; costed at the larger
+of the two pilots' tokens per family at its own prices (28,517 and 9,358 output tokens at $20 per million): **$80.3**
+(deviation: a projection from the other models, not its own pilot). All three at 20 per length: **$135**, over the
+$75 cap. At **10 per length** (110 problems, the first 10 of each cell): $7.3 + $20.1 + $40.2 = **$67.6**, under it.
+
+**The cut:** the frontier models run on the first 10 problems of each cell (`frontier_run.py full gpt gemini
+--per-cell 10`). Claude Opus 5.5 runs the same 110 when its key works, after its own two-problem pilot; if its own
+pilot projects the three over $75 in total, it stops there. The projection is an upper bound (short problems use far
+fewer tokens), so the actual spend is expected well below it; extending to 20 per length later asks only the missing
+problems.
+
+### Frontier result (31 Oct 2026; per problem in `results.json`, raw replies in `raw/frontier/`)
+
+Run 10 per length as registered after the pilot (110 problems), concurrency 8 per provider. Seven Gemini requests
+failed at once on a client-side bug in the runner (a second SDK client was dropped and closed its connection pool;
+fixed with a lock); they cost nothing and were asked again, and every problem has exactly one scored reply.
+
+| system | + 10 | + 30 | + 100 | + 300 | + 1,000 | × 2 | × 4 | × 6 | × 10 | × 15 | × 20 | total |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| GPT-6.1 Sol (high), exact / 10 | 10 | 10 | 10 | 9 | 9 | 10 | 10 | 10 | 10 | 10 | 10 | 108 / 110 |
+| Gemini 4 Argon (high), exact / 10 | 10 | 10 | 10 | 9 | 5 | 10 | 10 | 10 | 10 | 10 | 10 | 104 / 110 |
+| GPT-6.1 Sol, replies at the cap | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Gemini 4 Argon, replies at the cap | 0 | 0 | 0 | 1 | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 5 |
+| GPT-6.1 Sol, median output tokens | 73 | 244 | 1,872 | 3,468 | 12,752 | 29 | 77 | 146 | 556 | 788 | 1,721 | |
+| Gemini 4 Argon, median output tokens | 632 | 2,004 | 5,152 | 13,206 | 32,211 | 313 | 1,266 | 2,838 | 4,262 | 7,408 | 12,161 | |
+
+- **GPT-6.1 Sol's two errors:** id 64 (+ 300), four wrong digits in a 301-digit answer; id 84 (+ 1,000), every digit
+  wrong from the 73rd from the right on (523 of 1,001). Both replies finished well inside the budget (3,212 and
+  10,162 tokens).
+- **Gemini 4 Argon's six misses:** five replies ran out of budget (ids 63, 83, 84, 86, 87); id 82 (+ 1,000) finished
+  with 872 wrong digits from the 25th on.
+- **Claude Opus 5.5:** not run (the key fails; `QUESTIONS.md` 13).
+- **Spend, from the usage fields at the registered prices:** GPT-6.1 Sol $2.18 (215,663 output tokens), Gemini 4
+  Argon $8.27 (820,188), **$10.46 in all** of the $75 cap; the projection's upper bound was $27.4 for these two.
+
+Against the predictions: both are better than predicted on long sums and products (GPT 0.9 at + 300 and + 1,000
+against 0.6 and 0.1 predicted; both 1.0 on every product length against 0.3–0.9).
+
+### Extension to 20 per length (31 Oct 2026, before the run)
+
+The 110-problem run cost $10.46 against the projection's $27.4 upper bound for these two models (the three-model
+projection at 10 per length was $67.6). The cut rule allows extending by asking only the missing problems, so GPT-6.1
+Sol and Gemini 4 Argon now run the other 10 problems of every cell (`frontier_run.py full gpt gemini`; the 110
+already answered are not asked again), making every baseline 20 per length. Expected cost: about the first half's,
+$10–12, for a total near $21, inside the same $75 cap; the run stops if the running total passes $60, leaving room
+for Claude Opus 5.5. Same models, settings, prompt, cap and scorer. Claude Opus 5.5 waits for a working key.
+
+## Ten comparison models (registered 31 Oct 2026, before any further generation call)
+
+Neo, 31 Oct 2026: "just do 10 models in total, use a barchart maybe? like the ones ppl use in benchmarks". The
+comparison is Sketchpad against ten models, every one on the same 220 problems (20 per length), prompt, scorer and
+32,768-token cap including reasoning:
+
+| tier | model | setting |
+|---|---|---|
+| frontier | GPT-6.1 Sol (`gpt-6.1-sol`) | reasoning effort high (above) |
+| frontier | Claude Opus 5.5 (`claude-opus-5-5`) | effort high (above) |
+| frontier | Gemini 4 Argon (`gemini-4-argon`) | thinking level high (above) |
+| Qwen | Qwen3.5-27B (FP8 release) | thinking (done) |
+| Qwen | Qwen3.5-0.8B | its better setting, no thinking (23/220, done); the thinking run (3/220) stays in Extended Data |
+| open, Ollama cloud | `gpt-oss:120b`, `deepseek-v4-pro:0813`, `kimi-k3`, `glm-5.3`, `gemma4:31b` | highest reasoning (below) |
+
+`nemotron-3-super` and `mistral-large-4`, suggested earlier, are dropped by Neo's choice; neither has been called.
+
+### Claude Opus 5.5 (the key now works: `/v1/models/claude-opus-5-5` returns 200, `created_at` 2026-09-21)
+
+Its own two-problem pilot first (ids 80 and 200), then 20 per length if the three frontier models' total projects
+within $75: spend on record (GPT-6.1 Sol and Gemini 4 Argon at 20 per length when their extension ends) plus Claude's
+projection by the registered rule (100 × its + 1,000 cost + 120 × its × 20 cost). Else 10 per length, and the
+paper's comparison says so for Claude. The runner refuses new requests past $60 of frontier spend in all.
+
+### The open tier through Ollama cloud
+
+API `https://ollama.com/api/chat` with `Authorization: Bearer $OLLAMA_API_KEY`, through the official `ollama` Python
+package (`Client(host="https://ollama.com")`), `stream=False`, the registered user turn, no system prompt, provider
+default sampling, `options.num_predict = 32768` (Ollama counts every generated token, thinking included, in
+`eval_count`). The answer is scored on `message.content`; `message.thinking` is kept in the raw file. A reply with
+`done_reason: "length"` is at the cap. Concurrency 2 per model; exponential backoff on 429 and 5xx, up to 6 retries; a
+request that still fails is recorded as an error and not scored. Cost $0 on the free tier; `prompt_eval_count` and
+`eval_count` are recorded.
+
+The 25 models in `https://ollama.com/api/tags` on 31 Oct 2026: `beam`, `muse-spark-open`, `glm-5.3`,
+`deepseek-v4-pro:0813`, `deepseek-v4.1-flash`, `gemma4:31b`, `nemotron-3-ultra`, `glm-5.3-flash`, `kimi-k3`,
+`kimi-k2.7-code`, `minimax-m3.1-flash`, `nemotron-3-super`, `nemotron-3-nano:30b`, `mimo-v2.6-flash`,
+`mistral-large-4`, `clef:27b`, `mimo-v2.6-pro`, `gpt-oss:120b`, `gpt-oss:20b`, `glm-5.2`, `minimax-m2.7`, `minimax-m3`,
+`deepseek-v4.1-flash:1017`, `kimi-k2.6`, `mistral-large-3:675b`.
+
+The five, from `https://ollama.com/api/show` (no generation):
+
+| model | parameters (Ollama) | weights | capabilities | reasoning setting | Ollama `modified_at` |
+|---|---|---|---|---|---|
+| `gpt-oss:120b` (OpenAI) | 116.8 B (mixture of experts) | MXFP4 | completion, tools, thinking | `think: "high"` | 2025-08-05 |
+| `deepseek-v4-pro:0813` (DeepSeek) | 1,650 B | FP8 | completion, tools, thinking | `think: true` | 2026-08-13 |
+| `kimi-k3` (Moonshot AI) | 2,812 B | MXFP4 | vision, thinking, completion, tools | `think: true` | 2026-07-27 |
+| `glm-5.3` (Z.ai) | 753 B | FP8 | completion, thinking, tools | `think: true` | 2026-08-28 |
+| `gemma4:31b` (Google) | 32.7 B dense | BF16 | completion, thinking, tools, vision | `think: true` | 2026-04-02 |
+
+These are "open" by weights; three of them (DeepSeek, Kimi, GLM) are larger than any frontier model's published
+size, so the tier is defined by access (open weights, free endpoint), not by size.
+
+### Predictions (before any reply from these six)
+
+| model | exact / 220 | + 1,000 (of 20) | × 20 (of 20) |
+|---|---|---|---|
+| Claude Opus 5.5 (high) | 200 | 4 | 12 |
+| `gpt-oss:120b` (high) | 165 | 1 | 6 |
+| `deepseek-v4-pro:0813` | 195 | 8 | 14 |
+| `kimi-k3` | 190 | 6 | 12 |
+| `glm-5.3` | 185 | 5 | 10 |
+| `gemma4:31b` | 120 | 0 | 1 |
+
+### Claude Opus 5.5 pilot (31 Oct 2026, before its full run)
+
++ 1,000 (id 80): 8,737 output tokens, $0.178; × 20 (id 200): 2,661 tokens, $0.053. Projection at 20 per length
+by the registered rule: 100 × 0.178 + 120 × 0.053 = **$24.2**. With GPT-6.1 Sol and Gemini 4 Argon at $18.6 on record
+and about $21 when their extension ends, the three total about **$45**, inside $75: Claude Opus 5.5 runs all 220.
+
+### Results at 20 per length (31 Oct 2026; per problem in `results.json`)
+
+| system | + 10 | + 30 | + 100 | + 300 | + 1,000 | × 2 | × 4 | × 6 | × 10 | × 15 | × 20 | total | at cap | cost |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| GPT-6.1 Sol (high) | 20 | 20 | 20 | 18 | 19 | 20 | 20 | 20 | 20 | 20 | 20 | **217** | 0 | $4.56 |
+| Claude Opus 5.5 (high) | 20 | 20 | 20 | 19 | 17 | 20 | 20 | 20 | 20 | 20 | 20 | **216** | 0 | $9.17 |
+| Gemini 4 Argon (high) | 20 | 20 | 20 | 18 | 9 | 20 | 20 | 20 | 20 | 20 | 20 | **207** | 9 | $16.30 |
+
+All three are exact on every product length; every miss is a sum of 300 or 1,000 digits. GPT-6.1 Sol's misses (ids 64,
+71, 84) and Claude Opus 5.5's (ids 64, 83, 90, 93) ended inside the budget with 1 to 637 wrong digits; 9 of Gemini 4
+Argon's 13 misses hit the cap. Frontier spend **$30.03** of the $75 cap (stop at $60 never reached). Against the
+predictions: all three are better than predicted (Claude 216 against 200; its + 1,000 17 against 4 and × 20 20 against
+12).
+
+**Open tier:** not run. `/api/chat` returns 402 "Add usage credits or subscribe" for all five models (`QUESTIONS.md` 14).
+
+### Open tier: usage and the stop (31 Oct 2026, before any further Ollama call)
+
+Neo subscribed to Ollama Pro ($60 of usage credit a month). Rates from `https://ollama.com/pricing` (read 31 Oct
+2026; "Prices are per million tokens"; "Usage is measured in tokens at each model's rates"):
+
+| model | input | output | note |
+|---|---|---|---|
+| `gpt-oss:120b` | $0.15 | $0.60 | |
+| `deepseek-v4-pro:0813` | $1.32 | $3.96 | peak rate; off-peak $0.66 / $1.98 (outside 12:00–18:00 UTC on weekdays, all weekend) |
+| `kimi-k3` | $3.00 | $15.00 | |
+| `glm-5.3` | $1.40 | $4.40 | |
+| `gemma4:31b` | $0.14 | $0.40 | the page lists `gemma4` |
+
+Usage per reply is costed as `prompt_eval_count` × input + `eval_count` × output (thinking included), at the peak
+rate for DeepSeek, so the recorded usage is an upper bound on what Ollama meters.
+
+1. Pilot: ids 80 (+ 1,000) and 200 (× 20) per model.
+2. Projection by the registered rule (100 × the + 1,000 cost + 120 × the × 20 cost per model). If the five project
+   over **$55**, the most expensive models are cut to 10 per length (the first 10 of each cell), largest projected
+   cost first, until the total projects under $55; the cut is recorded here before the run. If even that does not fit,
+   stop and write it in `QUESTIONS.md`.
+3. The runner refuses new Ollama requests once the recorded Ollama usage passes $55.
+
+### Open-tier pilot and projection (31 Oct 2026): over the stop, not run further
+
+| model | + 1,000 (id 80): output tokens, usage | × 20 (id 200): output tokens, usage | projection, 220 | projection, 110 |
+|---|---|---|---|---|
+| `gpt-oss:120b` | 32,768 (cap), $0.020 | 32,768 (cap), $0.020 | $4.34 | $2.17 |
+| `deepseek-v4-pro:0813` | 32,768 (cap), $0.131 | 6,043, $0.024 | $15.95 | $7.97 |
+| `kimi-k3` | 32,768 (cap), $0.494 | 7,283, $0.110 | $62.57 | $31.29 |
+| `glm-5.3` | 32,768 (cap), $0.146 | 32,768 (cap), $0.144 | $31.90 | $15.95 |
+| `gemma4:31b` | 32,768 (cap), $0.013 | 19,494, $0.008 | $2.28 | $1.14 |
+| **all five** | | | **$117.04** | **$58.52** |
+
+By the registered rule the cut to 10 per length does not bring the five under $55 either ($58.52), so the open tier
+stops after its pilot (usage $1.10), and the decision goes to `QUESTIONS.md` 15. Seven of the ten pilot replies ran
+to the 32,768-token cap.
+
+### Kimi K3 replaced (31 Oct 2026, Neo: "Swap Kimi for a cheaper model"; before any further call)
+
+**Kimi K3 is dropped, on cost.** Its pilot alone projected $62.57 of the $117 (output at $15 per million tokens). Its
+two pilot replies stay in `raw/frontier/ollama_kimi-k3.jsonl` and are not in the comparison.
+
+**The replacement.** Three large open models from other labs, from ollama.com/pricing (read 31 Oct 2026) and
+`/api/show`:
+
+| model | lab | parameters (Ollama) | thinking | input / output per million | Ollama `modified_at` |
+|---|---|---|---|---|---|
+| `mistral-large-4` | Mistral AI | 1,050 B | yes | $0.70 / $2.10 | 2026-10-06 |
+| `nemotron-3-ultra` | NVIDIA | 550 B | yes | $0.10 / $3.00 | 2026-06-04 |
+| `minimax-m3` | MiniMax | not reported | yes | $0.60 / $2.40 | 2026-06-01 |
+
+Chosen: **`mistral-large-4`**, `think: true`, `num_predict` 32,768. It is the largest and newest of the three and has
+the lowest output rate, which dominates the cost here (the pilots' replies are mostly reasoning). Prediction: 170 of
+220, 1 of 20 at + 1,000, 8 of 20 at × 20.
+
+**DeepSeek's rate.** Off-peak ($0.66 / $1.98) applies outside 12:00–18:00 UTC on weekdays and all weekend. Every reply
+now records its start and end time (UTC); a DeepSeek reply is costed off-peak only if its call started and ended
+off-peak, else at the peak rate. The pilot replies, made before times were recorded, stay at the peak rate.
+
+**The rule with five.** The projection (as above, from each model's own pilot) with DeepSeek at off-peak for the
+calls still to make: gpt-oss $4.34 + DeepSeek $7.98 + GLM $31.90 + Gemma $2.28 = $46.50, which leaves **$8.50** for
+`mistral-large-4`. Its pilot decides: within $8.50, the five run at 20 per length; otherwise stop and report. The
+running stop stays at $55 of recorded Ollama usage (the Kimi pilot's $0.60 included).
+
+### `mistral-large-4` pilot (31 Oct 2026, 07:31–07:34 UTC): over the rule, stopped
+
+Both pilot replies ran to the 32,768-token cap (+ 1,000: $0.069; × 20: $0.069). Projection by the registered rule:
+100 × 0.0693 + 120 × 0.0688 = **$15.19**, over the $8.50 left. The five then project $46.50 + $15.19 = **$61.69**
+(> $55). As registered, the open tier stops here and the decision goes to `QUESTIONS.md` 16. Ollama usage on record:
+$1.24 (the six pilots).
+
+### Open tier: the running stop replaces the projection rule (31 Oct 2026, the orchestrator's decision, before any further call)
+
+Decision on `QUESTIONS.md` 16: run all five open models (`gemma4:31b`, `gpt-oss:120b`, `deepseek-v4-pro:0813`,
+`glm-5.3`, `mistral-large-4`) at 20 per length, with **only the running stop at $55** of recorded Ollama usage; the
+pilot-projection rule no longer gates this tier. Why: the projection prices every sum like the 1,000-digit pilot and
+every product like the 20-digit one, an upper bound; past runs cost 22–45% of theirs; and Neo's Pro plan already
+includes the $60 credit, so the run adds no spending.
+
+- **Order:** one model at a time, cheapest first: `gemma4:31b`, `gpt-oss:120b`, `deepseek-v4-pro:0813` (off-peak by
+  call time), `glm-5.3`, `mistral-large-4`. Within a model, problems in id order (sums 10 → 1,000 digits, then products
+  2 → 20 digits).
+- **Concurrency:** 8 requests per model (Pro plan), backoff on 429 and 5xx as before. The stop refuses new requests once
+  recorded usage passes $55; up to 8 requests already in flight may finish past it, and their usage is recorded.
+- **If the stop fires:** the problems not run are listed here, by model and id, and they are not scored.
+
+**Budget (31 Oct 2026, Neo):** "let's say 100 bucks total"; the open tier's budget is $100 in all, no projection rule applies, and the single running stop is $95 of recorded Ollama usage (Neo's dashboard showed $3.80 when this was written).
+
+### Open-tier result (31 Oct 2026, 07:3x–09:5x UTC; per problem in `results.json`, raw replies in `raw/frontier/ollama_*.jsonl`)
+
+Five open models, 20 per length, `num_predict` 32,768, highest reasoning setting; no request failed after retries
+(the 402 lines from before the subscription are kept and not scored). Usage recorded at the ollama.com/pricing rates,
+DeepSeek at its off-peak rate for the 218 calls made off-peak (Saturday) and at peak for its two pilot calls:
+
+| model | exact / 220 | + 1,000 / 20 | × 20 / 20 | misses at the cap | misses with wrong digits | usage |
+|---|---|---|---|---|---|---|
+| `deepseek-v4-pro:0813` | **199** | 2 | 20 | 17 | 4 | $2.96 |
+| `mistral-large-4` | **168** | 0 | 7 | 48 | 4 | $6.72 |
+| `gemma4:31b` | **156** | 0 | 5 | 18 | 46 | $1.18 |
+| `glm-5.3` | **152** | 0 | 2 | 63 | 5 | $13.62 |
+| `gpt-oss:120b` | **149** | 0 | 3 | 68 | 3 | $2.18 |
+
+Recorded Ollama usage in all: **$27.25** (these five $26.65, Kimi K3's pilot $0.60), inside the $100 budget; the $95
+stop never fired. Per length: `results.json` and `score.py`'s tables. Against the predictions: DeepSeek 199 (195
+predicted), GLM 152 (185), gpt-oss 149 (165), Gemma 156 (120), Mistral 168 (170).
+
+Failure modes: the open models fail by running out of budget on long sums and on 15- and 20-digit products (each
+answers every product up to 6 digits, and every model except Gemma every 10-digit one); Gemma 4 31B is the exception,
+most of its misses (46 of 64) are wrong digits in replies that finished.

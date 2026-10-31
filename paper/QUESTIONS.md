@@ -56,3 +56,63 @@ From the paper's writer, 31 Oct 2026. Each item says what the draft does today, 
     `paper/paper.md` §6 and Extended Data Table 4.
 12. **The PDF is not linked from the page.** `paper/tex/main.pdf` builds; serving it needs a copy under `static/` at
     publish time. Say if you want the link.
+
+## Decided by Neo (31 Oct 2026)
+
+- Author line: Mostafa 'Neo' Mohsenvand, MIT Media Lab.
+- The fourth theorem as "Transfer across code paths" (sel_eq_of_close, regeneration_of_close, policy_tick_eq): "ok".
+- Frontier baselines in Figure 1c: "yes, add all 3: GPT 6.1 Sol (high), Claude Opus 5.5 (high) and Gemini 4 Argon (high)".
+
+## Frontier baseline (31 Oct 2026)
+
+13. **The Anthropic key does not work.** `ANTHROPIC_API_KEY` in `~/.polyformer_keys` returns `401
+    authentication_error: invalid x-api-key` (request `req_011CgZmVoEiQanpe2F6jQExw`, `/v1/models`). The OpenAI and
+    Gemini keys work. Claude Opus 5.5 is registered (`BASELINES.md`, "Frontier") but cannot run until the key is
+    replaced; `frontier_run.py full claude` then runs it with nothing else to change. Until then the paper says
+    "not run" for it.
+
+14. **The Ollama key cannot generate.** `https://ollama.com/api/tags` and `/api/show` return 200, but every
+    `/api/chat` call returns **402 "Add usage credits or subscribe"** (one smoke request per model on problem 0, all
+    five models, 31 Oct; the errors are in `paper/baselines/raw/frontier/ollama_*.jsonl`, not scored). The open tier is
+    registered (`BASELINES.md`, "Ten comparison models") and the runner is ready (`frontier_run.py full ollama`).
+    Options, by what each breaks:
+    - **Add Ollama credits** (Neo's account; a purchase only Neo can make). Breaks nothing; cost unknown until the
+      plan page is read; 5 × 220 replies of up to 32,768 tokens.
+    - **Run the open weights on Modal with vLLM**, as for Qwen3.5-27B. `gpt-oss:120b` (117 B, MXFP4) and `gemma4:31b`
+      (33 B) fit one H100, about $5–8 for both. `glm-5.3` (753 B, FP8) needs 8 GPUs, roughly $30–60;
+      `deepseek-v4-pro` (1.65 T) and `kimi-k3` (2.8 T) need more than one 8-GPU node, which is expensive and slow to
+      set up. Breaks the "free" premise; keeps the same weights.
+    - **The labs' own APIs** (DeepSeek, Moonshot, Z.ai) with new keys. Cheap per token; breaks "one access route for
+      the open tier" and needs keys Neo does not have here.
+    - **Report the comparison with five models** (three frontier, two Qwen) until one of the above lands. The text
+      and Extended Data Table 5 are written that way today, with the open tier marked as registered and not run.
+
+15. **The open tier's pilot projects over the $55 stop.** Ollama's own rates (ollama.com/pricing), the registered
+    upper-bound rule (every sum costed like the 1,000-digit pilot, every product like the 20-digit one): **$117** for
+    the five at 20 per length, **$58.5** at 10 per length. Pilot usage so far $1.10; nothing else has run. Seven of the
+    ten pilot replies hit the 32,768-token cap, so the hard cells will cost the cap and mostly fail. Kimi K3 is the
+    expensive one ($15 per million output tokens: $62.6 of the $117). Options:
+    - **Run with the running-usage stop only.** The projection is an upper bound: short problems use a few hundred
+      tokens (GPT-6.1 Sol: 73 tokens at + 10 against 12,752 at + 1,000), and the frontier models' actual spend was
+      22–45% of theirs. Expected about $30–50 for all five at 20 per length; the runner stops at $55, which could leave
+      Kimi K3's longest cells unfinished. Breaks the registered projection rule.
+    - **Four open models at 20 per length, Kimi K3 at 10.** Projects $54.5 + $31.3 = $85.8 as an upper bound; same
+      caveat. Or **without Kimi K3**: the other four project $54.5, inside $55 even as an upper bound; breaks "ten
+      models" (nine).
+    - **DeepSeek at its off-peak rate** (today is a Saturday, off-peak all day): all five at 10 per length then
+      project $54.5. Breaks the conservative peak-rate assumption, and leaves the open tier at 10 per length.
+    - **More Ollama credit** beyond the Pro plan's $60, so the registered rule passes as is.
+
+16. **The replacement for Kimi K3 does not fit either.** `mistral-large-4` (Mistral AI, 1,050 B, thinking; $0.70 /
+    $2.10 per million) is the cheapest per output token of the three candidates, and both its pilot replies hit the
+    32,768-token cap: projection $15.19 for 220, against $8.50 left. The other candidates cost more per output token
+    (MiniMax-M3 $2.40, Nemotron-3-Ultra $3.00), so none fits under the cap-based upper bound. Five open models now
+    project $61.69 at 20 per length (DeepSeek off-peak). Options:
+    - **Cut GLM-5.3 to 10 per length** (the open tier's original cut rule, largest projected cost first): $45.74,
+      inside $55. Four open models at 20 per length, GLM-5.3 at 10.
+    - **Swap GLM-5.3 for Nemotron-3-Ultra** (NVIDIA, 550 B, $3.00 output against GLM's $4.40): about $51 if it caps like
+      GLM; needs its own pilot. Changes a second model.
+    - **Run all five at 20 per length with only the running $55 stop.** The projection prices every sum like the
+      1,000-digit pilot; short problems use far fewer tokens, so the actual spend is likely lower, but these models
+      often run to the cap, and the stop could leave the last problems unrun.
+    - **More credit**, beyond the Pro plan's $60.

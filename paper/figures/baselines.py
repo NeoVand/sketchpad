@@ -1,5 +1,6 @@
-"""Figure 1c's data: share exact against digits per operand, per system and task, from the writer's registered run
-(paper/BASELINES.md; records paper/baselines/results.json, summary RESULT.md). Writes data/baselines.json.
+"""Figure 1c and Extended Data Figure 1: share exact, per system, on the 220 problems of the registered run
+(paper/BASELINES.md; records paper/baselines/results.json). Writes data/baselines.json. Systems still running are
+listed with what has landed (n below 220) or with no records at all; re-run when the writer reports.
 
     python paper/figures/baselines.py
 """
@@ -10,42 +11,66 @@ import pathlib
 HERE = pathlib.Path(__file__).resolve().parent
 SRC = HERE.parents[0] / "baselines" / "results.json"
 
-SYSTEMS = [  # key in results.json, name on the figure, role, dashed
-    ("sketchpad", "Sketchpad", "ours", False),
-    ("27b thinking", "Qwen3.5-27B, thinking", "strongest", False),
-    ("0.8b thinking", "Qwen3.5-0.8B, thinking", "baseline", False),
-    ("0.8b nothink", "Qwen3.5-0.8B, no thinking", "baseline", True),
+# name in the paper, group, and how its records are found: a system key, or a model id fragment (lower case)
+REGISTRY = [
+    ("Sketchpad", "ours", ["sketchpad"], []),
+    ("GPT-6.1 Sol", "frontier", ["gpt high"], ["gpt-6.1-sol"]),
+    ("Claude Opus 5.5", "frontier", ["claude high", "opus high"], ["claude-opus-5-5"]),
+    ("Gemini 4 Argon", "frontier", ["gemini high"], ["gemini-4-argon"]),
+    ("gpt-oss-120b", "open", ["ollama/gpt-oss:120b high"], ["gpt-oss-120b"]),
+    ("DeepSeek-V4-Pro", "open", ["ollama/deepseek-v4-pro:0813 high"], ["deepseek-v4-pro"]),
+    ("Mistral-Large-4", "open", ["ollama/mistral-large-4 high"], ["mistral-large-4"]),
+    ("GLM-5.3", "open", ["ollama/glm-5.3 high"], ["glm-5.3"]),
+    ("Gemma 4 31B", "open", ["ollama/gemma4:31b high"], ["gemma-4-31b"]),
+    ("Qwen3.5-27B", "qwen", ["27b thinking"], []),
+    ("Qwen3.5-0.8B", "qwen", ["0.8b thinking", "0.8b nothink"], []),  # its better setting is shown
 ]
+SETTING = {"high": "high reasoning", "thinking": "thinking", "nothink": "no thinking", None: ""}
+CELLS = [("add", n) for n in (10, 30, 100, 300, 1000)] + [("mul", n) for n in (2, 4, 6, 10, 15, 20)]
+HARD = [("add", 1000), ("mul", 20)]
 
 
-def tally(records):
-    t = collections.defaultdict(lambda: [0, 0])
-    for r in records:
-        k = (r["system"], r["family"], r["n"])
-        t[k][0] += bool(r["exact"])
-        t[k][1] += 1
-    return t
+def match(rec, keys, frags):
+    model = (rec.get("model") or "").lower()
+    return rec["system"] in keys or any(f in model for f in frags)
+
+
+def summarise(records):
+    """per registry entry: every setting found, with its totals and cells; the entry's shown setting is the best"""
+    out = []
+    for name, group, keys, frags in REGISTRY:
+        recs = [r for r in records if match(r, keys, frags)]
+        settings = collections.defaultdict(list)
+        for r in recs:
+            settings[(r["system"], r.get("mode"))].append(r)
+        rows = []
+        for (sys_key, mode), rs in settings.items():
+            cells = {}
+            for fam, n in CELLS:
+                c = [r for r in rs if r["family"] == fam and r["n"] == n]
+                cells[f"{fam}{n}"] = [sum(bool(r["exact"]) for r in c), len(c)]
+            rows.append({"system": sys_key, "mode": mode, "setting": SETTING.get(mode, mode or ""),
+                         "exact": sum(bool(r["exact"]) for r in rs), "n": len(rs), "cells": cells,
+                         "model": rs[0].get("model")})
+        rows.sort(key=lambda x: (-x["exact"] / max(x["n"], 1), x["system"]))
+        out.append({"name": name, "group": group, "settings": rows, "shown": rows[0] if rows else None})
+    return out
 
 
 def build():
     records = json.loads(SRC.read_text())
-    assert len(records) == 880, len(records)
-    t = tally(records)
-    out = {"source": "paper/baselines/results.json (RESULT.md): 220 problems, 20 per length, four systems",
-           "series": []}
-    for key, name, role, dashed in SYSTEMS:
-        for fam in ("add", "mul"):
-            ns = sorted(n for (s, f, n) in t if s == key and f == fam)
-            pts = [[n, t[(key, fam, n)][0], t[(key, fam, n)][1]] for n in ns]
-            out["series"].append({"system": key, "name": name, "role": role, "dashed": dashed, "family": fam,
-                                  "points": pts})
-    totals = {key: sum(r["exact"] for r in records if r["system"] == key) for key, *_ in SYSTEMS}
-    assert totals == {"sketchpad": 220, "27b thinking": 121, "0.8b thinking": 3, "0.8b nothink": 23}, totals
-    out["totals"] = totals
+    seen = {(r["system"], r["id"]) for r in records}
+    assert len(seen) == len(records), "one record per system and problem"
+    claimed = [r for r in records if any(match(r, k, f) for _, _, k, f in REGISTRY)]
+    assert len(claimed) == len(records), "every record belongs to a listed system"
+    out = {"source": "paper/baselines/results.json (BASELINES.md, RESULT.md); 20 problems per length when complete",
+           "hard": [f"{f}{n}" for f, n in HARD], "systems": summarise(records)}
     (HERE / "data" / "baselines.json").write_text(json.dumps(out, indent=1))
     return out
 
 
 if __name__ == "__main__":
     o = build()
-    print("baselines.json:", o["totals"])
+    for s in o["systems"]:
+        sh = s["shown"]
+        print(f"{s['name']:18s}", "not run" if sh is None else f"{sh['exact']}/{sh['n']} ({sh['setting']})")
