@@ -15,7 +15,7 @@
 		ready: boolean;
 		/** ticks are paced: let each tick rise through the layers */
 		slow: boolean;
-		/** a view was answered without its states (a run at full speed leaves them on the GPU) */
+		/** a view was answered without its states (a program without inside data, or a step that did not read them) */
 		unseen?: boolean;
 	}
 
@@ -145,7 +145,7 @@
 				{!ready
 					? 'Load the model to look inside.'
 					: unseen
-						? 'At the fast pace the states stay on the GPU; choose slow to watch the layers.'
+						? 'This view came back without its states.'
 						: 'Run it to see each layer’s answer.'}
 			</p>
 		{/if}

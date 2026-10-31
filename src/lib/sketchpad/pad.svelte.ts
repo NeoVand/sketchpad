@@ -726,6 +726,16 @@ class Pad {
 		this.worker?.postMessage({ type: 'lose-device' } satisfies ToWorker);
 	}
 
+	/**
+	 * Dev page, to measure what the inside views cost: `watchSteps` false runs Calculate and Algebra without reading the
+	 * states (as before they were read at every pace); `statesVia('cpu')` downloads the whole states output instead of
+	 * the places read.
+	 */
+	watchSteps = true;
+	statesVia(via: 'gpu' | 'cpu') {
+		this.worker?.postMessage({ type: 'states-via', via } satisfies ToWorker);
+	}
+
 	private send(m: ToWorker) {
 		this.ensureWorker().postMessage(m);
 	}
@@ -1247,13 +1257,18 @@ class Pad {
 	}
 
 	/** several multiplier views in one batched generation (the wave schedule; also the dev page's benchmark) */
-	tickBatch(items: { op: TickOp; cells: string[]; push?: string | null }[], inside = true) {
+	tickBatch(
+		items: { op: TickOp; cells: string[]; push?: string | null }[],
+		inside = true,
+		insideRows?: number
+	) {
 		const rid = ++this.rid;
 		return this.request<Extract<FromWorker, { type: 'tick-batch' }>>({
 			type: 'tick-batch',
 			rid,
 			items,
-			inside
+			inside,
+			insideRows
 		});
 	}
 
@@ -1499,8 +1514,8 @@ class Pad {
 			let strip: Uint8ClampedArray;
 			let inside: InsideTick | null;
 			let margin: number | null = null;
-			// the inside panels follow a slow run; a fast one leaves the states on the GPU
-			const watch = this.pace > 0;
+			// the inside panels follow every step: the states of the view on show come back, the rest stay on the GPU
+			const watch = this.pace > 0 || this.watchSteps;
 			if (views.length === 1 && views[0].op === 'ADD-FAST') {
 				const r = await this.tick('ADD-FAST', views[0].cells, null, watch);
 				outs = [r.out];
@@ -1508,7 +1523,8 @@ class Pad {
 			} else {
 				const r = await this.tickBatch(
 					views.map((v) => ({ op: v.op, cells: v.cells })),
-					watch
+					watch,
+					1
 				);
 				outs = r.outs;
 				ms = r.ms;

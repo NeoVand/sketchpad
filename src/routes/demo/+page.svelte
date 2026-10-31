@@ -845,8 +845,8 @@
 			seen={pad.last?.inside ?? null}
 			wrote={pad.last ? pad.last.out[0] : null}
 			meta={pad.insideMeta}
-			kind={panelKind}
-			runKey={pad.sheet}
+			kind={calcPart ? 'calc' : panelKind}
+			runKey={pad.runs}
 			slow={pad.pace > 0}
 			push={pad.push}
 			canPush={pad.ready && !!pad.insideMeta && pad.op !== 'calc'}

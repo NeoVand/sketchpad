@@ -23,9 +23,22 @@ export type Point = [number, number, number];
 /** Qwen3.5-0.8B's full-attention layers (the other 18 are Gated DeltaNet); hidden_states[l + 1] is the stream after layer l */
 export const FULL_ATTENTION = [3, 7, 11, 15, 19, 23];
 
-export type Family = 'SUM' | 'MUL' | 'ADD';
+/**
+ * The maps a program may have: the adder's, the multiplier's two, and the calculator's three tables (E7 on). FLS and
+ * NXT have none (NXT's views share one first answer, FLS has two views).
+ */
+export type Family = 'SUM' | 'MUL' | 'ADD' | 'SUB' | 'EST' | 'DEC';
+export const FAMILIES: Family[] = ['SUM', 'MUL', 'ADD', 'SUB', 'EST', 'DEC'];
 export const familyOf = (op: TickOp): Family | null =>
-	op === 'ADD-FAST' ? 'SUM' : op === 'MUL' ? 'MUL' : op === 'ADD' || op === 'ADZ' ? 'ADD' : null;
+	op === 'ADD-FAST'
+		? 'SUM'
+		: op === 'MUL'
+			? 'MUL'
+			: op === 'ADD' || op === 'ADZ'
+				? 'ADD'
+				: op === 'SUB' || op === 'EST' || op === 'DEC'
+					? op
+					: null;
 
 /** The adder's one answer token, in value order: column sums 0..9 (no carry), 10..19 (carry), halt. */
 export const SUM_CODES = '0123456789abcdefghijH';
@@ -108,7 +121,8 @@ export interface InsideAssets {
 	normWeight: Float32Array;
 	/** lm_head row of each character in `chars` */
 	rows: Map<string, Float32Array>;
-	families: Record<Family, FamilyMap>;
+	/** the maps this program has (a program before E7 has SUM, MUL and ADD only) */
+	families: Partial<Record<Family, FamilyMap>>;
 	steerLayer: number;
 	/** class means of the stream entering `steerLayer`, by first answer code, for the families a visitor can push */
 	steer: Partial<Record<Family, Map<string, Float32Array>>>;
@@ -122,7 +136,7 @@ export function parseAssets(
 		steerLayer: number;
 		/** the codes of each pushable family's class means (an older program: the adder's, as a string) */
 		steerCodes: string | Partial<Record<Family, string>>;
-		families: Record<Family, Omit<FamilyMap, 'basis' | 'centre'>>;
+		families: Partial<Record<Family, Omit<FamilyMap, 'basis' | 'centre'>>>;
 		layout: Record<string, { offset: number; shape: number[] }>;
 	},
 	insideBin: ArrayBuffer
@@ -137,13 +151,10 @@ export function parseAssets(
 		if (!l) throw new Error(`inside.bin has no ${name}`);
 		return bin.subarray(l.offset, l.offset + l.shape.reduce((a, b) => a * b, 1));
 	};
-	const families = {} as Record<Family, FamilyMap>;
-	for (const f of ['SUM', 'MUL', 'ADD'] as Family[]) {
-		families[f] = {
-			...insideJson.families[f],
-			basis: arr(`${f}.basis`),
-			centre: arr(`${f}.centre`)
-		};
+	const families: InsideAssets['families'] = {};
+	for (const f of FAMILIES) {
+		const m = insideJson.families[f];
+		if (m) families[f] = { ...m, basis: arr(`${f}.basis`), centre: arr(`${f}.centre`) };
 	}
 	const steer: InsideAssets['steer'] = {};
 	for (const [f, codes] of Object.entries(steerCodes(insideJson.steerCodes))) {
@@ -238,8 +249,9 @@ export function analyse(
 		const n = normed[g.token];
 		return n && [...g.alphabet].every((c) => a.rows.has(c)) ? [readLens(a, n, g)] : [];
 	});
-	const family = familyOf(op);
-	const path = family && normed[0] ? project(a.families[family], normed[0]) : null;
+	const m = familyOf(op);
+	const family = m && a.families[m] ? m : null;
+	const path = family && normed[0] ? project(a.families[family]!, normed[0]) : null;
 	return { lens, family, path, pushed };
 }
 

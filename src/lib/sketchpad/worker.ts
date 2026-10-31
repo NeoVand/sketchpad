@@ -14,6 +14,8 @@ import { StreamHash, hashBytes } from './hash.ts';
 import {
 	DTYPE,
 	FILE_CACHE,
+	HF_INSIDE_ROOT,
+	HF_ROOT,
 	MODELS,
 	kindOf,
 	modelFiles,
@@ -24,7 +26,14 @@ import {
 	type Kind,
 	type SketchModel
 } from './models.ts';
-import { analyse, parseAssets, steerCodes, steerVector, type InsideAssets } from './inside.ts';
+import {
+	analyse,
+	DEPTH,
+	parseAssets,
+	steerCodes,
+	steerVector,
+	type InsideAssets
+} from './inside.ts';
 import { CALC_DOMAIN, CALC_OPS, calcRef, isCalcOp, type CalcOp } from './calc-tables.ts';
 import { MUL_DOMAIN, outChars, reference, type Op } from './multiplier.ts';
 import type { FromWorker, InsideMeta, LoadedInfo, TickOp, ToWorker } from './protocol.ts';
@@ -81,6 +90,13 @@ let capturing = false;
 /** per decoder call, per batch row, the states at its last `captureLast` positions */
 let captured: Float32Array[][][] = [];
 let captureLast = 1;
+/** the batch rows whose states a tick reads (the page shows one view a step: the first) */
+let captureRows = Infinity;
+/**
+ * how the states come back: 'gpu' keeps the whole `hidden_states` output on the GPU and copies back only the rows and
+ * places a tick reads; 'cpu' downloads the whole output (the fallback, and the dev page's comparison)
+ */
+let statesVia: 'gpu' | 'cpu' = 'gpu';
 /** logits the next decoder calls compute, counted from the end (0: every place); see slottedForward */
 let keepLogits = 0;
 /**
@@ -374,6 +390,102 @@ function padFor(op: BatchOp) {
 	return Math.max(...promptLength.values()) - promptLength.get(op)!;
 }
 
+// ---- the states on the GPU: one output buffer per size, and a small buffer the read places are copied into ----------
+/** WebGPU's buffer usage flags (GPUBufferUsage; GPUMapMode.READ is 1 too), which this worker's types do not declare */
+const USE = { MAP_READ: 0x1, COPY_SRC: 0x4, COPY_DST: 0x8, STORAGE: 0x80 } as const;
+const statesBuffers = new Map<number, { buffer: GPUBuffer; tensor: Map<string, OrtTensor> }>();
+let staging: GPUBuffer | null = null;
+/** float16 or float32, as the graph declares `hidden_states` (null: unknown, so the states come back whole) */
+let statesType: 'float16' | 'float32' | null | undefined;
+/**
+ * ONNX Runtime Web's Tensor class, taken from a tensor the session returned: a bound output must be one of its own (its
+ * bundle carries its own copy of onnxruntime-common, so transformers.js's tensors are a different class)
+ */
+let ortTensor: {
+	fromGpuBuffer(b: GPUBuffer, o: { dataType: string; dims: number[] }): OrtTensor;
+} | null = null;
+
+/**
+ * Where a capturing call's `hidden_states` [DEPTH, batch, seq, DIM] goes: a GPU buffer of this page's, bound as the
+ * output, so ONNX Runtime writes the states there and nothing is downloaded. Null when that is not possible here.
+ */
+function statesTarget(s: OrtSession, dims: number[]) {
+	if (!device || deviceLost || !ortTensor) return null;
+	if (statesType === undefined) {
+		const meta = (s as unknown as { outputMetadata?: { name: string; type?: string }[] })
+			.outputMetadata;
+		const t = meta?.find((m) => m.name === 'hidden_states')?.type;
+		statesType = t === 'float16' || t === 'float32' ? t : null;
+	}
+	if (!statesType) return null;
+	const [Bn, S, D] = dims;
+	const shape = [DEPTH, Bn, S, D];
+	const bytes = DEPTH * Bn * S * D * (statesType === 'float16' ? 2 : 4);
+	let slot = statesBuffers.get(bytes);
+	if (!slot) {
+		slot = {
+			buffer: device.createBuffer({
+				size: bytes,
+				usage: USE.STORAGE | USE.COPY_SRC | USE.COPY_DST
+			}),
+			tensor: new Map()
+		};
+		statesBuffers.set(bytes, slot);
+	}
+	const key = shape.join('x');
+	let tensor = slot.tensor.get(key);
+	if (!tensor) {
+		tensor = ortTensor.fromGpuBuffer(slot.buffer, { dataType: statesType, dims: shape });
+		slot.tensor.set(key, tensor);
+	}
+	return { buffer: slot.buffer, tensor };
+}
+
+/**
+ * Copy back only what a tick reads: for each row it reads, the last `captureLast` places at every depth (each one run
+ * of DIM values per depth, since the places are consecutive), and return them as `captured` keeps them.
+ */
+async function readStates(buffer: GPUBuffer, dims: number[]) {
+	const [Bn, S, D] = dims;
+	const rows = Math.min(Bn, captureRows);
+	const k = Math.min(captureLast, S);
+	const w = statesType === 'float16' ? 2 : 4;
+	const run = k * D * w;
+	const size = rows * DEPTH * run;
+	if (!staging || staging.size < size) {
+		staging?.destroy();
+		staging = device!.createBuffer({
+			size,
+			usage: USE.MAP_READ | USE.COPY_DST
+		});
+	}
+	const enc = device!.createCommandEncoder();
+	for (let b = 0; b < rows; b++)
+		for (let l = 0; l < DEPTH; l++)
+			enc.copyBufferToBuffer(
+				buffer,
+				((l * Bn + b) * S + (S - k)) * D * w,
+				staging,
+				(b * DEPTH + l) * run,
+				run
+			);
+	device!.queue.submit([enc.finish()]);
+	await staging.mapAsync(USE.MAP_READ, 0, size);
+	const raw = staging.getMappedRange(0, size).slice(0);
+	staging.unmap();
+	const data = w === 2 ? new Uint16Array(raw) : new Float32Array(raw);
+	return Array.from({ length: rows }, (_, b) =>
+		Array.from({ length: k }, (_, i) => {
+			const out = new Float32Array(DEPTH * D);
+			for (let l = 0; l < DEPTH; l++) {
+				const off = ((b * DEPTH + l) * k + i) * D;
+				for (let j = 0; j < D; j++) out[l * D + j] = w === 2 ? F16[data[off + j]] : data[off + j];
+			}
+			return out;
+		})
+	);
+}
+
 /**
  * Hook the decoder session: hide `steer` and `lora_gate` from transformers.js (which feeds only the inputs it knows)
  * and feed them here: `steer` zeros except for an armed push (steerNext), `lora_gate` the current gate; keep
@@ -404,16 +516,33 @@ function wrapDecoder(m: Model) {
 		// float16 bits: 0x3c00 is 1, 0 is 0
 		if (gated)
 			keep.lora_gate = ort(new tjs!.Tensor('float16', new Uint16Array([gate ? 0x3c00 : 0]), [1]));
-		// the states of every layer leave the GPU only for a tick that reads them
-		const out = capturing
-			? await run({ ...feeds, steer, ...keep }, opts)
-			: await run({ ...feeds, steer, ...keep }, others, opts);
+		// the states of every layer leave the GPU only for a tick that reads them, and then only the places it reads
+		const onGpu = capturing && statesVia === 'gpu' ? statesTarget(s, dims) : null;
+		const out = onGpu
+			? await run(
+					{ ...feeds, steer, ...keep },
+					{ ...Object.fromEntries(others.map((n) => [n, null])), hidden_states: onGpu.tensor },
+					opts
+				)
+			: capturing
+				? await run({ ...feeds, steer, ...keep }, opts)
+				: await run({ ...feeds, steer, ...keep }, others, opts);
+		ortTensor ??= (out.logits as unknown as { constructor: NonNullable<typeof ortTensor> })
+			?.constructor;
+		if (onGpu) {
+			// the bound output comes back as given; anything else means this runtime did not write into it
+			const bound = out.hidden_states === onGpu.tensor;
+			delete out.hidden_states;
+			if (bound) captured.push(await readStates(onGpu.buffer, dims));
+			else statesType = null;
+			return out;
+		}
 		const hs = out.hidden_states;
 		if (capturing && hs) {
 			const S = hs.dims[2];
 			const k = Math.min(captureLast, S);
 			captured.push(
-				Array.from({ length: hs.dims[1] }, (_, b) =>
+				Array.from({ length: Math.min(hs.dims[1], captureRows) }, (_, b) =>
 					Array.from({ length: k }, (_, i) => statesAt(hs, b, S - k + i))
 				)
 			);
@@ -425,9 +554,11 @@ function wrapDecoder(m: Model) {
 
 /** The program's inside data, beside its graph; null when the program has none. */
 async function loadInside(spec: SketchModel, root: string) {
-	const base = `${root}${spec.id}/`;
+	// the published program's maps are pinned on their own (models.ts, insideRevision); a local program keeps its folder
+	const insideRoot = root === HF_ROOT ? HF_INSIDE_ROOT : root;
 	const get = async (f: string) => {
-		const r = await fetch(base + f);
+		const at = f.startsWith('inside.') ? insideRoot : root;
+		const r = await fetch(`${at}${spec.id}/${f}`);
 		if (!r.ok) throw new Error(`${f}: ${r.status}`);
 		return r;
 	};
@@ -442,17 +573,19 @@ async function loadInside(spec: SketchModel, root: string) {
 		steerLayer: ij.steerLayer,
 		steerCodes: steerCodes(ij.steerCodes),
 		families: Object.fromEntries(
-			Object.entries(ij.families as Record<string, InsideMeta['families']['SUM']>).map(([k, f]) => [
-				k,
-				{
-					cloud: f.cloud,
-					cloudLabels: f.cloudLabels,
-					cloudViews: f.cloudViews,
-					labels: f.labels,
-					radius: f.radius,
-					separation: f.separation
-				}
-			])
+			Object.entries(ij.families as Record<string, NonNullable<InsideMeta['families']['SUM']>>).map(
+				([k, f]) => [
+					k,
+					{
+						cloud: f.cloud,
+						cloudLabels: f.cloudLabels,
+						cloudViews: f.cloudViews,
+						labels: f.labels,
+						radius: f.radius,
+						separation: f.separation
+					}
+				]
+			)
 		) as InsideMeta['families']
 	};
 }
@@ -487,6 +620,7 @@ async function withInside<T>(
 ) {
 	captured = [];
 	capturing = !!inside && want;
+	captureRows = 1;
 	const slotted = (op !== 'ADD-FAST' || padSum()) && slots();
 	captureLast = slotted ? 1 + slots() + padFor(op) : 1;
 	rowPads = slotted ? [padFor(op)] : [];
@@ -499,6 +633,7 @@ async function withInside<T>(
 	} finally {
 		capturing = false;
 		captured = [];
+		captureRows = Infinity;
 		steerNext = null;
 	}
 }
@@ -700,6 +835,7 @@ async function tickBatch(m: Extract<ToWorker, { type: 'tick-batch' }>) {
 		const t = performance.now();
 		captured = [];
 		capturing = !!inside && m.inside !== false;
+		captureRows = m.insideRows ?? Infinity;
 		rowPads = slots() ? items.map((it) => padFor(it.op)) : [];
 		captureLast = slots() ? 1 + slots() + Math.max(...rowPads) : 1;
 		steerNext = null;
@@ -709,7 +845,7 @@ async function tickBatch(m: Extract<ToWorker, { type: 'tick-batch' }>) {
 		try {
 			const rows = await mulBatch(items);
 			const seen = rows.map((_, b) =>
-				inside && captured.length
+				inside && captured.length && b < captureRows
 					? analyse(inside, items[b].op, tokenStates(b), b === p ? pushed : null)
 					: null
 			);
@@ -717,6 +853,7 @@ async function tickBatch(m: Extract<ToWorker, { type: 'tick-batch' }>) {
 		} finally {
 			capturing = false;
 			captured = [];
+			captureRows = Infinity;
 			steerNext = null;
 		}
 	});
@@ -1073,6 +1210,7 @@ self.onmessage = async (ev: MessageEvent<ToWorker>) => {
 	if (m.type === 'load') return load(m);
 	if (m.type === 'cancel') return void cancelled.add(m.rid);
 	if (m.type === 'lose-device') return void device?.destroy();
+	if (m.type === 'states-via') return void (statesVia = m.via);
 	try {
 		if (m.type === 'certify') await certify(m.rid, m.kind, m.rows, m.from);
 		else if (m.type === 'tick') await tick(m);

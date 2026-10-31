@@ -80,7 +80,7 @@ describe('the inside of a tick', () => {
 		const a = toy();
 		const h = new Float32Array(DEPTH * DIM);
 		h[(DEPTH - 1) * DIM + 1] = 3; // the last depth is used as it is
-		const p = project(a.families.SUM, h);
+		const p = project(a.families.SUM!, h);
 		expect(Array.from(p.subarray((DEPTH - 1) * MAP_K))).toEqual([0, 3, 0]);
 	});
 

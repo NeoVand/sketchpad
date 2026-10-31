@@ -35,16 +35,18 @@ export interface InsideMeta {
 	steerLayer: number;
 	/** the answer codes a visitor can push each pushable family toward */
 	steerCodes: Partial<Record<Family, string>>;
-	families: Record<
-		Family,
-		{
-			cloud: Point[];
-			cloudLabels: string[];
-			cloudViews: string[];
-			labels: Record<string, Point>;
-			radius: number[];
-			separation: number;
-		}
+	families: Partial<
+		Record<
+			Family,
+			{
+				cloud: Point[];
+				cloudLabels: string[];
+				cloudViews: string[];
+				labels: Record<string, Point>;
+				radius: number[];
+				separation: number;
+			}
+		>
 	>;
 }
 
@@ -75,9 +77,13 @@ export type ToWorker =
 			items: { op: TickOp; cells: string[]; push?: string | null }[];
 			/** false: leave the layer states on the GPU */
 			inside?: boolean;
+			/** read the states of the first rows only (the page shows one view a step); default every row */
+			insideRows?: number;
 	  }
 	| { type: 'chat'; rid: number; question: string; maxNew: number }
 	| { type: 'cancel'; rid: number }
+	/** how a tick's states come back: only the places it reads (gpu), or the whole output (cpu; the dev page compares) */
+	| { type: 'states-via'; via: 'gpu' | 'cpu' }
 	/** a check of device-loss recovery (dev page only): destroy the GPU device under the loaded model */
 	| { type: 'lose-device' };
 

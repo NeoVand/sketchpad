@@ -24,14 +24,25 @@ export interface Program {
 	revision: string;
 	/** it has learned the calculator's three tables (SUB, EST, DEC: E7 and later); Calculate and Algebra need them */
 	calculator: boolean;
+	/**
+	 * a later commit whose only change is the inside data (`inside.json`, `inside.bin`: the maps of the calculator's
+	 * steps came after the model); the page reads those two files there and every other file at `revision`, where they
+	 * are byte for byte the same, so a visitor's cached model stays good
+	 */
+	insideRevision?: string;
 }
 
 /**
- * The program this page runs, in one place. The swap to E7 is this one line (its folder, its revision and
- * `calculator: true`); everything else follows from it.
+ * The program this page runs, and the commits it is pinned at, in one place; everything else follows from it.
  */
-// prettier-ignore
-export const PUBLISHED: Program = { folder: 'arithmetic', revision: '2df871728a9d24d1e102a327d1f1475457c53962', calculator: true };
+export const PUBLISHED: Program = {
+	folder: 'arithmetic',
+	// the model, the lens and the certificate
+	revision: '2df871728a9d24d1e102a327d1f1475457c53962',
+	// the six state-space maps (SUM, MUL, ADD, SUB, EST, DEC); its parent is the commit above
+	insideRevision: '97d606b832f60afe60c149216d5d100c02bd1055',
+	calculator: true
+};
 
 /**
  * `pnpm dev` only: a program not yet published, served from static/sketchpad/models/<folder>/ beside a `base/` folder
@@ -48,6 +59,8 @@ export const PROGRAM: Program & { local: boolean } = LOCAL
 export const HF_REPO = 'mohsenvand/sketchpad-0.8b-preview';
 export const HF_REVISION = PUBLISHED.revision;
 export const HF_ROOT = `https://huggingface.co/${HF_REPO}/resolve/${HF_REVISION}/`;
+/** where the published program's inside data is read (HF_ROOT when it has not moved on) */
+export const HF_INSIDE_ROOT = `https://huggingface.co/${HF_REPO}/resolve/${PUBLISHED.insideRevision ?? HF_REVISION}/`;
 export const HF_CARD = `https://huggingface.co/${HF_REPO}`;
 
 /** Files under a pinned revision never change, so their cached copies need no check against the server. */
