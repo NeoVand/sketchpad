@@ -35,13 +35,15 @@
 				Language models still get long arithmetic wrong, and the usual fix hands the work to a tool
 				outside the model. Here we teach Qwen3.5-0.8B, through one small adapter, to do the work
 				itself on a sheet it reads with its own eyes, three cells at a time: every digit comes from
-				one forward pass, and the sheet is its only memory. It adds and multiplies numbers of any
-				length exactly. We certify every one of the 1,795 views it can ever meet, and each visitor’s
-				GPU checks the weakest of them again before a run.
+				one forward pass, and the sheet is its only memory. It adds, subtracts, multiplies, divides
+				and takes square roots of whole numbers of any length exactly. We certify every one of the
+				2,446 views it can ever meet, and each visitor’s GPU checks the weakest of them again before
+				a run.
 			</p>
 			<p class="waits">
-				Waiting on: subtraction, long division and square root; algebra by evaluation; one gated
-				model that chats like stock Qwen and opens its sheet by itself.
+				Waiting on: the published model’s 200 on-device runs (under way); algebra by evaluation
+				within 12 s on device; one gated model that chats like stock Qwen and opens its sheet by
+				itself.
 			</p>
 		</div>
 	</section>

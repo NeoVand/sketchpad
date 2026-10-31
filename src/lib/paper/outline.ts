@@ -33,7 +33,7 @@ export const SECTIONS: Section[] = [
 		id: 'certificate',
 		title: 'Certification',
 		holds:
-			'Exactness at every step of every run of any length is equivalent to exactness on the finite set of views (Theorem P, sheet form), and no finite test suffices once state leaves the sheet. All 1,795 views certified with their margins; every visitor’s GPU re-checks the weakest tenth; fp16 against q4 on device.',
+			'Exactness at every step of every run of any length is equivalent to exactness on the finite set of views (Theorem P, sheet form), and no finite test suffices once state leaves the sheet. All 2,446 views certified with their margins; every visitor’s GPU re-checks the weakest tenth; fp16 against q4 on device.',
 		waits: null
 	},
 	{
@@ -41,7 +41,7 @@ export const SECTIONS: Section[] = [
 		title: 'A calculator on the sheet',
 		holds:
 			'Five digit tables: add, multiply, subtract, guess a quotient digit, lower the guess. Long division by Knuth’s Algorithm D, square root digit by digit, gcd and signed numbers as layout over them.',
-		waits: 'E7 certified on every row; 50 exact runs of each operation on device'
+		waits: 'the published model’s 200 on-device runs (under way)'
 	},
 	{
 		id: 'algebra',
