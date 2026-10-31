@@ -17,11 +17,11 @@ REGISTRY = [
     ("GPT-6.1 Sol", "frontier", ["gpt high"], ["gpt-6.1-sol"]),
     ("Claude Opus 5.5", "frontier", ["claude high", "opus high"], ["claude-opus-5-5"]),
     ("Gemini 4 Argon", "frontier", ["gemini high"], ["gemini-4-argon"]),
-    ("gpt-oss-120b", "open", [], ["gpt-oss-120b"]),
-    ("DeepSeek-V4-Pro", "open", [], ["deepseek-v4-pro"]),
-    ("Kimi K3", "open", [], ["kimi-k3"]),
-    ("GLM-5.3", "open", [], ["glm-5.3"]),
-    ("Gemma 4 31B", "open", [], ["gemma-4-31b"]),
+    ("gpt-oss-120b", "open", ["ollama/gpt-oss:120b high"], ["gpt-oss-120b"]),
+    ("DeepSeek-V4-Pro", "open", ["ollama/deepseek-v4-pro:0813 high"], ["deepseek-v4-pro"]),
+    ("Mistral-Large-4", "open", ["ollama/mistral-large-4 high"], ["mistral-large-4"]),
+    ("GLM-5.3", "open", ["ollama/glm-5.3 high"], ["glm-5.3"]),
+    ("Gemma 4 31B", "open", ["ollama/gemma4:31b high"], ["gemma-4-31b"]),
     ("Qwen3.5-27B", "qwen", ["27b thinking"], []),
     ("Qwen3.5-0.8B", "qwen", ["0.8b thinking", "0.8b nothink"], []),  # its better setting is shown
 ]

@@ -464,32 +464,572 @@
   {
    "name": "gpt-oss-120b",
    "group": "open",
-   "settings": [],
-   "shown": null
+   "settings": [
+    {
+     "system": "ollama/gpt-oss:120b high",
+     "mode": "high",
+     "setting": "high reasoning",
+     "exact": 149,
+     "n": 220,
+     "cells": {
+      "add10": [
+       20,
+       20
+      ],
+      "add30": [
+       20,
+       20
+      ],
+      "add100": [
+       10,
+       20
+      ],
+      "add300": [
+       0,
+       20
+      ],
+      "add1000": [
+       0,
+       20
+      ],
+      "mul2": [
+       20,
+       20
+      ],
+      "mul4": [
+       20,
+       20
+      ],
+      "mul6": [
+       20,
+       20
+      ],
+      "mul10": [
+       20,
+       20
+      ],
+      "mul15": [
+       16,
+       20
+      ],
+      "mul20": [
+       3,
+       20
+      ]
+     },
+     "model": "gpt-oss:120b (ollama cloud, think=high)"
+    }
+   ],
+   "shown": {
+    "system": "ollama/gpt-oss:120b high",
+    "mode": "high",
+    "setting": "high reasoning",
+    "exact": 149,
+    "n": 220,
+    "cells": {
+     "add10": [
+      20,
+      20
+     ],
+     "add30": [
+      20,
+      20
+     ],
+     "add100": [
+      10,
+      20
+     ],
+     "add300": [
+      0,
+      20
+     ],
+     "add1000": [
+      0,
+      20
+     ],
+     "mul2": [
+      20,
+      20
+     ],
+     "mul4": [
+      20,
+      20
+     ],
+     "mul6": [
+      20,
+      20
+     ],
+     "mul10": [
+      20,
+      20
+     ],
+     "mul15": [
+      16,
+      20
+     ],
+     "mul20": [
+      3,
+      20
+     ]
+    },
+    "model": "gpt-oss:120b (ollama cloud, think=high)"
+   }
   },
   {
    "name": "DeepSeek-V4-Pro",
    "group": "open",
-   "settings": [],
-   "shown": null
+   "settings": [
+    {
+     "system": "ollama/deepseek-v4-pro:0813 high",
+     "mode": "high",
+     "setting": "high reasoning",
+     "exact": 199,
+     "n": 220,
+     "cells": {
+      "add10": [
+       20,
+       20
+      ],
+      "add30": [
+       20,
+       20
+      ],
+      "add100": [
+       19,
+       20
+      ],
+      "add300": [
+       18,
+       20
+      ],
+      "add1000": [
+       2,
+       20
+      ],
+      "mul2": [
+       20,
+       20
+      ],
+      "mul4": [
+       20,
+       20
+      ],
+      "mul6": [
+       20,
+       20
+      ],
+      "mul10": [
+       20,
+       20
+      ],
+      "mul15": [
+       20,
+       20
+      ],
+      "mul20": [
+       20,
+       20
+      ]
+     },
+     "model": "deepseek-v4-pro:0813 (ollama cloud, think=True)"
+    }
+   ],
+   "shown": {
+    "system": "ollama/deepseek-v4-pro:0813 high",
+    "mode": "high",
+    "setting": "high reasoning",
+    "exact": 199,
+    "n": 220,
+    "cells": {
+     "add10": [
+      20,
+      20
+     ],
+     "add30": [
+      20,
+      20
+     ],
+     "add100": [
+      19,
+      20
+     ],
+     "add300": [
+      18,
+      20
+     ],
+     "add1000": [
+      2,
+      20
+     ],
+     "mul2": [
+      20,
+      20
+     ],
+     "mul4": [
+      20,
+      20
+     ],
+     "mul6": [
+      20,
+      20
+     ],
+     "mul10": [
+      20,
+      20
+     ],
+     "mul15": [
+      20,
+      20
+     ],
+     "mul20": [
+      20,
+      20
+     ]
+    },
+    "model": "deepseek-v4-pro:0813 (ollama cloud, think=True)"
+   }
   },
   {
-   "name": "Kimi K3",
+   "name": "Mistral-Large-4",
    "group": "open",
-   "settings": [],
-   "shown": null
+   "settings": [
+    {
+     "system": "ollama/mistral-large-4 high",
+     "mode": "high",
+     "setting": "high reasoning",
+     "exact": 168,
+     "n": 220,
+     "cells": {
+      "add10": [
+       20,
+       20
+      ],
+      "add30": [
+       20,
+       20
+      ],
+      "add100": [
+       14,
+       20
+      ],
+      "add300": [
+       7,
+       20
+      ],
+      "add1000": [
+       0,
+       20
+      ],
+      "mul2": [
+       20,
+       20
+      ],
+      "mul4": [
+       20,
+       20
+      ],
+      "mul6": [
+       20,
+       20
+      ],
+      "mul10": [
+       20,
+       20
+      ],
+      "mul15": [
+       20,
+       20
+      ],
+      "mul20": [
+       7,
+       20
+      ]
+     },
+     "model": "mistral-large-4 (ollama cloud, think=True)"
+    }
+   ],
+   "shown": {
+    "system": "ollama/mistral-large-4 high",
+    "mode": "high",
+    "setting": "high reasoning",
+    "exact": 168,
+    "n": 220,
+    "cells": {
+     "add10": [
+      20,
+      20
+     ],
+     "add30": [
+      20,
+      20
+     ],
+     "add100": [
+      14,
+      20
+     ],
+     "add300": [
+      7,
+      20
+     ],
+     "add1000": [
+      0,
+      20
+     ],
+     "mul2": [
+      20,
+      20
+     ],
+     "mul4": [
+      20,
+      20
+     ],
+     "mul6": [
+      20,
+      20
+     ],
+     "mul10": [
+      20,
+      20
+     ],
+     "mul15": [
+      20,
+      20
+     ],
+     "mul20": [
+      7,
+      20
+     ]
+    },
+    "model": "mistral-large-4 (ollama cloud, think=True)"
+   }
   },
   {
    "name": "GLM-5.3",
    "group": "open",
-   "settings": [],
-   "shown": null
+   "settings": [
+    {
+     "system": "ollama/glm-5.3 high",
+     "mode": "high",
+     "setting": "high reasoning",
+     "exact": 152,
+     "n": 220,
+     "cells": {
+      "add10": [
+       20,
+       20
+      ],
+      "add30": [
+       19,
+       20
+      ],
+      "add100": [
+       11,
+       20
+      ],
+      "add300": [
+       4,
+       20
+      ],
+      "add1000": [
+       0,
+       20
+      ],
+      "mul2": [
+       20,
+       20
+      ],
+      "mul4": [
+       20,
+       20
+      ],
+      "mul6": [
+       20,
+       20
+      ],
+      "mul10": [
+       20,
+       20
+      ],
+      "mul15": [
+       16,
+       20
+      ],
+      "mul20": [
+       2,
+       20
+      ]
+     },
+     "model": "glm-5.3 (ollama cloud, think=True)"
+    }
+   ],
+   "shown": {
+    "system": "ollama/glm-5.3 high",
+    "mode": "high",
+    "setting": "high reasoning",
+    "exact": 152,
+    "n": 220,
+    "cells": {
+     "add10": [
+      20,
+      20
+     ],
+     "add30": [
+      19,
+      20
+     ],
+     "add100": [
+      11,
+      20
+     ],
+     "add300": [
+      4,
+      20
+     ],
+     "add1000": [
+      0,
+      20
+     ],
+     "mul2": [
+      20,
+      20
+     ],
+     "mul4": [
+      20,
+      20
+     ],
+     "mul6": [
+      20,
+      20
+     ],
+     "mul10": [
+      20,
+      20
+     ],
+     "mul15": [
+      16,
+      20
+     ],
+     "mul20": [
+      2,
+      20
+     ]
+    },
+    "model": "glm-5.3 (ollama cloud, think=True)"
+   }
   },
   {
    "name": "Gemma 4 31B",
    "group": "open",
-   "settings": [],
-   "shown": null
+   "settings": [
+    {
+     "system": "ollama/gemma4:31b high",
+     "mode": "high",
+     "setting": "high reasoning",
+     "exact": 156,
+     "n": 220,
+     "cells": {
+      "add10": [
+       20,
+       20
+      ],
+      "add30": [
+       20,
+       20
+      ],
+      "add100": [
+       17,
+       20
+      ],
+      "add300": [
+       6,
+       20
+      ],
+      "add1000": [
+       0,
+       20
+      ],
+      "mul2": [
+       20,
+       20
+      ],
+      "mul4": [
+       20,
+       20
+      ],
+      "mul6": [
+       20,
+       20
+      ],
+      "mul10": [
+       19,
+       20
+      ],
+      "mul15": [
+       9,
+       20
+      ],
+      "mul20": [
+       5,
+       20
+      ]
+     },
+     "model": "gemma4:31b (ollama cloud, think=True)"
+    }
+   ],
+   "shown": {
+    "system": "ollama/gemma4:31b high",
+    "mode": "high",
+    "setting": "high reasoning",
+    "exact": 156,
+    "n": 220,
+    "cells": {
+     "add10": [
+      20,
+      20
+     ],
+     "add30": [
+      20,
+      20
+     ],
+     "add100": [
+      17,
+      20
+     ],
+     "add300": [
+      6,
+      20
+     ],
+     "add1000": [
+      0,
+      20
+     ],
+     "mul2": [
+      20,
+      20
+     ],
+     "mul4": [
+      20,
+      20
+     ],
+     "mul6": [
+      20,
+      20
+     ],
+     "mul10": [
+      19,
+      20
+     ],
+     "mul15": [
+      9,
+      20
+     ],
+     "mul20": [
+      5,
+      20
+     ]
+    },
+    "model": "gemma4:31b (ollama cloud, think=True)"
+   }
   },
   {
    "name": "Qwen3.5-27B",
