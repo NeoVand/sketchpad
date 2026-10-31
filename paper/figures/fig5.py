@@ -143,7 +143,7 @@ ax.add_patch(Rectangle((crit, crit), XL[1] - crit, YL[1] - crit, fc="#FBE3EB", e
 ax.text(1.25, 2.55, "both", fontsize=6, color=ROSE, ha="center", va="center")
 ax.text(1.25, 2.05, "criteria", fontsize=6, color=ROSE, ha="center", va="center")
 ax.axhline(-5, color=VIOLET, lw=0.6, ls=(0, (1, 1.5)), zorder=0)
-ax.text(4.2, -5.2, "IFEval kill line", fontsize=6, color=VIOLET, ha="right", va="top")
+ax.text(4.2, -5.2, "−5 points: stopping rule", fontsize=6, color=VIOLET, ha="right", va="top")
 pts = {r["id"]: (r["gsm8k"], r["ifeval"]) for r in runs if r["gsm8k"] is not None}
 for r in runs:
     if r["gsm8k"] is None:
