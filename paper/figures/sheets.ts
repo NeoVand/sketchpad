@@ -161,9 +161,29 @@ const out: Record<string, unknown> = {};
 			: s.op === 'ADD' || s.op === 'ADZ'
 				? [at('R', s.x), at('cA', s.x + 1)]
 				: [];
-	// the whole run, for the tick count
+	// the whole run, for the tick count, and every tick as the page shows it before the model answers: the sheet,
+	// the cells read, the answer, and the cells the answer is stamped into
 	const full = new MulSheet(A, Bn);
-	while (!full.done) full.apply(reference(full.op as Op, full.view()));
+	const history: unknown[] = [];
+	while (!full.done) {
+		const sn = snapshot(mulSource(full));
+		sn.wrote = sn.glyphs.map((row, r) =>
+			row.map((g, c) => (g !== B && !operand(ORDER[r], full.W - 1 - c) ? 1 : 0))
+		);
+		const v = full.view();
+		const ans = reference(full.op as Op, v);
+		const fat = (row: string, x: number) => ({ r: ORDER.indexOf(row), c: full.W - 1 - x });
+		const st =
+			full.op === 'MUL'
+				? [fat('p', full.x), ...(full.x + 1 < full.W ? [fat('cM', full.x + 1)] : [])]
+				: full.op === 'ADD' || full.op === 'ADZ'
+					? [fat('R', full.x), ...(ans[1] === '1' && full.x + 1 < full.W ? [fat('cA', full.x + 1)] : [])]
+					: full.op === 'FLS' && ans[0] !== B
+						? [fat('R', full.x)]
+						: [];
+		history.push({ tick: full.ticks, op: full.op, pass: full.j, view: v, answer: ans, stamps: st, sheet: sn });
+		full.apply(ans);
+	}
 	out.mul = {
 		a: A,
 		b: Bn,
@@ -178,9 +198,20 @@ const out: Record<string, unknown> = {};
 		stamps,
 		strip: strip(view),
 		ops_before: ops,
-		sheet: snap
+		sheet: snap,
+		history,
+		final: (() => {
+			const sn = snapshot(mulSource(full));
+			sn.wrote = sn.glyphs.map((row, r) =>
+				row.map((g, c) => (g !== B && !operand(ORDER[r], full.W - 1 - c) ? 1 : 0))
+			);
+			return sn;
+		})()
 	};
 }
+
+// the certificate's weakest view (SUM: carry blank, top 5, bottom 6), as the model receives it
+out.weak = { op: 'ADD-FAST', cells: [B, '5', '6'], answer: referenceAnswer('ADD-FAST', [B, '5', '6']), strip: strip([B, '5', '6']) };
 
 // ---- figure 2a: one real view of each of the five tables, and its answer -------------------------------------------
 {

@@ -246,3 +246,93 @@ def strip_image(strip, color=INK):
     rgba = np.ones((g.shape[0], g.shape[1], 4), dtype=np.float32)
     rgba[..., :3] = g[..., None] / 255.0
     return rgba
+
+
+# ---- layout checks --------------------------------------------------------------------------------------------------
+def _segments(artist, fig):
+    """line segments (display px) of a Line2D or a patch's outline"""
+    import matplotlib.lines as mlines
+    import matplotlib.patches as mpatches
+    if isinstance(artist, mlines.Line2D):
+        if not artist.get_visible() or artist.get_linestyle() in ("None", " ", "") or artist.get_linewidth() == 0:
+            return []
+        xy = artist.get_transform().transform(np.column_stack(artist.get_data()))
+        return list(zip(xy[:-1], xy[1:]))
+    if isinstance(artist, mpatches.Patch):
+        if not artist.get_visible():
+            return []
+        ec = artist.get_edgecolor()
+        has_edge = artist.get_linewidth() > 0 and ec is not None and ec[3] > 0
+        has_fill = artist.get_fill() and artist.get_facecolor()[3] > 0
+        if not (has_edge or has_fill):
+            return []
+        segs = []
+        for poly in artist.get_path().to_polygons(transform=artist.get_transform(), closed_only=False):
+            segs += list(zip(poly[:-1], poly[1:]))
+        return segs
+    return []
+
+
+def _seg_hits_box(p, q, b):
+    """does segment pq touch box b = (x0, y0, x1, y1)?"""
+    x0, y0, x1, y1 = b
+    if max(p[0], q[0]) < x0 or min(p[0], q[0]) > x1 or max(p[1], q[1]) < y0 or min(p[1], q[1]) > y1:
+        return False
+    inside = lambda r: x0 <= r[0] <= x1 and y0 <= r[1] <= y1
+    if inside(p) or inside(q):
+        return True
+    d = (q[0] - p[0], q[1] - p[1])
+    corners = [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+    side = [d[0] * (c[1] - p[1]) - d[1] * (c[0] - p[0]) for c in corners]
+    return min(side) <= 0 <= max(side)
+
+
+def assert_clean(fig, pad_mm=0.1, allow=()):
+    """no text touches another text, a line, a patch edge or a filled patch, or an image; allow: pairs of text
+    strings (or a single string) exempt from the check"""
+    fig.canvas.draw()
+    R = fig.canvas.get_renderer()
+    px = pad_mm / 25.4 * fig.dpi
+    texts = []
+    for t in fig.findobj(matplotlib.text.Text):
+        if not t.get_visible() or not t.get_text().strip() or t.get_alpha() == 0:
+            continue
+        bb = t.get_window_extent(R)
+        if bb.width == 0:
+            continue
+        texts.append((t, (bb.x0 - px, bb.y0 - px, bb.x1 + px, bb.y1 + px)))
+    problems = []
+    fw_, fh_ = fig.bbox.width, fig.bbox.height
+    edge = 0.8 / 25.4 * fig.dpi
+    for t, b in texts:
+        if b[0] < edge or b[1] < edge or b[2] > fw_ - edge or b[3] > fh_ - edge:
+            problems.append(f"text {t.get_text()!r} touches the figure's edge")
+    for i in range(len(texts)):
+        for j in range(i + 1, len(texts)):
+            a, b = texts[i][1], texts[j][1]
+            if a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]:
+                pair = (texts[i][0].get_text(), texts[j][0].get_text())
+                if pair in allow or pair[::-1] in allow:
+                    continue
+                problems.append(f"text {pair[0]!r} touches text {pair[1]!r}")
+    import matplotlib.lines as mlines
+    import matplotlib.patches as mpatches
+    import matplotlib.image as mimage
+    shapes = [a for a in fig.findobj(lambda a: isinstance(a, (mlines.Line2D, mpatches.Patch)))
+              if a.get_visible() and a is not fig.patch and not (a.axes is not None and a is a.axes.patch)]
+    for t, b in texts:
+        if t.get_text() in allow:
+            continue
+        for s in shapes:
+            if getattr(s, "_text_ok", False):
+                continue
+            for p, q in _segments(s, fig):
+                if _seg_hits_box(p, q, b):
+                    problems.append(f"text {t.get_text()!r} touches a {type(s).__name__}")
+                    break
+        for im in fig.findobj(mimage.AxesImage):
+            e = im.get_window_extent(R)
+            if b[0] < e.x1 and e.x0 < b[2] and b[1] < e.y1 and e.y0 < b[3]:
+                problems.append(f"text {t.get_text()!r} touches an image")
+    if problems:
+        raise AssertionError("layout:\n  " + "\n  ".join(sorted(set(problems))))
