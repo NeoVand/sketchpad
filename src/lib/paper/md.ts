@@ -4,10 +4,11 @@
  *
  * - front matter between `---` lines: `key: value`;
  * - headings `## Title {#id .unnumbered}`; level 2 sections are numbered unless `.unnumbered`;
- * - fenced divs `::: kind {#id key="value" .class}` … `:::` (figure, theorem, proof, abstract, status, table,
- *   appendix), which may nest;
- * - display maths `$$ … $$` on its own lines; inline maths `$…$`;
- * - citations `[@key]`, `[@a; @b]`; cross-references `{@id}` (the number of a section, figure, table or theorem);
+ * - fenced divs `::: kind {#id key="value" .class}` … `:::` (figure, theorem, lemma, definition, proof, abstract,
+ *   status, table, appendix), which may nest; `restate=id` on a theorem repeats that theorem's number;
+ * - display maths `$$ … $$` on its own lines, numbered when followed by `{#eq-name}`; inline maths `$…$`;
+ * - citations `[@key]`, `[@a; @b]`; cross-references `{@id}` (the number of a section, appendix, figure, table,
+ *   theorem or equation: write `({@eq-name})` for an equation);
  *   sidenotes `^[…]`;
  * - pipe tables, `-` and `1.` lists, `**strong**`, `*em*`, `` `code` ``, `[text](url)`.
  *
@@ -21,7 +22,7 @@ export type Block =
 	| { t: 'para'; text: string }
 	| { t: 'list'; ordered: boolean; items: string[] }
 	| { t: 'table'; head: string[]; align: ('l' | 'r' | 'c')[]; rows: string[][] }
-	| { t: 'math'; tex: string }
+	| { t: 'math'; tex: string; attrs: Attrs; cont: boolean }
 	| { t: 'code'; lang: string; text: string }
 	| { t: 'div'; kind: string; attrs: Attrs; children: Block[] };
 
@@ -57,6 +58,10 @@ export function parseAttrs(s: string | undefined): Attrs {
 const FENCE = /^:::\s*([\w-]+)?\s*(\{.*\})?\s*$/;
 const HEADING = /^(#{1,4})\s+(.*?)\s*(\{[^}]*\})?\s*$/;
 const LIST = /^(\s*)(-|\d+\.)\s+(.*)$/;
+/** the end of a display: `$$`, optionally followed by attributes such as `{#eq-name}` */
+const MATH_END = /\$\$\s*(\{[^}]*\})?\s*$/;
+/** theorem-like environments, numbered by kind */
+export const THEOREM_LIKE = ['theorem', 'lemma', 'definition'];
 
 function isTableSep(line: string) {
 	return /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?\s*$/.test(line);
@@ -149,21 +154,20 @@ function parseBlocks(lines: string[], start: number, inDiv: boolean): [Block[], 
 		}
 		if (trimmed.startsWith('$$')) {
 			const body: string[] = [];
-			let rest = trimmed.slice(2);
-			if (rest.endsWith('$$') && rest.length >= 2) {
-				out.push({ t: 'math', tex: rest.slice(0, -2).trim() });
-				i++;
-				continue;
-			}
-			if (rest) body.push(rest);
-			i++;
-			while (i < lines.length && !lines[i].trim().endsWith('$$')) body.push(lines[i++]);
-			if (i < lines.length) {
-				rest = lines[i].trim().slice(0, -2);
+			const rest = trimmed.slice(2);
+			let end = MATH_END.exec(rest);
+			if (end) {
+				body.push(rest.slice(0, end.index));
+			} else {
 				if (rest) body.push(rest);
+				i++;
+				while (i < lines.length && !(end = MATH_END.exec(lines[i].trim()))) body.push(lines[i++]);
+				if (end) body.push(lines[i].trim().slice(0, end.index));
 			}
-			out.push({ t: 'math', tex: body.join('\n').trim() });
 			i++;
+			// a display followed directly by text continues its paragraph
+			const cont = i < lines.length && lines[i].trim() !== '' && !FENCE.test(lines[i].trim());
+			out.push({ t: 'math', tex: body.join('\n').trim(), attrs: parseAttrs(end?.[1]), cont });
 			continue;
 		}
 		if (trimmed.startsWith('|') && i + 1 < lines.length && isTableSep(lines[i + 1])) {
@@ -378,22 +382,30 @@ export interface Numbering {
 export function number(doc: Doc): Numbering {
 	const ids = new Map<string, { kind: string; n: string }>();
 	let sec = 0;
+	let app = 0;
 	let sub = 0;
+	let cur = '';
 	const count: Record<string, number> = {};
 	const walk = (blocks: Block[], appendix: boolean) => {
 		for (const b of blocks) {
 			if (b.t === 'heading') {
 				if (b.level === 2 && !b.attrs.classes.includes('unnumbered')) {
-					sec++;
+					// sections are numbered 1, 2, …; appendices A, B, …
+					cur = appendix ? String.fromCharCode(65 + app++) : String(++sec);
 					sub = 0;
-					if (b.attrs.id) ids.set(b.attrs.id, { kind: 'section', n: String(sec) });
+					if (b.attrs.id) ids.set(b.attrs.id, { kind: appendix ? 'appendix' : 'section', n: cur });
 				} else if (b.level === 3 && b.attrs.id) {
 					sub++;
-					ids.set(b.attrs.id, { kind: 'section', n: `${sec}.${sub}` });
+					ids.set(b.attrs.id, { kind: 'section', n: `${cur}.${sub}` });
+				}
+			} else if (b.t === 'math') {
+				if (b.attrs.id) {
+					count.equation = (count.equation ?? 0) + 1;
+					ids.set(b.attrs.id, { kind: 'equation', n: String(count.equation) });
 				}
 			} else if (b.t === 'div') {
 				const k = b.kind;
-				if (['figure', 'table', 'theorem'].includes(k)) {
+				if (['figure', 'table', ...THEOREM_LIKE].includes(k) && !b.attrs.kv.restate) {
 					const ext = b.attrs.classes.includes('extended') || appendix;
 					const key = (ext ? 'ext-' : '') + k;
 					count[key] = (count[key] ?? 0) + 1;

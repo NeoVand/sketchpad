@@ -86,13 +86,23 @@ Because every step is a function of its view and the views form a finite set, th
 \section{The sheet machine}\label{sec-machine}
 \textbf{Model.} Qwen3.5-0.8B\cite{qwen35} combines a vision encoder with a 24-layer language model in which six layers use full attention and eighteen use Gated DeltaNet\cite{yang2025gateddeltanet}. We train a rank-16 LoRA adapter on 150 projection matrices of the language model (10.2 million parameters, 1.2\% of the model); all base weights are frozen.
 
-\textbf{Views and prompts.} The sheet is a grid of 32-pixel cells, each blank or a digit, rendered from a fixed glyph set. A view is a vertical strip of three cells, which the vision encoder maps to three image tokens. A step prompt consists of an operation token, the view, \texttt{=\allowbreak{}} and two placeholder tokens; the step's outputs are decoded at these three positions in a single forward pass. Since the model is causal, padding after \texttt{=\allowbreak{}} does not affect the outputs, and steps of different operations can be batched (Methods).
+\textbf{Views and prompts.} The sheet is a grid of 32-pixel cells, each blank or a digit, rendered from a fixed glyph set. A view is a vertical strip of three cells, which the vision encoder maps to three image tokens. A step prompt consists of an operation token, the view, \texttt{=\allowbreak{}} and two placeholder tokens; the step's outputs are decoded at these three positions in a single forward pass. Since the model is causal, padding after \texttt{=\allowbreak{}} does not affect the outputs (Lemma \hyperref[lem-cache]{4}), and steps of different operations can be batched (Methods).
 
-\textbf{Tables.} For each operation, a table enumerates every view the operation can encounter, with its correct outputs: column addition (\texttt{SUM}, 242 views); the five operations of long multiplication (1,553); subtraction (\texttt{SUB}, 242); estimation of a quotient digit (\texttt{EST}, 400); and decrement of an estimate (\texttt{DEC}, 9). The nine tables contain 2,446 views (Extended Data Table \hyperref[tbl-tables]{1}).
+\textbf{Tables.} For each operation, a table enumerates every view the operation can encounter, with its correct outputs: column addition (\texttt{SUM}, 242 views); the five operations of long multiplication (1,553); subtraction (\texttt{SUB}, 242); estimation of a quotient digit (\texttt{EST}, 400); and decrement of an estimate (\texttt{DEC}, 9). With $\mathcal O$ the nine operations and $G$ the eleven glyphs, the table rows form the set
+\begin{equation}
+V = \bigsqcup_{o \in \mathcal O} V_o, \qquad V_o \subseteq \{o\} \times G^3, \qquad |V| = 242 + 1{,}553 + 651 = 2{,}446,
+\tag{1}\label{eq-views}
+\end{equation}
+whose terms count addition, multiplication and the calculator tables \texttt{SUB}, \texttt{EST} and \texttt{DEC} (Extended Data Table \hyperref[tbl-tables]{1}).
 
-\textbf{Runtime.} For each procedure, a runtime of a few hundred lines lays out the operands, extracts views, invokes the model and writes its outputs. In multiplication, control flow is determined entirely by the model's next-operation output. In division and square roots, the runtime fixes the outer loop, and the branches within it are decided by the model's outputs. The runtime checks that every extracted view is a row of a table; no view outside the tables occurred in any experiment. Independent procedures are executed in lockstep, with one view from each in a shared batch. On the M4, a forward pass costs 0.065 s plus 0.037 s per view in the batch (Fig. \hyperref[fig-machine]{2}c).
+\textbf{Runtime.} For each procedure, a runtime of a few hundred lines lays out the operands, extracts views, invokes the model and writes its outputs. In multiplication, control flow is determined entirely by the model's next-operation output. In division and square roots, the runtime fixes the outer loop, and the branches within it are decided by the model's outputs. The runtime checks that every extracted view is a row of a table; no view outside the tables occurred in any experiment. Independent procedures are executed in lockstep, with one view from each in a shared batch. On the M4, a computation of $n_{\text{pass}}$ forward passes over $n_{\text{view}}$ views takes
+\begin{equation}
+t \approx \alpha\, n_{\text{pass}} + \beta\, n_{\text{view}}, \qquad \alpha = 0.065\ \text{s}, \quad \beta = 0.037\ \text{s}
+\tag{2}\label{eq-cost}
+\end{equation}
+(Fig. \hyperref[fig-machine]{2}c); batching reduces $n_{\text{pass}}$ and leaves $n_{\text{view}}$ unchanged.
 
-\textbf{Training.} The adapter is trained directly on the tables with cross-entropy, a hinge loss on the logit margin and a distillation penalty toward the base model's distribution on plain text\cite{li2017lwf}. Rows whose margin falls below 2 are replayed, and training stops when every row has a margin of at least 3 (Methods).
+\textbf{Training.} The adapter is trained directly on the tables with cross-entropy, a hinge loss on the logit margin and a distillation penalty toward the base model's distribution on plain text\cite{li2017lwf} (objective (\hyperref[eq-loss]{10}) in Methods). Rows whose margin falls below 2 are replayed, and training stops when every row has a margin of at least 3.
 
 \begin{figure}[tbp]
 \centering
@@ -100,27 +110,41 @@ Because every step is a function of its view and the views form a finite set, th
 \caption*{\textbf{Fig. 2 $|$} \textbf{The sheet machine.} \textbf{a}, One view and its outputs for each calculator table. \textbf{b}, Left: the division 4,100 ÷ 59; the borrow out of the leading column indicates that the estimate 8 is too high. Right: the operation sequence of the same division (Knuth's Algorithm D) and of the square root of 2,000,000 (56 forward passes). \textbf{c}, Batching four independent procedures: 32 forward passes instead of 73. Measured time against the cost model for the 200 problems of the browser test (median ratio 1.01). \textbf{d}, Time per problem in the browser test, all 200 exact.}\phantomsection\label{fig-machine}
 \end{figure}
 \section{Certification}\label{sec-cert}
-At each output position, the margin of a view is the logit of the correct token minus the largest logit of any other token. A view passes if all its margins are positive. A certificate records the margins of every view of every table.
+At output position $k$ of a view $v$, let $z_k(v) \in \mathbb R^{\Sigma}$ be the model's logits over the vocabulary $\Sigma$ and $T_k(v)$ the correct token. The margin of $v$ is the smallest lead of a correct token over any other token,
+\begin{equation}
+m(v) = \min_{k} \Big( z_k(v)_{T_k(v)} - \max_{a \neq T_k(v)} z_k(v)_a \Big),
+\tag{3}\label{eq-margin}
+\end{equation}
+and $v$ passes if $m(v) > 0$; the model's output $f(v)$, the argmax at each position, then equals $T(v)$ under any tie rule. A certificate records $m(v)$ for every $v \in V$.
 
-Let $C$ be the configurations of a procedure (sheet contents, view position and control state), $V$ the views and $A$ the outputs. At configuration $c$, the runtime either halts or presents $v = \mathrm{view}(c)$ and sets $c' = \mathrm{paint}(c, f(v))$, where $f: V \to A$ is the model's output map, and $T: V \to A$ is the reference table. That $f$ is a function of the view alone holds because each step's prompt contains only the operation token and the view (the pinned-sheet policy).
+Let $C$ be the configurations of a procedure (sheet contents, view position and control state), $\mathcal V \supseteq V$ all views and $A$ the outputs. At configuration $c_t$, the runtime either halts, $\mathrm{view}(c_t) = \bot$, or presents the view $\mathrm{view}(c_t) \in \mathcal V$ and writes the outputs:
+\begin{equation}
+c_{t+1} = \mathrm{paint}\big(c_t,\, f(\mathrm{view}(c_t))\big),
+\tag{4}\label{eq-step}
+\end{equation}
+where $f\colon \mathcal V \to A$ is the model's output map; the reference run uses the table $T\colon \mathcal V \to A$ instead. That $f$ is a function of the view alone holds because each step's prompt contains only the operation token and the view (the pinned-sheet policy).
 
-\begin{thmbox}\phantomsection\label{thm-p}\noindent\textbf{Theorem 1} (Exactness on views).\enspace\itshape Assume that distinct outputs at a view produce distinct configurations. For every initial configuration in a set $I$ and every number of steps, the model's run equals the reference run if and only if $f(v) = T(v)$ for every view $v$ reached by some reference run from $I$. In particular, if every such view is a row of the tables and every row passes, every run of every length is exact.\upshape
+\begin{thmbox}\phantomsection\label{thm-p}\noindent\textbf{Theorem 1} (Exactness on views).\enspace\itshape Let $R_T(I)$ be the set of views presented on reference runs from a set $I$ of initial configurations, and assume that $\mathrm{paint}(c, \cdot)$ is injective whenever $\mathrm{view}(c) \neq \bot$. The model's run from every $c_0 \in I$ equals the reference run at every step if and only if $f(v) = T(v)$ for all $v \in R_T(I)$. In particular, if $R_T(I) \subseteq V$ and $m(v) > 0$ for all $v \in V$, every run of every length is exact; this direction does not need injectivity.\upshape
 \end{thmbox}
-\begin{proofbox}\noindent\textit{Proof sketch.}\enspace Sufficiency follows by induction on the number of steps. For necessity, consider the first view at which $f$ and $T$ disagree; the reference run reaches it, and the two runs diverge there.
+\begin{proofbox}\noindent\textit{Proof sketch.}\enspace If $f = T$ on $R_T(I)$ and the runs agree at $c_t$, then $\mathrm{view}(c_t) \in R_T(I) \cup \{\bot\}$ and (\hyperref[eq-step]{4}) gives the same $c_{t+1}$; induction on $t$ completes sufficiency. Conversely, if the runs agree and $v = \mathrm{view}(c)$ for a configuration $c$ of a reference run, then $\mathrm{paint}(c, f(v)) = \mathrm{paint}(c, T(v))$, and injectivity gives $f(v) = T(v)$.
 \end{proofbox}
 The hypothesis that $f$ depends only on the view is essential. If a step's context includes earlier steps, as in chain of thought, no finite test suffices.
 
-\begin{thmbox}\phantomsection\label{thm-nofinite}\noindent\textbf{Theorem 2} (Necessity of the pinned policy).\enspace\itshape If each step's context retains earlier steps, then for every finite set of test contexts there exists a decoder that passes every row of a two-state table and every test context with positive margins, yet errs on a longer run. The same decoder is exact at every length under the pinned policy.\upshape
+\begin{thmbox}\phantomsection\label{thm-nofinite}\noindent\textbf{Theorem 2} (Necessity of the pinned policy).\enspace\itshape Suppose instead that each step's context retains the earlier steps. There is a two-state table and a family of decoders, each a correct lookup plus one attention head, such that for every finite set of test contexts some member passes every row of the table, and every test context that begins with the prompt and ends in a row, with positive margins, yet errs on a longer run. Under the pinned policy the same member is exact at every length.\upshape
 \end{thmbox}
-\begin{proofbox}\noindent\textit{Proof sketch.}\enspace The construction adds to a correct lookup an attention head whose contribution grows with the count of a token in the context and exceeds the margin only beyond the longest test. This is an instance of Moore's result that no finite experiment identifies a machine with an unbounded number of states\cite{moore1956gedanken}.
+\begin{proofbox}\noindent\textit{Proof sketch.}\enspace On a context with $n$ tokens after a sink token, $k$ of them events, the head writes $4Rk/(e^{c} + n)$ to the logit of the wrong state, where $R$ is the lookup's margin and $c$ the head's score on the sink. With $e^{c} = 3M + 5$, for $M$ the length of the longest test context, the write exceeds $R$ only on longer contexts (Appendix \hyperref[app-proofs]{A}). This is an instance of Moore's result that no finite experiment identifies a machine with an unbounded number of states\cite{moore1956gedanken}.
 \end{proofbox}
-\begin{thmbox}\phantomsection\label{thm-compose}\noindent\textbf{Theorem 3} (Composition).\enspace\itshape Consider a transcript of $K$ calls to certified procedures, where the inputs of a call may depend on the results of earlier calls. Each call returns its table's output on the input it received. If the final result is wrong, then a table, a transcription of an input, or the combining program is wrong, and the probability of a wrong result is bounded by the sum of the probabilities of these events.\upshape
+\begin{thmbox}\phantomsection\label{thm-compose}\noindent\textbf{Theorem 3} (Composition).\enspace\itshape Consider $K$ calls in which the input $x_i = q_i(v)$ of call $i$ depends only on the results $v_j$ of earlier calls and the answer $g(v)$ only on $v_1, \dots, v_K$; let $q^*_i$, $T^*_i$ and $g^*$ be the intended inputs, functions and combining program, with results $v^*_i = T^*_i(q^*_i(v^*))$. If every call returns its table's output on the input it received, $v_i = T_i(x_i)$, as Theorem \hyperref[thm-p]{1} guarantees for a certified procedure, then a wrong answer requires a wrong table, $T_i(q^*_i(v^*)) \neq T^*_i(q^*_i(v^*))$, a wrong transcription, $q_i(v^*) \neq q^*_i(v^*)$, or a wrong combining program, $g(v^*) \neq g^*(v^*)$, and for any distribution of transcripts
+\begin{equation}
+\Pr\big[g(v) \neq g^*(v^*)\big] \le \Pr[\textup{some table wrong}] + \Pr[\textup{some transcription wrong}] + \Pr\big[g(v^*) \neq g^*(v^*)\big].
+\tag{5}\label{eq-compose}
+\end{equation}\upshape
 \end{thmbox}
-\begin{thmbox}\phantomsection\label{thm-transfer}\noindent\textbf{Theorem 4} (Robustness to perturbation).\enspace\itshape If, at every reachable view, the logits on the execution path differ from the certified logits by at most $\tau$, and every certified margin exceeds $2\tau$, then every run is exact.\upshape
+\begin{thmbox}\phantomsection\label{thm-transfer}\noindent\textbf{Theorem 4} (Robustness to perturbation).\enspace\itshape Let $z, \tilde z \in \mathbb R^{O}$ over a finite set $O$, and $y \in O$. If $\lVert z - \tilde z \rVert_\infty \le \tau$ and $z_y - \max_{a \neq y} z_a > 2\tau$, then $y$ is the unique maximiser of $\tilde z$. Hence, if $R_T(I) \subseteq V$, $m(v) > 2\tau$ for all $v \in V$, and at every step the logits on the execution path for each view $v \in V$ are within $\tau$ of $z_k(v)$ at every output position, every run from $I$ is exact.\upshape
 \end{thmbox}
-\begin{proofbox}\noindent\textit{Proof sketch.}\enspace A perturbation of at most $\tau$ in every logit cannot reverse a lead greater than $2\tau$, so every step selects the certified output, and Theorem \hyperref[thm-p]{1} applies. A cached-prefix implementation of the pinned step is shown to yield identical logits, so it is a path with $\tau = 0$ in exact arithmetic.
+\begin{proofbox}\noindent\textit{Proof sketch.}\enspace If $a \neq y$ maximised $\tilde z$, then $\tilde z_a \le z_a + \tau < z_y - \tau \le \tilde z_y$. In a run, induction on $t$ as for Theorem \hyperref[thm-p]{1}: while the run agrees with the reference run, its view lies in $V$ and each output is the certified one. A cached-prefix implementation of the pinned step computes the logits of the full prompt exactly (Lemma \hyperref[lem-cache]{4}), so it is a path with $\tau = 0$ in exact arithmetic.
 \end{proofbox}
-All four statements are proved in Lean 4 (Appendix A). Theorem \hyperref[thm-transfer]{4} motivates certifying on the deployment path. A 4-bit quantised decoder moved some margins of an earlier adapter from +9.4 to −8.9, whereas the 16-bit decoder reproduced the server certificate; we therefore deploy the 16-bit decoder.
+Appendix \hyperref[app-proofs]{A} gives complete proofs and the corresponding Lean 4 theorems. Theorem \hyperref[thm-transfer]{4} motivates certifying on the deployment path. A 4-bit quantised decoder moved some margins of an earlier adapter from +9.4 to −8.9, whereas the 16-bit decoder reproduced the server certificate; we therefore deploy the 16-bit decoder.
 
 We certify twice. In 32-bit PyTorch, the smallest margin over all 2,446 views is 3.96. On the deployment path (ONNX Runtime Web on WebGPU\cite{onnxruntime,transformersjs,webgpu}, 16-bit, in the batched form used at inference), all views pass with smallest margins of 3.02 for addition, 6.52 for multiplication and 4.61 for the calculator tables (Fig. \hyperref[fig-cert]{3}c); the full check takes 3.5 minutes on the M4. The certificate is bound to the model files by their hashes. Before running, the client recomputes the lowest-margin tenth of each table on the local GPU; the full certificate can be recomputed on request.
 
@@ -130,7 +154,12 @@ We certify twice. In 32-bit PyTorch, the smallest margin over all 2,446 views is
 \caption*{\textbf{Fig. 3 $|$} \textbf{Certification.} \textbf{a}, Sums of increasing length read only views from the 242-view addition table; nine sums of 4 to 1,024 digits reach 202 of them. \textbf{b}, The counterexample of Theorem \hyperref[thm-nofinite]{2}: with state in the context, a decoder passes all tests up to $N$ steps and fails at step $N+1$ ($N$ = 4, 8, 16); under the pinned policy the margin is constant. \textbf{c}, Margins of all 2,446 views on the M4, by operation; dark points mark the lowest tenth, which is rechecked on each new device. \textbf{d}, Smallest margin per operation on the server (PyTorch, 32-bit) against the browser (WebGPU): 16-bit decoders lie on the identity line; 4-bit decoders of earlier adapters deviate by up to 3 logits.}\phantomsection\label{fig-cert}
 \end{figure}
 \section{Arithmetic}\label{sec-calc}
-Signed addition and subtraction proceed column by column; the borrow out of the final column determines the sign. Multiplication is the schoolbook algorithm. Division follows Knuth's Algorithm D\cite{knuth1997taocp2}: after normalisation of the divisor's leading digit to at least 5, each quotient digit is estimated from the two leading digits of the remainder and the leading digit of the divisor (\texttt{EST}), the estimate is never too small and at most two too large, and a borrow out of the multiply-subtract pass triggers a decrement (\texttt{DEC}) and an add-back. Square roots use the digit-by-digit method after scaling the radicand by $c^2$, $c \in \{1, 2, 4, 5\}$, so that the same estimation table applies. Greatest common divisors use Euclid's algorithm.
+Signed addition and subtraction proceed column by column; the borrow out of the final column determines the sign. Multiplication is the schoolbook algorithm. Division follows Knuth's Algorithm D\cite{knuth1997taocp2}. Both operands are multiplied by $\lfloor 10/(d_0 + 1) \rfloor$, where $d_0$ is the divisor's leading digit; this leaves the quotient unchanged and makes the divisor's leading digit $d$ at least 5. Let $r < 10b$ be the current partial remainder for the scaled divisor $b$, with leading digits $r_1 r_2$ when written with one digit more than $b$, so that $r_1 \le d$. The quotient digit is $q = \lfloor r/b \rfloor$, and \texttt{EST} returns
+\begin{equation}
+\hat q = \min\Big(9, \Big\lfloor \frac{10 r_1 + r_2}{d} \Big\rfloor\Big), \qquad q \le \hat q \le q + 2,
+\tag{6}\label{eq-est}
+\end{equation}
+where the bounds are Knuth's Theorems A and B\cite{knuth1997taocp2} for base 10 and $d \ge 5$. A borrow out of the multiply-subtract pass $r - \hat q\, b$ signals $\hat q > q$ and triggers a decrement (\texttt{DEC}) and an add-back, at most twice. Square roots use the digit-by-digit method on $c^2 a$, with $c \in \{1, 2, 4, 5\}$ chosen so that the root of $c^2 a$ begins with 25 to 49. Once the partial root has two digits, twice it begins with a digit of at least 5, so the same estimation table applies to every later digit, and $\lfloor \sqrt a \rfloor = \lfloor \lfloor \sqrt{c^2 a} \rfloor / c \rfloor$. Greatest common divisors use Euclid's algorithm.
 
 \textbf{Browser test.} We pre-registered 200 problems: 50 each of division to 10 decimal places, square roots to 6 places, greatest common divisors of integers up to 999, and signed sums and differences of up to 20 digits. Run sequentially in the browser on the M4, all 200 answers were exact and every view was a table row. Median times were 7.0 s (division), 9.8 s (square root), 7.0 s (gcd) and 2.0 s (sums); 184 problems finished within 12 s, the slowest in 16.5 s (Extended Data Table \hyperref[tbl-t3]{2}).
 
@@ -149,7 +178,12 @@ We compare this route with evaluation-based methods from computer algebra, inter
 \caption*{\textbf{Fig. 4 $|$} \textbf{Algebra.} \textbf{a}, Factorisation of $x^3-6x^2+11x-6$. Numbers in rose were computed by the model; each is linked to the column operation that produced it. \textbf{b}, Rejection rates under fault injection: incorrect roots (200 of 200 for both routes) and one corrupted arithmetic result (185 of 200 for the textbook route, 173 of 200 for evaluation). \textbf{c}, Time per benchmark problem: textbook route measured on the M4 (rose) and under the cost model (open rose); evaluation route under the cost model (cobalt).}\phantomsection\label{fig-algebra}
 \end{figure}
 \section{Gating}\label{sec-gate}
-An earlier arithmetic adapter changed perplexity on plain text by a factor of only 1.0065, yet reduced strict instruction-following accuracy on IFEval\cite{zhou2023ifeval} by 16.4 points, an instance of catastrophic forgetting\cite{mccloskey1989catastrophic,kirkpatrick2017ewc}. We therefore multiply every adapter branch by a scalar graph input $g$: $y = xW + g\,s\,(xA^{\top})B^{\top}$, where $W$ is the frozen weight, $A$ and $B$ are the adapter matrices and $s$ is the LoRA scale (Fig. \hyperref[fig-gate]{5}a). At $g = 0$ each branch contributes an exact floating-point zero. On ONNX Runtime, every logit, hidden state and cached state of the gated graph equals that of the base model at $g = 0$ and that of the ungated adapter at $g = 1$, over 2,500 chat forward passes and 2,688 table views; greedy completions of 100 chat prompts are identical. On the M4, the certificate at $g = 1$ reproduces all 2,446 margins.
+An earlier arithmetic adapter changed perplexity on plain text by a factor of only 1.0065, yet reduced strict instruction-following accuracy on IFEval\cite{zhou2023ifeval} by 16.4 points, an instance of catastrophic forgetting\cite{mccloskey1989catastrophic,kirkpatrick2017ewc}. We therefore multiply every adapter branch by a scalar graph input $g$:
+\begin{equation}
+y = xW + g\, s\, (xA^{\top})B^{\top}, \qquad y\big|_{g=0} = xW,
+\tag{7}\label{eq-gate}
+\end{equation}
+where $W$ is the frozen weight, $A$ and $B$ are the adapter matrices and $s$ is the LoRA scale (Fig. \hyperref[fig-gate]{5}a). At $g = 0$ each branch contributes an exact floating-point zero. On ONNX Runtime, every logit, hidden state and cached state of the gated graph equals that of the base model at $g = 0$ and that of the ungated adapter at $g = 1$, over 2,500 chat forward passes and 2,688 table views; greedy completions of 100 chat prompts are identical. On the M4, the certificate at $g = 1$ reproduces all 2,446 margins.
 
 The gate does not decide when to compute. We therefore trained the adapter to invoke the sheet from within dialogue: on synthetic dialogues and grade-school problems, it learns to emit a short program for the sheet when a reply requires exact computation, and the results are returned into the reply. Training combines supervised data with self-distillation\cite{li2017lwf} and on-policy distillation\cite{agarwal2024gkd,lu2025onpolicy} toward the gated-off model, which limits forgetting\cite{shenfeld2025razor}, followed by reinforcement learning with GRPO\cite{shao2024grpo} against an execution-based reward, with a KL penalty toward the supervised checkpoint. Success criteria were fixed before training. The final adapter meets all of them: on held-out phrasings it invokes the sheet with precision 0.994 and recall 0.989 (the base model prompted with four examples: 0.971 and 0.809), writes the correct computation for 92.8\% of word problems, 96.7\% of equations and 98.3\% of expressions embedded in prose, and stays within 1.6 points of the base model on IFEval (−1.5), GSM8K\cite{cobbe2021gsm8k} (−1.6) and MMLU\cite{hendrycks2021mmlu} (−1.4), with all 2,446 views still certified; on the M4 the final adapter passes every view with smallest margins of 6.67 (addition), 6.53 (multiplication) and 4.56 (calculator tables), and the same weights at $g=1$ serve both the arithmetic procedures and dialogue. Intermediate recipes traded instruction following against multi-step reasoning; on-policy distillation removed most of that trade-off, and an unanchored reinforcement-learning stage reintroduced it (Fig. \hyperref[fig-gate]{5}b,c; Extended Data Table \hyperref[tbl-chat]{4}).
 
@@ -159,7 +193,17 @@ The gate does not decide when to compute. We therefore trained the adapter to in
 \caption*{\textbf{Fig. 5 $|$} \textbf{Gating.} \textbf{a}, A scalar input $g$ multiplies every adapter branch; at $g=0$ the model is identical to the base model, at $g=1$ it executes the sheet procedures. \textbf{b}, IFEval against GSM8K, in points relative to the base model, for the dialogue fine-tunes and for switching the gate within a reply; the shaded region satisfies both criteria, and the dotted line at −5 points is the pre-registered stopping rule. \textbf{c}, Precision and recall of invoking the sheet on held-out problems: base model with four examples (cobalt) and fine-tunes (rose).}\phantomsection\label{fig-gate}
 \end{figure}
 \section{Mechanism}\label{sec-inside}
-We applied the logit lens\cite{nostalgebraist2020logitlens,belrose2023tunedlens} at the first output position. The correct output becomes and remains the top token at a median depth of 19 for addition, 20 for multiplication and 18 for the addition steps of the multiplier; up to depth 15 it is the top token for at most 13\% of views in any of these tables (Fig. \hyperref[fig-inside]{6}a). At the final layer, states cluster by output, and sums with a carry (10–19) separate from those without (Fig. \hyperref[fig-inside]{6}b). Adding the difference between class-mean states\cite{turner2023actadd,rimsky2024caa} after depth 20, the end of the fifth full-attention layer, changes the output to the target class in 79 of 80 addition steps and 80 of 80 multiplication steps. In an earlier adapter, the same intervention after depth 18 changed 8 of 80 addition steps, and after depth 20 it changed 75 of 80, which locates the decision in the full-attention layer ending at depth 20 (Fig. \hyperref[fig-inside]{6}c).
+We applied the logit lens\cite{nostalgebraist2020logitlens,belrose2023tunedlens} at the first output position: with $h_\ell$ the residual state after depth $\ell$, and $W_U$ and $\mathrm{norm}$ the final unembedding and normalisation,
+\begin{equation}
+\hat p_\ell = \operatorname{softmax}\big(W_U\, \mathrm{norm}(h_\ell)\big).
+\tag{8}\label{eq-lens}
+\end{equation}
+The correct output becomes and remains the top token at a median depth of 19 for addition, 20 for multiplication and 18 for the addition steps of the multiplier; up to depth 15 it is the top token for at most 13\% of views in any of these tables (Fig. \hyperref[fig-inside]{6}a). At the final layer, states cluster by output, and sums with a carry (10–19) separate from those without (Fig. \hyperref[fig-inside]{6}b). A class-mean intervention\cite{turner2023actadd,rimsky2024caa} moves the state of a view with output $a$ toward a target output $a'$,
+\begin{equation}
+h_\ell \leftarrow h_\ell + \mu^{\ell}_{a'} - \mu^{\ell}_{a},
+\tag{9}\label{eq-steer}
+\end{equation}
+where $\mu^{\ell}_a$ is the mean of $h_\ell$ over the table's views with output $a$. Applied after depth $\ell = 20$, the end of the fifth full-attention layer, it changes the output to $a'$ in 79 of 80 addition steps and 80 of 80 multiplication steps. In an earlier adapter, the same intervention after depth 18 changed 8 of 80 addition steps, and after depth 20 it changed 75 of 80, which locates the decision in the full-attention layer ending at depth 20 (Fig. \hyperref[fig-inside]{6}c).
 
 \begin{figure}[tbp]
 \centering
@@ -192,18 +236,31 @@ The language model of Qwen3.5-0.8B\cite{qwen35} has 24 layers with hidden size 1
 Glyphs are fixed 32 × 32 sprites of blank and the ten digits, so the set of possible views is finite and each view is an exact image. The prompt of a step is its operation token, the 32 × 96 image, \texttt{=\allowbreak{}} and two placeholder tokens, padded with further placeholders to a common length. The tables are exhaustive over each operation's views; for example, \texttt{MUL} covers every multiplicand digit or blank, every multiplier digit and every carry from blank to 8 (11 × 10 × 10 = 1,100 views), and \texttt{EST} covers every pair of leading remainder digits for each normalised divisor digit from 5 to 9 (400 views). That the procedures reach no other view follows from the layout and, for division and square roots, from normalisation; the runtime checks it at every step, and a reference implementation checked it on 1,000 random problems per procedure.
 
 \subsection*{Training}
-Each training step samples rows from every table. The loss is cross-entropy, plus a hinge loss on margins below 4, plus a KL penalty toward the base model on plain text\cite{li2017lwf}. Every 100 steps the full certificate is computed and rows with margins below 2 are replayed; training stops when every row has a margin of at least 3. The published adapter was initialised from an adapter certified on the addition and multiplication tables, with the subtraction, estimation and decrement tables added. It passed every row at step 1,200 and was stopped at step 1,600 (19.8 minutes on one H100 GPU; learning rate decayed by cosine from $2\times10^{-4}$ to $2\times10^{-5}$). Its plain-text perplexity is 1.0048 times that of the base model.
+Each training step draws a batch $R$ of rows from every table, together with rows replayed from the last certificate. With $z_k(v;\theta)$ the logits at output position $k$ of row $v$, $K_v \in \{1, 3\}$ the number of output positions and $m_k(v;\theta)$ the margin at position $k$, the term inside the minimum in (\hyperref[eq-margin]{3}), the loss is
+\begin{equation}
+\begin{aligned}
+\mathcal L(\theta) = {} & \frac{1}{|R|} \sum_{v \in R} \frac{1}{K_v} \sum_{k=1}^{K_v} \Big[ -\log \operatorname{softmax}\big(z_k(v;\theta)\big)_{T_k(v)} + \max\big(0,\, h - m_k(v;\theta)\big) \Big] \\
+& + \frac{\lambda}{n} \sum_{j=1}^{n} \mathrm{KL}\big(p_0(\cdot \mid x_{\le j}) \,\big\|\, p_\theta(\cdot \mid x_{\le j})\big),
+\end{aligned}
+\tag{10}\label{eq-loss}
+\end{equation}
+with hinge target $h = 4$ and $\lambda = 1$, where $x$ is a passage of $n = 128$ tokens of plain text and $p_0$ the base model\cite{li2017lwf}. Every 100 steps the full certificate is computed and rows with margins below $h/2 = 2$ are replayed until the next; training stops when every row has a margin of at least 3. The published adapter was initialised from an adapter certified on the addition and multiplication tables, with the subtraction, estimation and decrement tables added. It passed every row at step 1,200 and was stopped at step 1,600 (19.8 minutes on one H100 GPU; learning rate on a cosine schedule from $2\times10^{-4}$ to $2\times10^{-5}$ over 4,000 steps). Its plain-text perplexity is 1.0048 times that of the base model.
 
 \subsection*{Certification}
-Margins are computed over the full vocabulary of 248,320 tokens. The server certificate uses PyTorch in 32-bit floating point. The device certificate runs the deployed files (transformers.js 4.2.0\cite{transformersjs}, ONNX Runtime Web on WebGPU) through the inference code path and batched prompt form, and records every margin with the device, library version, file hashes and glyph set (Appendix B). Padding the addition prompt to the batched form changed no margin by more than 0.0018. Two device certificates, with and without the gate, agree on all margins to $10^{-3}$.
+Margins are computed over the full vocabulary of 248,320 tokens. The server certificate uses PyTorch in 32-bit floating point. The device certificate runs the deployed files (transformers.js 4.2.0\cite{transformersjs}, ONNX Runtime Web on WebGPU) through the inference code path and batched prompt form, and records every margin with the device, library version, file hashes and glyph set (Appendix \hyperref[app-cert]{B}). Padding the addition prompt to the batched form changed no margin by more than 0.0018. Two device certificates, with and without the gate, agree on all margins to $10^{-3}$.
 
 \subsection*{Procedures and timing}
-Subtraction ends on a row that reports a final borrow, in which case the operands are swapped and the sign recorded. In division, both operands are scaled by $\lfloor 10/(d+1) \rfloor$, where $d$ is the leading digit of the divisor; each quotient digit is estimated by \texttt{EST}, and the multiply-subtract pass interleaves \texttt{MUL} and \texttt{SUB}. In square roots, the scale $c^2$ makes the root begin with 25 to 49, which we verified for every radicand from 1 to 999,999. The runtime's choice of scale factors and initial estimates affects the number of steps but not the result, since every estimate is at least the true digit and is lowered only by certified steps. The cost model was fitted on batches of 1 to 32 views on the M4.
+Subtraction ends on a row that reports a final borrow, in which case the operands are swapped and the sign recorded. In division, the multiply-subtract pass interleaves \texttt{MUL} and \texttt{SUB}. In square roots, the scale $c^2$ makes the root begin with 25 to 49, which we verified for every radicand from 1 to 999,999. The runtime's choice of scale factors and initial estimates affects the number of steps but not the result, since every estimate is at least the true digit and is lowered only by certified steps. The cost model was fitted on batches of 1 to 32 views on the M4.
 
 The browser test drew its 200 problems from a fixed generator before any run: $a \div b$ to 10 places with $a \le 999$ and $2 \le b \le 99$; $\sqrt a$ to 6 places with $2 \le a \le 999$; $\gcd(a, b)$ with $10 \le a, b \le 999$; and signed sums and differences of 1 to 20 digits. It ran in Chrome on an Apple M4, one problem at a time. Answers were checked against arbitrary-precision arithmetic. The test was repeated with the gated adapter, with identical views and outputs.
 
 \subsection*{Algebra}
-The algebra runtime parses a problem, constructs the derivation and obtains every number through the calculator interface; independent calls are batched. Each line of the derivation records the model calls that produced its numbers. The default check substitutes rational roots into the collected equation and verifies expansions at one additional point; the strict check substitutes into the original expressions. An irrational pair of roots of $ax^2 + bx + c$, written $(p \pm q\sqrt m)/d$, is accepted only if $2ap = -bd$ and $a(p^2 - q^2 m) = cd^2$. Fault injection planted an incorrect root (200 problems per route) or corrupted one arithmetic result (200 per route), with fixed seeds; a further 200 perturbed radical pairs were all rejected. The reference test suite (264 tests, 2,200 generated problems per route and check mode) uses exact tables in place of the model.
+The algebra runtime parses a problem, constructs the derivation and obtains every number through the calculator interface; independent calls are batched. Each line of the derivation records the model calls that produced its numbers. The default check substitutes rational roots into the collected equation and verifies expansions at one additional point; the strict check substitutes into the original expressions. An irrational pair of roots of $ax^2 + bx + c$, written $(p \pm q\sqrt m)/d$ with integers $p$, $q > 0$, $m > 0$ and $d > 0$, is accepted only if
+\begin{equation}
+2ap = -bd \quad \text{and} \quad a\,(p^2 - q^2 m) = c\,d^2,
+\tag{11}\label{eq-vieta}
+\end{equation}
+which are Vieta's relations $x_1 + x_2 = -b/a$ and $x_1 x_2 = c/a$ multiplied by $ad$ and $ad^2$; for $a \neq 0$ they hold if and only if the pair are the two roots. Fault injection planted an incorrect root (200 problems per route) or corrupted one arithmetic result (200 per route), with fixed seeds; a further 200 perturbed radical pairs were all rejected. The reference test suite (264 tests, 2,200 generated problems per route and check mode) uses exact tables in place of the model.
 
 \subsection*{Gating}
 The gate multiplies each adapter branch before it is added to the frozen projection. The identity test compared, bit for bit, every logit, hidden state and cached state of the base, ungated and gated graphs under ONNX Runtime 1.31.1 on CPU, on 100 chat prompts (first user turns of the No Robots test split\cite{norobots2023}; one prefill and 24 greedy steps each) and on all table views.
@@ -212,13 +269,13 @@ The gate multiplies each adapter branch before it is added to the frozen project
 The training data comprise about 3,150 synthetic dialogues, about 30\% of which should not invoke the sheet, and 547 grade-school problems solved by the base model with each calculation replaced by a call to the sheet. The held-out set contains 780 items from unseen templates. Invocations are scored by execution. Criteria were fixed before training: precision and recall of invocation of at least 0.95; correct invocations for at least 90\% of word problems and 95\% of equations; IFEval, GSM8K (250 problems) and MMLU (500 questions) within 2 points of the base model. Reinforcement learning used GRPO with groups of eight samples per task and four tasks per step, a reward that requires a finished reply quoting the executed result and penalises repeated or excess invocations, and a KL penalty toward the supervised checkpoint on every generated token; it ran for 200 steps on one H100 GPU.
 
 \subsection*{Mechanism}
-The logit lens applies the final normalisation and unembedding to the residual stream after each layer at the first output position, for the 1,795 addition and multiplication views. The decision depth of a view is the first depth after which the final output remains the top token. The class-mean intervention adds to the state after depth 20 the difference between the mean states of the target and true outputs (80 trials per table).
+The logit lens (\hyperref[eq-lens]{8}) is computed after each layer at the first output position, for the 1,795 addition and multiplication views. The decision depth of a view is the first depth after which the final output remains the top token. The class-mean intervention (\hyperref[eq-steer]{9}) acts at the first output position, with the target drawn at random from the table's other outputs (80 trials per table).
 
 \subsection*{Baselines}
 The comparison was pre-registered with its scoring rule. Problems were generated with a fixed seed; every model received the prompt ``What is a + b? Give the exact integer. Put the final answer in \textbackslash{}boxed\{\}.'' (with × for products). The answer was the last boxed integer, and a reply that exhausted the budget or gave no answer was scored as wrong. Qwen3.5-0.8B and Qwen3.5-27B (FP8 release) ran under vLLM with the recommended sampling settings and budgets of 32,768 tokens with chain of thought and 4,096 without. GPT-6.1 Sol (\texttt{gpt-6.\allowbreak{}1-sol}, reasoning effort high), Claude Opus 5.5 (\texttt{claude-opus-5-5}, effort high) and Gemini 4 Argon (\texttt{gemini-4-argon}, thinking level high) were accessed through their APIs on 31 October 2026 with default sampling and a budget of 32,768 output tokens including reasoning. Five open-weight models, DeepSeek-V4-Pro (\texttt{deepseek-v4-pro:0813}), Mistral-Large-4, Gemma 4 31B, GLM-5.3 and gpt-oss-120b, ran through the Ollama cloud API on 31 October 2026 with reasoning enabled at the highest available setting and the same budget; Kimi K3 was piloted and excluded on cost. Sketchpad ran all 220 problems in batched lockstep in PyTorch.
 
 \subsection*{Data and code availability}
-The model, adapter, certificate and analysis data are available on Hugging Face (\texttt{mohsenvand/\allowbreak{}sketchpad-0.\allowbreak{}8b-preview}). The runtime, the algebra, the baselines and the sources of this paper are available under the Apache 2.0 licence in the Sketchpad repository. The Lean proofs are in the accompanying package (Appendix A).
+The model, adapter, certificate and analysis data are available on Hugging Face (\texttt{mohsenvand/\allowbreak{}sketchpad-0.\allowbreak{}8b-preview}). The runtime, the algebra, the baselines and the sources of this paper are available under the Apache 2.0 licence in the Sketchpad repository. The Lean proofs are in the accompanying package (Appendix \hyperref[app-proofs]{A}).
 
 \section*{Extended Data}\label{extended}
 \begin{figure}[tbp]
@@ -339,29 +396,147 @@ Qwen3.5-0.8B & 0 (8) & 0 (20) & 0 (20) & 0 (20) & 0 (20) & 15 (4) & 8 (9) & 0 (1
 }
 \end{table}
 \appendix
-\section*{Lean formalisation}\label{app-lean}
-The theorems are proved in Lean 4\cite{demoura2021lean4} with Mathlib\cite{mathlib2020} (version 4.35.0), without \texttt{sorry} or additional axioms; \texttt{\#print axioms} reports only \texttt{propext}, \texttt{Classical.\allowbreak{}choice} and \texttt{Quot.\allowbreak{}sound}, or a subset. The formalisation models the network as a deterministic function of its context, or as a causal decoder whose layer at a position reads only earlier positions, with arbitrary tie-breaking in the argmax and exact arithmetic; floating point enters only through $\tau$ in Theorem \hyperref[thm-transfer]{4}.
+\section{Proofs}\label{app-proofs}
+The theorems are proved in the Lean 4 proof assistant\cite{demoura2021lean4} with Mathlib\cite{mathlib2020} (version 4.35.0), without \texttt{sorry} or additional axioms; \texttt{\#print axioms} reports only \texttt{propext}, \texttt{Classical.\allowbreak{}choice} and \texttt{Quot.\allowbreak{}sound}, or a subset. The formalisation models the network as a deterministic function of its context, or as a causal decoder whose layer at a position reads only earlier positions, with arbitrary tie-breaking in the argmax and exact arithmetic; floating point enters only through $\tau$ in Theorem \hyperref[thm-transfer]{4}. The proofs below follow the Lean proofs, whose declarations are listed in Extended Data Table \hyperref[tbl-lean]{6} (in the namespace \texttt{Polyformer.\allowbreak{}Pinned} unless prefixed). Theorem \hyperref[thm-p]{1} is formalised for the sheet machine (\texttt{Sheet.\allowbreak{}lean}) and for a token form, in which the state is a token and each step reads a state token and an event token after a fixed prompt (\texttt{Pinned.\allowbreak{}lean}). Lemmas \hyperref[lem-argmax]{1}–\hyperref[lem-cache]{4} and Theorem \hyperref[thm-compose]{3}a are formalised in general. The run-level statements of Theorems \hyperref[thm-compose]{3}b and \hyperref[thm-transfer]{4} are formalised for the token form; for the sheet machine they follow from the lemmas as shown below.
 
 \begin{table}[tbp]
 \centering
-\caption*{\textbf{Extended Data Table 6 $|$} \textbf{Lean statements.}}\phantomsection\label{tbl-lean}
+\caption*{\textbf{Extended Data Table 6 $|$} \textbf{Lean statements.} Files are in the package's \texttt{Polyformer/\allowbreak{}} folder, except \texttt{Sheet.\allowbreak{}lean}, which is in \texttt{paper/\allowbreak{}lean/\allowbreak{}} of the Sketchpad repository.}\phantomsection\label{tbl-lean}
 {\small
 \begin{tabularx}{\linewidth}{l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
 \toprule
-Theorem & Lean names & File \\
+Statement & Lean declarations & File \\
 \midrule
-\hyperref[thm-p]{1} & \texttt{Sketchpad.\allowbreak{}sheet\_\allowbreak{}exact\_\allowbreak{}iff}, \texttt{Sketchpad.\allowbreak{}sheet\_\allowbreak{}certified}; token form \texttt{pinned\_\allowbreak{}regeneration\_\allowbreak{}iff}, \texttt{regeneration\_\allowbreak{}trace\_\allowbreak{}iff} & \texttt{Sheet.\allowbreak{}lean}, \texttt{Pinned.\allowbreak{}lean} \\
-\hyperref[thm-nofinite]{2} & \texttt{no\_\allowbreak{}finite\_\allowbreak{}test\_\allowbreak{}suite}, \texttt{no\_\allowbreak{}finite\_\allowbreak{}check} & \texttt{Unpinned.\allowbreak{}lean} \\
-\hyperref[thm-compose]{3} & \texttt{compose\_\allowbreak{}exact}, \texttt{error\_\allowbreak{}decomposition\_\allowbreak{}certified}, \texttt{error\_\allowbreak{}bound} & \texttt{Compose.\allowbreak{}lean} \\
-\hyperref[thm-transfer]{4} & \texttt{sel\_\allowbreak{}eq\_\allowbreak{}of\_\allowbreak{}close}, \texttt{regeneration\_\allowbreak{}of\_\allowbreak{}close}; cached prefix \texttt{policy\_\allowbreak{}tick\_\allowbreak{}eq}, \texttt{policy\_\allowbreak{}regeneration} & \texttt{Pinned.\allowbreak{}lean}, \texttt{Policy.\allowbreak{}lean} \\
+Theorem \hyperref[thm-p]{1} & \texttt{Sketchpad.\allowbreak{}sheet\_\allowbreak{}exact\_\allowbreak{}iff}, \texttt{Sketchpad.\allowbreak{}sheet\_\allowbreak{}certified}; token form \texttt{regeneration\_\allowbreak{}trace\_\allowbreak{}iff}, \texttt{pinned\_\allowbreak{}regeneration\_\allowbreak{}iff} & \texttt{Sheet.\allowbreak{}lean}, \texttt{Pinned.\allowbreak{}lean} \\
+Theorem \hyperref[thm-nofinite]{2} & \texttt{no\_\allowbreak{}finite\_\allowbreak{}test\_\allowbreak{}suite}, \texttt{theorem8a\_\allowbreak{}counterexample}, \texttt{no\_\allowbreak{}finite\_\allowbreak{}check} & \texttt{Unpinned.\allowbreak{}lean} \\
+Theorem \hyperref[thm-compose]{3} & (a) \texttt{error\_\allowbreak{}decomposition}; (b) token form \texttt{compose\_\allowbreak{}exact}, \texttt{error\_\allowbreak{}decomposition\_\allowbreak{}certified}, \texttt{error\_\allowbreak{}bound} & \texttt{Compose.\allowbreak{}lean} \\
+Theorem \hyperref[thm-transfer]{4} & \texttt{sel\_\allowbreak{}eq\_\allowbreak{}of\_\allowbreak{}close}, \texttt{histRun\_\allowbreak{}eq\_\allowbreak{}of\_\allowbreak{}closed}; token form \texttt{regeneration\_\allowbreak{}of\_\allowbreak{}close}; unpinned decoding \texttt{unpinned\_\allowbreak{}exact\_\allowbreak{}of\_\allowbreak{}close} & \texttt{Pinned.\allowbreak{}lean}, \texttt{Unpinned.\allowbreak{}lean} \\
+Lemma \hyperref[lem-argmax]{1} & \texttt{sel\_\allowbreak{}eq\_\allowbreak{}of\_\allowbreak{}close}, \texttt{sel\_\allowbreak{}eq\_\allowbreak{}of\_\allowbreak{}strict} & \texttt{Pinned.\allowbreak{}lean} \\
+Lemma \hyperref[lem-regen]{2} & \texttt{Polyformer.\allowbreak{}Interp.\allowbreak{}regeneration}, \texttt{scanl\_\allowbreak{}eq\_\allowbreak{}iff\_\allowbreak{}foldl\_\allowbreak{}eq}, \texttt{regeneration\_\allowbreak{}trace\_\allowbreak{}iff} & \texttt{Interp.\allowbreak{}lean}, \texttt{Pinned.\allowbreak{}lean} \\
+Lemma \hyperref[lem-hist]{3} & \texttt{histRun\_\allowbreak{}eq\_\allowbreak{}of\_\allowbreak{}closed}, \texttt{reach\_\allowbreak{}closed} & \texttt{Pinned.\allowbreak{}lean} \\
+Lemma \hyperref[lem-cache]{4} & \texttt{resid\_\allowbreak{}congr}, \texttt{cache\_\allowbreak{}sound}, \texttt{cachedForward\_\allowbreak{}eq}, \texttt{policy\_\allowbreak{}tick\_\allowbreak{}eq} & \texttt{Pinned.\allowbreak{}lean}, \texttt{Policy.\allowbreak{}lean} \\
 \bottomrule
 \end{tabularx}
 }
 \end{table}
-\section*{Certificate format}\label{app-cert}
+\subsection*{Definitions and lemmas}
+\begin{thmbox}\phantomsection\label{def-machine}\noindent\textbf{Definition 1} (Sheet machine).\enspace\itshape A sheet machine consists of sets $C$ of configurations, $\mathcal V$ of views and $A$ of outputs, a view map $\mathrm{view}\colon C \to \mathcal V \cup \{\bot\}$ and a paint map $\mathrm{paint}\colon C \times A \to C$. For $g\colon \mathcal V \to A$, the step $\sigma_g\colon C \to C$ is
+\begin{equation}
+\sigma_g(c) = \begin{cases} \mathrm{paint}\big(c, g(v)\big) & \text{if } \mathrm{view}(c) = v \in \mathcal V, \\ c & \text{if } \mathrm{view}(c) = \bot, \end{cases}
+\tag{12}\label{eq-sigma}
+\end{equation}
+and the run of length $n$ from $c_0$ is $(c_0, \sigma_g(c_0), \dots, \sigma_g^n(c_0))$. The model's run and the reference run are those of $\sigma_f$ and $\sigma_T$. For $I \subseteq C$,
+\[
+\mathrm{Reach}_T(I) = \{\sigma_T^n(c_0) : c_0 \in I,\ n \ge 0\}, \qquad R_T(I) = \{\mathrm{view}(c) : c \in \mathrm{Reach}_T(I)\} \setminus \{\bot\}.
+\]\upshape
+\end{thmbox}
+\begin{thmbox}\phantomsection\label{def-fold}\noindent\textbf{Definition 2} (Runs over events).\enspace\itshape Let $S$ be a set of states, $E$ a set of events and $F\colon S \times E \to S$. For $s_0 \in S$ and a word $w$ over $E$, $F^w(s_0)$ is the left fold, $F^{\varepsilon}(s_0) = s_0$ and $F^{ue}(s_0) = F(F^u(s_0), e)$, and the trace of $F$ on $w = e_1 \cdots e_n$ is $\big(F^{e_1 \cdots e_i}(s_0)\big)_{i=0}^{n}$. For $B \subseteq E$, $\mathrm{Reach}^B_F(s_0) = \{F^u(s_0) : u \in B^*\}$.\upshape
+\end{thmbox}
+\begin{thmbox}\phantomsection\label{lem-argmax}\noindent\textbf{Lemma 1} (Margins decide the argmax).\enspace\itshape Let $O$ be a finite set, $z, \tilde z \in \mathbb R^O$, $y \in O$ and $\tau \in \mathbb R$. If $z_a + 2\tau < z_y$ for every $a \in O \setminus \{y\}$ and $|\tilde z_a - z_a| \le \tau$ for every $a \in O$, then every maximiser of $\tilde z$ over $O$ is $y$. In particular, if $m(v) > 0$, then $f(v) = T(v)$ under every tie rule.\upshape
+\end{thmbox}
+\begin{proofbox}\noindent\textit{Proof.}\enspace Let $s$ maximise $\tilde z$ over $O$ and suppose $s \neq y$. Then $\tilde z_s \le z_s + \tau < z_y - \tau \le \tilde z_y$, which contradicts $\tilde z_y \le \tilde z_s$. For the second statement take, at each output position $k$, $O = \Sigma$, $y = T_k(v)$, $\tilde z = z = z_k(v)$ and $\tau = 0$; the hypothesis is that the $k$-th term in (\hyperref[eq-margin]{3}) is positive.
+\end{proofbox}
+\begin{thmbox}\phantomsection\label{lem-regen}\noindent\textbf{Lemma 2} (Regeneration).\enspace\itshape Let $F, \delta\colon S \times E \to S$, $s_0 \in S$ and $B \subseteq E$. Then $F^w(s_0) = \delta^w(s_0)$ for every $w \in B^*$ if and only if $F(s, e) = \delta(s, e)$ for every $s \in \mathrm{Reach}^B_\delta(s_0)$ and $e \in B$. Both conditions are equivalent to equality of the traces of $F$ and $\delta$ on every $w \in B^*$.\upshape
+\end{thmbox}
+\begin{proofbox}\noindent\textit{Proof.}\enspace ($\Leftarrow$) Induction on the length of $w$. For $w = \varepsilon$ both sides are $s_0$. For $w = ue$ with $u \in B^*$ and $e \in B$,
+\[
+F^{ue}(s_0) = F\big(F^u(s_0), e\big) = F\big(\delta^u(s_0), e\big) = \delta\big(\delta^u(s_0), e\big) = \delta^{ue}(s_0),
+\]
+by the induction hypothesis and then by the assumption at $s = \delta^u(s_0) \in \mathrm{Reach}^B_\delta(s_0)$.
+
+($\Rightarrow$) Let $s = \delta^u(s_0)$ with $u \in B^*$, and let $e \in B$. Applying the assumption to $u$ and to $ue$,
+\[
+F(s, e) = F\big(F^u(s_0), e\big) = F^{ue}(s_0) = \delta^{ue}(s_0) = \delta(s, e).
+\]
+Traces: the $i$-th entry of the trace on $w$ is the fold over the prefix $e_1 \cdots e_i \in B^*$, so equal folds on all words give equal traces; conversely, the last entries of equal traces are the folds over $w$.
+\end{proofbox}
+\begin{thmbox}\phantomsection\label{lem-hist}\noindent\textbf{Lemma 3} (Steps that read the history).\enspace\itshape Let $G\colon E^* \times S \times E \to S$, and for $w = e_1 \cdots e_n$ let $s'_0 = s_0$ and $s'_i = G(e_1 \cdots e_{i-1}, s'_{i-1}, e_i)$. If $G(u, s, e) = \delta(s, e)$ for all $u \in B^*$, $s \in \mathrm{Reach}^B_\delta(s_0)$ and $e \in B$, then $s'_n = \delta^w(s_0)$ for every $w \in B^*$.\upshape
+\end{thmbox}
+\begin{proofbox}\noindent\textit{Proof.}\enspace By induction on $i$, $s'_i = \delta^{e_1 \cdots e_i}(s_0)$. This holds for $i = 0$. If it holds for $i - 1$, then $s'_{i-1} \in \mathrm{Reach}^B_\delta(s_0)$, and the assumption with $u = e_1 \cdots e_{i-1}$ gives $s'_i = \delta(s'_{i-1}, e_i) = \delta^{e_1 \cdots e_i}(s_0)$. Lean proves the lemma with any set $Q \ni s_0$ closed under $\delta$ on $B$ in place of $\mathrm{Reach}^B_\delta(s_0)$, which is the smallest such set.
+\end{proofbox}
+\begin{thmbox}\phantomsection\label{def-decoder}\noindent\textbf{Definition 3} (Causal decoder).\enspace\itshape A causal decoder of depth $L$ maps tokens $x_0 x_1 \cdots$ to states $h^0_p = \mathrm{emb}(x_p, p)$ and $h^{\ell+1}_p = \Lambda_\ell(p, h^\ell)$, where $\Lambda_\ell(p, h)$ depends only on $h_0, \dots, h_p$; the logits of a sequence of length $N$ are $\mathrm{head}(h^L_{N-1})$. A cached forward of a block $b$ after a prefix $\Pi$ reads $h^\ell_p$ for $p < |\Pi|$ from a cache computed on $\Pi$ alone and computes the positions $p \ge |\Pi|$ by the same recursion.\upshape
+\end{thmbox}
+\begin{thmbox}\phantomsection\label{lem-cache}\noindent\textbf{Lemma 4} (Causality and caching).\enspace\itshape (i) $h^\ell_p$ depends only on $x_0, \dots, x_p$. (ii) The cached forward of $b$ after $\Pi$ computes $h^\ell_p(\Pi b)$ at every layer and position, and hence the logits of $\Pi b$. (iii) Decoding a two-token block $b_1 b_2$ one token at a time on the cache of $\Pi$ gives the logits of $\Pi b_1 b_2$.\upshape
+\end{thmbox}
+\begin{proofbox}\noindent\textit{Proof.}\enspace (i) Induction on $\ell$: $h^0_p$ reads only $x_p$; if $x$ and $x'$ agree up to $p$, the induction hypothesis gives $h^\ell_i(x) = h^\ell_i(x')$ for $i \le p$, so $h^{\ell+1}_p(x) = h^{\ell+1}_p(x')$ by causality of $\Lambda_\ell$. (ii) Induction on $\ell$. For $p < |\Pi|$ the cache holds $h^\ell_p(\Pi)$, which equals $h^\ell_p(\Pi b)$ by (i). For $p \ge |\Pi|$, layer 0 embeds $b_{p - |\Pi|} = (\Pi b)_p$, and layer $\ell + 1$ applies $\Lambda_\ell(p, \cdot)$ to states equal to $h^\ell(\Pi b)$ by the induction hypothesis. (iii) Decoding $b_1$ on the cache of $\Pi$ leaves the cache of $\Pi b_1$ by (ii), and decoding $b_2$ on that cache gives the logits of $\Pi b_1 b_2$, again by (ii).
+\end{proofbox}
+\subsection*{Theorem 1}
+\begin{proofbox}\noindent\textit{Proof of Theorem 1.}\enspace Fix $c_0 \in I$ and apply Lemma \hyperref[lem-regen]{2} with $S = C$, a single event $E = B = \{\ast\}$, $F(c, \ast) = \sigma_f(c)$ and $\delta(c, \ast) = \sigma_T(c)$. The words over $B$ are $\ast^n$, $F^{\ast^n}(c_0) = \sigma_f^n(c_0)$, the trace on $\ast^n$ is the run of length $n$, and $\mathrm{Reach}^B_\delta(c_0) = \mathrm{Reach}_T(\{c_0\})$. By the lemma, the model's run from $c_0$ equals the reference run at every length if and only if
+\begin{equation}
+\sigma_f(c) = \sigma_T(c) \quad \text{for every } c \in \mathrm{Reach}_T(\{c_0\}).
+\tag{13}\label{eq-agree}
+\end{equation}
+
+\emph{Sufficiency.} Let $f = T$ on $R_T(I)$ and $c \in \mathrm{Reach}_T(\{c_0\})$. If $\mathrm{view}(c) = \bot$, then $\sigma_f(c) = c = \sigma_T(c)$. Otherwise $v = \mathrm{view}(c) \in R_T(I)$ and $\sigma_f(c) = \mathrm{paint}(c, f(v)) = \mathrm{paint}(c, T(v)) = \sigma_T(c)$. So (\hyperref[eq-agree]{13}) holds for every $c_0 \in I$.
+
+\emph{Necessity.} Let $v \in R_T(I)$, so that $v = \mathrm{view}(c)$ for some $c \in \mathrm{Reach}_T(\{c_0\})$ and $c_0 \in I$. By (\hyperref[eq-agree]{13}), $\mathrm{paint}(c, f(v)) = \mathrm{paint}(c, T(v))$, and injectivity of $\mathrm{paint}(c, \cdot)$ gives $f(v) = T(v)$.
+
+\emph{The certificate.} If $R_T(I) \subseteq V$ and $m(v) > 0$ for all $v \in V$, Lemma \hyperref[lem-argmax]{1} gives $f = T$ on $V \supseteq R_T(I)$, and sufficiency, which did not use injectivity, applies.
+\end{proofbox}
+\subsection*{Theorem 2}
+Let $\Sigma$ be a set of tokens, $\Pi$ a fixed prompt and $\rho\colon \Sigma^* \to \Sigma$ a step map that returns a maximiser of the logits at the last position of a context. On events $e_1 e_2 \cdots$ from a state $s_0$, pinned decoding computes $s_i = \rho(\Pi\, s_{i-1}\, e_i)$; unpinned decoding keeps the whole context, $x_0 = \Pi\, s_0$, $s_i = \rho(x_{i-1}\, e_i)$ and $x_i = x_{i-1}\, e_i\, s_i$. A row $(s, e)$ of a table $\delta$ passes if the logits at $\Pi\, s\, e$ have their strict maximum at $\delta(s, e)$.
+
+\begin{thmbox}\phantomsection\label{def-counter}\noindent\textbf{Definition 4} (The counterexample).\enspace\itshape The tokens are $\Sigma = \{\omega, \mathsf u, \mathsf v, \mathsf a\}$, where $\omega$ is a sink token, and the prompt is $\Pi = \omega\, \mathsf u\, \mathsf a\, \mathsf u\, \mathsf v\, \mathsf a\, \mathsf v$. The table has states $\{\mathsf u, \mathsf v\}$, the event $\mathsf a$, $\delta(\mathsf u, \mathsf a) = \mathsf u$, $\delta(\mathsf v, \mathsf a) = \mathsf v$ and start $\mathsf u$, so its state is $\mathsf u$ after every input. For $R > 0$ and $c \in \mathbb R$, the logits at the last position of a context $x = x_0 x_1 \cdots x_{N-1}$ are
+\begin{equation}
+\ell(x)_y = R\, [\, y = x_{N-2} \,] + [\, y = \mathsf v \,]\, \eta(x), \qquad \eta(x) = \frac{\sum_{j=0}^{N-1} e^{\kappa_j} \beta_j}{\sum_{j=0}^{N-1} e^{\kappa_j}},
+\tag{14}\label{eq-counter}
+\end{equation}
+with scores $\kappa_0 = c$ and $\kappa_j = 0$ for $j \ge 1$, and values $\beta_j = 4R$ if $x_j = \mathsf a$ and $\beta_j = 0$ otherwise. The first term is a lookup that returns the state token of the last row, which is the correct output for $\delta$; the second is one attention head at the last position, with score $c$ on the sink, which writes its value to the logit of $\mathsf v$. If $x_0 = \omega$ and $k$ of the $n = N - 1$ tokens after it are $\mathsf a$,
+\begin{equation}
+\eta(x) = \frac{4Rk}{e^{c} + n}.
+\tag{15}\label{eq-write}
+\end{equation}\upshape
+\end{thmbox}
+\begin{thmbox}\noindent\textbf{Theorem 2} (Necessity of the pinned policy, precise form).\enspace\itshape Let $\mathcal T$ be a finite set of contexts, $M$ the largest length of a context in $\mathcal T$ ($M = 0$ if $\mathcal T$ is empty), and $e^{c} = 3M + 5$. For every $R > 0$ and every tie rule, the decoder (\hyperref[eq-counter]{14}): (a) passes both rows of $\delta$ with positive margins; (b) at every context in $\mathcal T$ of the form $\Pi\, w\, s\, \mathsf a$ with $s \in \{\mathsf u, \mathsf v\}$, has its strict maximum at $\delta(s, \mathsf a)$; (c) under unpinned decoding of $\mathsf a^{2M+4}$ ends in the state $\mathsf v$, whereas $\delta$ ends in $\mathsf u$; and (d) under pinned decoding equals $\delta$ on every input.\upshape
+\end{thmbox}
+\begin{proofbox}\noindent\textit{Proof.}\enspace \emph{Two facts.} At a context ending in $\mathsf v\, \mathsf a$, $\ell_{\mathsf v} = R + \eta \ge R > 0$ while every other logit is 0, since $\eta \ge 0$; so $\mathsf v$ is the strict maximiser. At a context ending in $\mathsf u\, \mathsf a$, $\ell_{\mathsf u} = R$, $\ell_{\mathsf v} = \eta$ and $\ell_\omega = \ell_{\mathsf a} = 0$; so $\mathsf u$ is the strict maximiser if $\eta < R$, and $\mathsf v$ is if $\eta > R$.
+
+(a) A row $\Pi\, s\, \mathsf a$ has $n = 8$ tokens after the sink, three of them $\mathsf a$, so $\eta = 12R/(e^{c} + 8)$ by (\hyperref[eq-write]{15}), which is less than $R$ because $e^{c} = 3M + 5 > 4$. Both facts then give the rows.
+
+(b) A test context $x = \Pi\, w\, \mathsf u\, \mathsf a$ of length $N \le M$ has $n = N - 1$ tokens after the sink and at most $N - 1$ of them $\mathsf a$, so
+\[
+\eta(x) \le \frac{4R(N - 1)}{3M + 4 + N} < R \iff 3N < 3M + 8,
+\]
+which holds because $N \le M$. Test contexts ending in $\mathsf v\, \mathsf a$ are covered by the first fact.
+
+(c) A state $\mathsf v$ is followed only by $\mathsf v$, by the first fact, so if $s_{i-1} = \mathsf u$, then $s_0 = \cdots = s_{i-1} = \mathsf u$ and the context that determines $s_i$ is $\Pi\, \mathsf u\, (\mathsf a\, \mathsf u)^{i-1}\, \mathsf a$, with $2i + 6$ tokens after the sink, $i + 2$ of them $\mathsf a$. By (\hyperref[eq-write]{15}),
+\[
+\eta = \frac{4R(i + 2)}{e^{c} + 2i + 6} > R \iff 2i > e^{c} - 2,
+\]
+and $\eta < R$ if $2i < e^{c} - 2$. Induction on $i$ gives $s_i = \mathsf u$ while $2i < e^{c} - 2$ and $s_i = \mathsf v$ once $2i > e^{c} - 2$. For $i = 2M + 4$, $2i = 4M + 8 > 3M + 3 = e^{c} - 2$, so $s_{2M+4} = \mathsf v$.
+
+(d) Under pinned decoding every step reads a row $\Pi\, s\, \mathsf a$ with $s \in \{\mathsf u, \mathsf v\}$, which returns $\delta(s, \mathsf a) \in \{\mathsf u, \mathsf v\}$ by (a). Lemma \hyperref[lem-regen]{2} with $S = \{\mathsf u, \mathsf v\}$, $B = \{\mathsf a\}$ and $F(s, \mathsf a) = \rho(\Pi\, s\, \mathsf a)$ gives equality with $\delta$ on every input.
+\end{proofbox}
+With $e^{c} = 2N + 5$ instead, the same computation gives a decoder that passes both rows and is exact under unpinned decoding on every input of length at most $N$, yet wrong on $\mathsf a^{N+2}$ (\texttt{no\_\allowbreak{}finite\_\allowbreak{}check}); testing every input up to a given length does not suffice either. Conversely, if the context moves every logit by at most $\tau$ from the logit at the pinned row and every certified margin exceeds $2\tau$, unpinned decoding is exact on every input (\texttt{unpinned\_\allowbreak{}exact\_\allowbreak{}of\_\allowbreak{}close}). In the construction, the head's write is such a perturbation, and it grows without bound.
+
+\subsection*{Theorem 3}
+\begin{thmbox}\phantomsection\label{def-transcript}\noindent\textbf{Definition 5} (Transcript).\enspace\itshape A transcript makes $K$ calls. Call $i$ receives the input $x_i = q_i(v)$ and returns $v_i = E_i(x_i)$, where $E_i$ is the procedure that executes it and $q_i$ reads only $v_1, \dots, v_{i-1}$; the answer $g(v)$ reads only $v_1, \dots, v_K$. Call $i$ has a table $T_i$, the function its procedure is certified to compute. The intended computation has inputs $q^*_i$, functions $T^*_i$ and combining program $g^*$, with results satisfying $v^*_i = T^*_i(q^*_i(v^*))$ and answer $g^*(v^*)$.\upshape
+\end{thmbox}
+\begin{thmbox}\noindent\textbf{Theorem 3} (Composition, precise form).\enspace\itshape (a) If $g(v) \neq g^*(v^*)$, then for some $i \le K$, $E_i(x_i) \neq T_i(x_i)$, or $T_i(q^*_i(v^*)) \neq T^*_i(q^*_i(v^*))$, or $q_i(v^*) \neq q^*_i(v^*)$; or else $g(v^*) \neq g^*(v^*)$. (b) Let every quantity depend on a transcript $\omega$ in a set $\Omega$ with a measure $\mu$. If $E_i(x_i) = T_i(x_i)$ for every call of every transcript, then
+\[
+\begin{aligned}
+\mu\{g(v) \neq g^*(v^*)\} \le {} & \mu\{\exists i\colon T_i(q^*_i(v^*)) \neq T^*_i(q^*_i(v^*))\} \\
+& + \mu\{\exists i\colon q_i(v^*) \neq q^*_i(v^*)\} + \mu\{g(v^*) \neq g^*(v^*)\}.
+\end{aligned}
+\]\upshape
+\end{thmbox}
+\begin{proofbox}\noindent\textit{Proof.}\enspace (a) Suppose that none of the four events occurs. We show $v_i = v^*_i$ for all $i \le K$ by strong induction on $i$. If $v_j = v^*_j$ for all $j < i$, then $q_i(v) = q_i(v^*)$ because $q_i$ reads only earlier results, and
+\[
+v_i = E_i(q_i(v)) = T_i(q_i(v)) = T_i(q_i(v^*)) = T_i(q^*_i(v^*)) = T^*_i(q^*_i(v^*)) = v^*_i,
+\]
+using in turn that the procedure, the transcription and the table are correct. Then $g(v) = g(v^*) = g^*(v^*)$, because $g$ reads only the results and the combining program is correct, a contradiction.
+
+(b) Under the hypothesis, (a) places the event $\{g(v) \neq g^*(v^*)\}$ inside the union of the other three, and the bound follows from monotonicity and subadditivity of $\mu$, which hold for arbitrary sets, so no measurability is needed; a probability distribution gives (\hyperref[eq-compose]{5}). For a procedure certified on the views it reaches, the hypothesis $E_i(x_i) = T_i(x_i)$ is Theorem \hyperref[thm-p]{1} applied to its run on $x_i$, whatever the length of $x_i$ and the order of the calls. In Lean, (a) is proved for arbitrary $E_i$, $T_i$ and $T^*_i$, and (b) for calls executed by the token-form procedure, with the hypothesis derived from Theorem \hyperref[thm-p]{1} in that form (\texttt{compose\_\allowbreak{}exact}).
+\end{proofbox}
+\subsection*{Theorem 4}
+\begin{proofbox}\noindent\textit{Proof of Theorem 4.}\enspace The first statement is Lemma \hyperref[lem-argmax]{1}. For the second, fix $c_0 \in I$ and let the execution path's step $t$ be $G_t(c) = \mathrm{paint}(c, \tilde f_t(\mathrm{view}(c)))$ if $\mathrm{view}(c) \neq \bot$ and $G_t(c) = c$ otherwise, where $\tilde f_t(v)$ is the argmax of the execution-path logits $\tilde z^{(t)}_k(v)$ at each position; these may depend on $t$, and through it on the rest of the batch. Let $c \in \mathrm{Reach}_T(\{c_0\})$ with $v = \mathrm{view}(c) \neq \bot$. Then $v \in R_T(I) \subseteq V$, so $\lVert \tilde z^{(t)}_k(v) - z_k(v) \rVert_\infty \le \tau$ and $m(v) > 2\tau$, and Lemma \hyperref[lem-argmax]{1} at each position gives $\tilde f_t(v) = T(v)$, hence $G_t(c) = \sigma_T(c)$; this also holds when $\mathrm{view}(c) = \bot$. Lemma \hyperref[lem-hist]{3} with a single event, so that the history is the step count, gives $G_t \circ \cdots \circ G_1(c_0) = \sigma_T^t(c_0)$ for every $t$.
+
+In Lean, the first statement is \texttt{sel\_\allowbreak{}eq\_\allowbreak{}of\_\allowbreak{}close} and Lemma \hyperref[lem-hist]{3} is \texttt{histRun\_\allowbreak{}eq\_\allowbreak{}of\_\allowbreak{}closed}; their combination is \texttt{regeneration\_\allowbreak{}of\_\allowbreak{}close} for the token form and \texttt{unpinned\_\allowbreak{}exact\_\allowbreak{}of\_\allowbreak{}close} for unpinned decoding, and the sheet form is the instance above. By Lemma \hyperref[lem-cache]{4}, a pinned step computed on a cache of a fixed prefix, or decoded token by token on it, yields exactly the logits of the full prompt (\texttt{cachedForward\_\allowbreak{}eq}, \texttt{policy\_\allowbreak{}tick\_\allowbreak{}eq}), so in exact arithmetic it is an execution path with $\tau = 0$.
+\end{proofbox}
+\section{Certificate format}\label{app-cert}
 A certificate is a JSON file distributed with the model graph. It specifies the prompt forms under which it was measured, the numerical precision of each graph, the library version, hashes of the glyph set and of every model file, the device and the time, and, for each table, the number of rows, the number passed and every row's margin in a fixed order, to $10^{-3}$ logits. A client accepts a certificate only if every hash matches the loaded files, and recomputes the lowest-margin tenth of each table before use.
 
-\section*{Reproducibility}\label{app-repro}
+\section{Reproducibility}\label{app-repro}
 Every number in this paper is listed, with its source record, in \texttt{paper/\allowbreak{}numbers.\allowbreak{}md} of the Sketchpad repository. Training, server certification, the gate identity test and dialogue fine-tuning are scripted for Modal; the device certificate and browser test run in the client; the algebra tests and cost tables run with \texttt{pnpm vitest run src/\allowbreak{}lib/\allowbreak{}sketchpad/\allowbreak{}program}; the comparison is in \texttt{paper/\allowbreak{}baselines/\allowbreak{}}; the Lean proofs build with \texttt{lake build}.
 
 \section*{References}

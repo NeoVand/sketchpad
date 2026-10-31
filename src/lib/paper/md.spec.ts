@@ -30,6 +30,95 @@ describe('the paper source', () => {
 		expect(compress([4, 5])).toBe('4,5');
 	});
 
+	it('numbers display equations and refers to them in both outputs', () => {
+		const md = [
+			'## A {#sec-a}',
+			'',
+			'By ({@eq-b}), $x$ is one:',
+			'$$ x = 1 $$ {#eq-a}',
+			'and then',
+			'$$',
+			'y = 2',
+			'$$ {#eq-b}',
+			'',
+			'$$ z $$',
+			'',
+			'New paragraph.'
+		].join('\n');
+		const doc = parse(md);
+		expect(doc.blocks.map((b) => b.t)).toEqual([
+			'heading',
+			'para',
+			'math',
+			'para',
+			'math',
+			'math',
+			'para'
+		]);
+		const n = number(doc);
+		expect(n.ids.get('eq-a')).toEqual({ kind: 'equation', n: '1' });
+		expect(n.ids.get('eq-b')).toEqual({ kind: 'equation', n: '2' });
+		const html = renderPaper(
+			md,
+			new Map(),
+			(f) => f,
+			() => true
+		);
+		expect(html.missing).toEqual([]);
+		expect(html.html).toContain('(<a class="xref" href="#eq-b">2</a>)');
+		expect(html.html).toContain('<div class="dmath" id="eq-b"');
+		// the number sits beside the formula, not as KaTeX's tag; an unnumbered display has none
+		expect(html.html.match(/<span class="eq-n"/g)?.length).toBe(2);
+		expect(html.html).not.toContain('katex-tag');
+		const tex = renderTex(md, new Map(), { figDir: '', figExists: () => true });
+		expect(tex).toContain('(\\hyperref[eq-b]{2})');
+		expect(tex).toContain('\\begin{equation}\ny = 2\n\\tag{2}\\label{eq-b}\n\\end{equation}');
+		// a display stays in its paragraph: no blank line before it, none after it when the sentence goes on
+		expect(tex).toContain(
+			'is one:\n\\begin{equation}\nx = 1\n\\tag{1}\\label{eq-a}\n\\end{equation}\nand then\n\\begin'
+		);
+		expect(tex).toContain('\\[\nz\n\\]\n\nNew paragraph.');
+	});
+
+	it('numbers lemmas and definitions, repeats a restated theorem, and letters appendices', () => {
+		const md = [
+			'## A {#sec-a}',
+			'::: theorem {#thm-a title="Main"}',
+			'Body.',
+			':::',
+			'::: appendix',
+			'## Proofs {#app-p}',
+			'::: definition {#def-a}',
+			'D.',
+			':::',
+			'::: lemma {#lem-a}',
+			'L.',
+			':::',
+			'::: theorem {restate=thm-a}',
+			'Body.',
+			':::',
+			'## More {#app-q}',
+			':::'
+		].join('\n');
+		const n = number(parse(md));
+		expect(n.ids.get('app-p')).toEqual({ kind: 'appendix', n: 'A' });
+		expect(n.ids.get('app-q')).toEqual({ kind: 'appendix', n: 'B' });
+		expect(n.ids.get('lem-a')?.n).toBe('1');
+		expect(n.ids.get('def-a')?.n).toBe('1');
+		const html = renderPaper(
+			md,
+			new Map(),
+			(f) => f,
+			() => true
+		).html;
+		expect(html).toContain('<span class="thm-label">Lemma 1</span>');
+		expect(html).toContain('<span class="thm-label">Definition 1</span>');
+		expect(html.match(/<span class="thm-label">Theorem 1<\/span>/g)?.length).toBe(2);
+		const tex = renderTex(md, new Map(), { figDir: '', figExists: () => true });
+		expect(tex).toContain('\\appendix\n\\section{Proofs}\\label{app-p}');
+		expect(tex).toContain('\\textbf{Lemma 1}');
+	});
+
 	it('renders the real paper to HTML and LaTeX with every reference resolved', () => {
 		const md = readFileSync('paper/paper.md', 'utf8');
 		const bib = parseBib(readFileSync('paper/refs.bib', 'utf8'));

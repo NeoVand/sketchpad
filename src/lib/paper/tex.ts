@@ -37,7 +37,11 @@ const KIND_LABEL: Record<string, string> = {
 	table: 'Table',
 	'ext-table': 'Extended Data Table',
 	theorem: 'Theorem',
-	'ext-theorem': 'Theorem'
+	'ext-theorem': 'Theorem',
+	lemma: 'Lemma',
+	'ext-lemma': 'Lemma',
+	definition: 'Definition',
+	'ext-definition': 'Definition'
 };
 
 export interface TexOptions {
@@ -112,34 +116,53 @@ export function renderTex(md: string, bib: Map<string, Entry>, opt: TexOptions):
 		].join('\n');
 	};
 
-	const blocks = (bs: Block[]): string =>
-		bs
-			.map((b) => {
-				switch (b.t) {
-					case 'heading': {
-						const lab = b.attrs.id ? `\\label{${b.attrs.id}}` : '';
-						const star = b.attrs.classes.includes('unnumbered') ? '*' : '';
-						if (b.level === 2) return `\\section${star}{${run(b.text)}}${lab}`;
-						if (b.level === 3) return `\\subsection*{${run(b.text)}}${lab}`;
-						return `\\paragraph{${run(b.text)}}${lab}`;
-					}
-					case 'para':
-						return run(b.text) + '\n';
-					case 'list': {
-						const env = b.ordered ? 'enumerate' : 'itemize';
-						return `\\begin{${env}}\n${b.items.map((it) => `\\item ${run(it)}`).join('\n')}\n\\end{${env}}`;
-					}
-					case 'math':
-						return `\\[\n${b.tex}\n\\]`;
-					case 'code':
-						return `\\begin{verbatim}\n${b.text}\n\\end{verbatim}`;
-					case 'table':
-						return `{\\small\n${table(b)}\n}`;
-					case 'div':
-						return div(b.kind, b.attrs, b.children);
-				}
-			})
-			.join('\n');
+	/**
+	 * Blocks joined by newlines. A display belongs to the paragraph around it: no blank line before it, and none
+	 * after it when the source continues the sentence (`cont`); otherwise a blank line ends the paragraph.
+	 */
+	const blocks = (bs: Block[]): string => {
+		const parts = bs.map(one);
+		let out = parts[0] ?? '';
+		for (let i = 1; i < bs.length; i++) {
+			const prev = bs[i - 1];
+			if (bs[i].t === 'math' || (prev.t === 'math' && prev.cont))
+				out = out.trimEnd() + '\n' + parts[i];
+			else if (prev.t === 'math') out += '\n\n' + parts[i];
+			else out += '\n' + parts[i];
+		}
+		return out;
+	};
+
+	const one = (b: Block): string => {
+		switch (b.t) {
+			case 'heading': {
+				const lab = b.attrs.id ? `\\label{${b.attrs.id}}` : '';
+				const star = b.attrs.classes.includes('unnumbered') ? '*' : '';
+				// in the appendix, numbered sections are lettered by LaTeX's \appendix, as md.ts letters them
+				if (b.level === 2) return `\\section${star}{${run(b.text)}}${lab}`;
+				if (b.level === 3) return `\\subsection*{${run(b.text)}}${lab}`;
+				return `\\paragraph{${run(b.text)}}${lab}`;
+			}
+			case 'para':
+				return run(b.text) + '\n';
+			case 'list': {
+				const env = b.ordered ? 'enumerate' : 'itemize';
+				return `\\begin{${env}}\n${b.items.map((it) => `\\item ${run(it)}`).join('\n')}\n\\end{${env}}`;
+			}
+			case 'math': {
+				const r = b.attrs.id ? num.ids.get(b.attrs.id) : undefined;
+				return r
+					? `\\begin{equation}\n${b.tex}\n\\tag{${r.n}}\\label{${b.attrs.id}}\n\\end{equation}`
+					: `\\[\n${b.tex}\n\\]`;
+			}
+			case 'code':
+				return `\\begin{verbatim}\n${b.text}\n\\end{verbatim}`;
+			case 'table':
+				return `{\\small\n${table(b)}\n}`;
+			case 'div':
+				return div(b.kind, b.attrs, b.children);
+		}
+	};
 
 	const div = (kind: string, a: Attrs, children: Block[]): string => {
 		const lab = a.id ? `\\phantomsection\\label{${a.id}}` : '';
@@ -165,7 +188,9 @@ export function renderTex(md: string, bib: Map<string, Entry>, opt: TexOptions):
 				const cap = hasCap ? `\\caption*{\\textbf{${label(a.id)} $|$} ${run(first.text)}}` : '';
 				return `\\begin{table}[tbp]\n\\centering\n${cap}${lab}\n${blocks(hasCap ? rest : children)}\n\\end{table}`;
 			}
-			case 'theorem': {
+			case 'theorem':
+			case 'lemma':
+			case 'definition': {
 				const name = a.kv.title ? ` (${run(a.kv.title)})` : '';
 				const lean = a.kv.lean
 					? `\n\n\\noindent{\\small\\raggedright\\textsc{Lean:} ${a.kv.lean
@@ -173,7 +198,7 @@ export function renderTex(md: string, bib: Map<string, Entry>, opt: TexOptions):
 							.map(escCode)
 							.join(', ')}\\par}`
 					: '';
-				return `\\begin{thmbox}${lab}\\noindent\\textbf{${label(a.id)}}${name}.\\enspace\\itshape ${blocks(children).trim()}\\upshape${lean}\n\\end{thmbox}`;
+				return `\\begin{thmbox}${lab}\\noindent\\textbf{${label(a.kv.restate ?? a.id)}}${name}.\\enspace\\itshape ${blocks(children).trim()}\\upshape${lean}\n\\end{thmbox}`;
 			}
 			case 'proof':
 				return `\\begin{proofbox}\\noindent\\textit{${a.kv.title ? run(a.kv.title) : 'Proof sketch'}.}\\enspace ${blocks(children).trim()}\n\\end{proofbox}`;

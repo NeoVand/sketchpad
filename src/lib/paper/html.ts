@@ -44,7 +44,12 @@ const KIND_LABEL: Record<string, string> = {
 	table: 'Table',
 	'ext-table': 'Extended Data Table',
 	theorem: 'Theorem',
-	'ext-theorem': 'Theorem'
+	'ext-theorem': 'Theorem',
+	lemma: 'Lemma',
+	'ext-lemma': 'Lemma',
+	definition: 'Definition',
+	'ext-definition': 'Definition',
+	appendix: 'Appendix'
 };
 
 function tex(src: string, display: boolean): string {
@@ -145,8 +150,17 @@ export function renderPaper(
 						const tag = b.ordered ? 'ol' : 'ul';
 						return `<${tag}>${b.items.map((it) => `<li>${run(it)}</li>`).join('')}</${tag}>`;
 					}
-					case 'math':
-						return `<div class="dmath">${tex(b.tex, true)}</div>`;
+					case 'math': {
+						const r = b.attrs.id ? num.ids.get(b.attrs.id) : undefined;
+						if (!r) return `<div class="dmath">${tex(b.tex, true)}</div>`;
+						// a numbered display: the number beside the formula, which scrolls on its own when it is wider than
+						// the column (KaTeX's \tag would sit on top of an overflowing formula)
+						return (
+							`<div class="dmath" id="${esc(b.attrs.id!)}" style="display:flex;align-items:center;gap:1em;overflow:visible">` +
+							`<div style="flex:1 1 auto;min-width:0;overflow-x:auto;overflow-y:hidden">${tex(b.tex, true)}</div>` +
+							`<span class="eq-n" style="flex:none">${tex(`(${r.n})`, false)}</span></div>`
+						);
+					}
 					case 'code':
 						return `<pre class="code"><code>${esc(b.text)}</code></pre>`;
 					case 'table': {
@@ -194,7 +208,9 @@ export function renderPaper(
 						: '';
 				return `<div class="tbl"${id}>${cap}${blocks(first && first.t === 'para' ? rest : children)}</div>`;
 			}
-			case 'theorem': {
+			case 'theorem':
+			case 'lemma':
+			case 'definition': {
 				const name = a.kv.title ? ` <span class="thm-name">(${run(a.kv.title)})</span>` : '';
 				const lean = a.kv.lean
 					? `<p class="lean"><span class="lean-k">Lean</span> ${a.kv.lean
@@ -202,7 +218,8 @@ export function renderPaper(
 							.map((n) => `<code>${esc(n)}</code>`)
 							.join(', ')}</p>`
 					: '';
-				return `<div class="thm"${id}><p class="thm-head"><span class="thm-label">${label(a.id)}</span>${name}</p>${blocks(children)}${lean}</div>`;
+				// a restated theorem repeats the label of the one it restates
+				return `<div class="thm"${id}><p class="thm-head"><span class="thm-label">${label(a.kv.restate ?? a.id)}</span>${name}</p>${blocks(children)}${lean}</div>`;
 			}
 			case 'proof':
 				return `<div class="proof"><p class="proof-head">${a.kv.title ? run(a.kv.title) : 'Proof sketch'}.</p>${blocks(children)}</div>`;

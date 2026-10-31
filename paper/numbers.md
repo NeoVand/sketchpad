@@ -29,6 +29,8 @@ published model `mohsenvand/sketchpad-0.8b-preview` at `2df87172`, whose certifi
 | Claim | Value | Source |
 |---|---|---|
 | E7 recipe | hinge 4; cosine lr 2e-4 → 2e-5; KL to base on text; certificate every 100 steps; replay below hinge/2; stop at min margin ≥ 3.0 | P `CALC3.md` 73–76 |
+| E7 objective, Eq. (loss) | per row: mean over answer positions of cross-entropy + relu(4 − margin); mean over the batch; plus 1.0 × KL(base ‖ adapted) on a 128-token plain-text chunk, averaged over its positions | P `research/sketch/e5_union.py` 130–161 (`train`, `kl=1.0`), `e2_column.py` 88–91 (`margins`), 123–132 (`TEXT_CHUNKS`, `text_kl`); called by `e7_calc.py` 61 |
+| E7 cosine schedule length | `T_max` = 4,000 steps (the run's `steps` argument; it stopped at 1,600) | P `research/sketch/modal/launch.py` 87–93; job `e7_s3_4000_h4.0_stop3.0_fast` |
 | E7 first all rows; stop | step 1,200; step 1,600 | P `CALC3.md` 109, 112 |
 | E7 training time and cost | 19.8 min H100, about $1.30 | P `CALC3.md` 411 |
 | E7 perplexity | × 1.0048 of stock | P `CALC3.md` 112 |
