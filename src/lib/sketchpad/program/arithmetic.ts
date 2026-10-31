@@ -33,6 +33,16 @@ export interface EvaluationOptions {
 	 */
 	rational?: boolean;
 	cut?: number;
+	/**
+	 * told after each level of the evaluation (every operation whose operands are known, computed together as one
+	 * wave): the level, the last level, and each subexpression's value once computed (with the level it was computed
+	 * at). The evaluation itself is unchanged: the same calls in the same waves.
+	 */
+	onLevel?: (
+		level: number,
+		last: number,
+		valueOf: (e: Expr) => { value: Rational; level: number } | undefined
+	) => void;
 }
 export class Arithmetic {
 	constructor(
@@ -170,7 +180,14 @@ export class Arithmetic {
 			const prev = power(base, n - 1);
 			return register(key, [prev, base], () => this.mul(value(prev), value(base)));
 		};
+		// each subexpression's node (a power names its chain's node, not its own text)
+		const keyOf = new Map<Expr, string>();
 		const build = (e: Expr): string => {
+			const key = node(e);
+			keyOf.set(e, key);
+			return key;
+		};
+		const node = (e: Expr): string => {
 			const key = JSON.stringify(e);
 			if (nodes.has(key)) return key;
 			if (e.kind === 'number')
@@ -226,13 +243,20 @@ export class Arithmetic {
 		const roots = expressions.map(build);
 		const levels: Node[][] = [];
 		for (const node of nodes.values()) (levels[node.depth] ??= []).push(node);
-		for (const level of levels)
-			if (level)
+		const valueOf = (e: Expr) => {
+			const key = keyOf.get(e) ?? JSON.stringify(e),
+				v = values.get(key);
+			return v && { value: v, level: nodes.get(key)!.depth };
+		};
+		for (const [depth, level] of levels.entries())
+			if (level) {
 				await this.calc.wave(
 					level.map((node) => async () => {
 						values.set(node.key, await node.work());
 					})
 				);
+				options.onLevel?.(depth, levels.length - 1, valueOf);
+			}
 		return roots.map(value);
 	}
 	async equal(a: Rational, b: Rational): Promise<boolean> {

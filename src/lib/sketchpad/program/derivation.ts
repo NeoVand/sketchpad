@@ -5,6 +5,7 @@ import {
 	magnitude,
 	type CheckMode,
 	type Environment,
+	type EvaluationOptions,
 	type Rational
 } from './arithmetic';
 import { TraceCalc, type Calc, type Result, type ScalarOp } from './calc';
@@ -159,6 +160,49 @@ export class DerivationBuilder {
 		const c = new CapturedCalc(this.trace),
 			value = await work(new Arithmetic(c, this.mode));
 		return this.from(value, c.indices, [...inputs, ...this.known]);
+	}
+	/**
+	 * An expression worked the way a textbook writes it. After each level of its evaluation (every operation whose
+	 * operands are known: one wave of calls) comes a line `= …` with the computed numbers in place of the operations
+	 * they replace, each number from the call that computed it: `47·1186 − 39862`, `= 55742 − 39862`, then the
+	 * caller's result line. A level that changes nothing on show (a power's inner step) writes no line, and a cut
+	 * (approximate) value ends the chain, so every `=` line is exact. The calls are those of `Arithmetic.evaluate`,
+	 * unchanged. Returns the value and the last expression shown (the result line's left side).
+	 */
+	async evaluate(
+		e: Expr,
+		options: EvaluationOptions = {}
+	): Promise<{ value: Quantity; shown: Expr }> {
+		const c = new CapturedCalc(this.trace);
+		const computed = (x: Expr) =>
+			x.kind === 'binary' || x.kind === 'gcd' || (x.kind === 'unary' && x.op === 'sqrt');
+		let shown = e,
+			last = this.plain(e),
+			exact = true;
+		const value = await new Arithmetic(c, this.mode).evaluate(e, this.env, {
+			...options,
+			onLevel: (level, top, valueOf) => {
+				if (level === 0 || level >= top || !exact) return;
+				const at = (x: Expr): Expr => {
+					const v = computed(x) ? valueOf(x) : undefined;
+					if (v && v.level <= level) {
+						if (v.value.approximate) exact = false;
+						return this.expr(this.from(v.value, c.indices, this.known));
+					}
+					if (x.kind === 'unary') return { ...x, value: at(x.value) };
+					if (x.kind === 'binary' || x.kind === 'gcd')
+						return { ...x, left: at(x.left), right: at(x.right) };
+					return x;
+				};
+				const next = at(e),
+					text = this.plain(next);
+				if (!exact || text === last) return;
+				this.identity('evaluate', shown, next);
+				shown = next;
+				last = text;
+			}
+		});
+		return { value: this.from(value, c.indices, this.known), shown };
 	}
 	async int(work: (c: Calc) => Promise<bigint>, inputs: Quantity[] = []): Promise<Quantity> {
 		return this.compute(async (a) => integer(await work(a.calc)), inputs);

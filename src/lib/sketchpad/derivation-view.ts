@@ -62,7 +62,8 @@ export const fill = (tex: string, shown: ReadonlySet<string> | 'all') =>
 	shown === 'all'
 		? tex
 		: tex.replace(/\\htmlId\{([^}]*)\}\{([^}]*)\}/g, (m, id: string) =>
-				shown.has(id) ? m : `\\htmlId{${id}}{${SLOT}}`
+				// in a group, the slot is an operand: a sign after it stays an operator (`□ − 39862`, not `−39862`)
+				shown.has(id) ? m : `{\\htmlId{${id}}{${SLOT}}}`
 			);
 
 let mathFonts: Promise<void> | null = null;

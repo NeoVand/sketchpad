@@ -9,6 +9,9 @@
  *
  *   PLAYWRIGHT=/path/to/node_modules/playwright/index.mjs node scripts/record-demo.mjs [base url] [chrome profile dir]
  *
+ * TABS=chat (or a comma-separated list of machine, calc, algebra, chat) records only those tabs and leaves the others'
+ * recordings as they are.
+ *
  * Playwright is not a dependency of this repo; point PLAYWRIGHT at any copy (its `chromium` export is used, with the
  * installed Chrome channel). The profile directory keeps the model in the browser's cache between runs. With
  * HF_MIRROR=http://host:port, model files are read from a local mirror laid out as <revision>/<path> instead.
@@ -74,10 +77,14 @@ await page
 await until(() => sketchpad.canCalc && !sketchpad.certifying && !sketchpad.replaying);
 mkdirSync(OUT, { recursive: true });
 
-for (const run of RUNS) {
+const only = process.env.TABS?.split(',').map((t) => t.trim());
+for (const run of RUNS.filter((r) => !only || only.includes(r.tab))) {
 	await page.locator('.parts .part').nth(run.part).click();
-	await page.waitForTimeout(800);
-	await until(() => !sketchpad.running && !sketchpad.certifying && !sketchpad.replaying);
+	// the tab opens on its current recording (played at once with the model loaded): let it finish first
+	await until((tab) => sketchpad.recordedShown?.tab === tab, run.tab, 30000).catch(() => {});
+	await until(
+		() => !sketchpad.running && !sketchpad.certifying && !sketchpad.replaying && !sketchpad.chatBusy
+	);
 	const rec = await page.evaluate(async (input) => {
 		sketchpad.startRecording();
 		if (input.tab === 'machine') {

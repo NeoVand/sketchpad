@@ -65,19 +65,18 @@ export async function run(
 			if (statement.kind === 'expression' || statement.kind === 'assign') {
 				b.line('given', (r) => r(statement.value), { given: statement.value });
 				const fallback = statement.places === undefined ? options.defaultPlaces : undefined;
-				const computed = await b.compute((a) =>
-					a.evaluate(statement.value, env, {
-						places: statement.places,
-						rational: fallback !== undefined,
-						cut: fallback
-					})
-				);
+				// one line per level of the evaluation, every number from the model's calls, then the result
+				const { value: computed, shown } = await b.evaluate(statement.value, {
+					places: statement.places,
+					rational: fallback !== undefined,
+					cut: fallback
+				});
 				value = computed.value;
-				if (!value.approximate) b.identity('result', statement.value, b.expr(computed));
+				if (!value.approximate) b.identity('result', shown, b.expr(computed));
 				else
 					b.line(
 						'result',
-						(r) => `${r(statement.value)} \\approx ${r(b.expr(computed))}`,
+						(r) => `${r(shown)} \\approx ${r(b.expr(computed))}`,
 						{ approximation: { expression: statement.value, value, places: statement.places } },
 						'Decimal arithmetic uses the requested per-operation precision'
 					);
