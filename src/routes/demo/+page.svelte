@@ -163,10 +163,14 @@
 		void costs();
 		// open on something visible: the certificate panel shows the shipped table and the inside panels their maps, then
 		// the tab's recorded run plays (in that order, so no panel changes its layout once the run is under way)
-		void Promise.all([opened, pad.showShipped(), pad.showInside(modelsBase)]).then(() =>
-			play(part, RECORDED_PACE)
-		);
+		void Promise.all([opened, pad.showShipped(), pad.showInside(modelsBase)])
+			.then(() => play(part, RECORDED_PACE))
+			// then, while the visitor reads, the math faces Algebra and the chat's sheet draw with
+			.then(() => loadMathFonts());
 	});
+
+	/** the math faces, waited for at most 3 s: a derivation drawn before they arrive shifts by a pixel or two when they do */
+	const mathFaces = () => Promise.race([loadMathFonts(), new Promise((r) => setTimeout(r, 3000))]);
 
 	// ---- the recordings: what each tab shows before the model loads, and whenever Recorded is chosen -----------------
 	/** each tab's recording, fetched when the tab is first shown (a few tens of KB) */
@@ -201,9 +205,8 @@
 	async function play(p: Part, pace: number) {
 		const rec = await recordingFor(p);
 		if (part === p) unrecorded = !rec;
-		// a derivation's faces are in before its lines are drawn: one arriving mid-run would shift them (3 s at most)
-		if (rec && (p === 'algebra' || p === 'chat'))
-			await Promise.race([loadMathFonts(), new Promise((r) => setTimeout(r, 3000))]);
+		// a derivation's faces are in before its lines are drawn: one arriving mid-run would shift them
+		if (rec && (p === 'algebra' || p === 'chat')) await mathFaces();
 		if (!rec || part !== p || pad.chatBusy || pad.loading) return;
 		if (pad.running) await pad.halt();
 		const i = rec.input;
@@ -284,6 +287,8 @@
 		// the last tab's run stops and its results go before the new tab is laid out: nothing of it (a long derivation in
 		// a narrower column) sets the new tab's height, which only grows until its own run starts (ratchet.ts)
 		if (pad.running) await pad.halt();
+		// a tab with a derivation is laid out once its faces are in (they are, unless the visitor is quick)
+		if (write && (p === 'algebra' || p === 'chat')) await mathFaces();
 		pad.clearRun();
 		if (p !== 'algebra') pad.algebraPlan = null;
 		part = p;
