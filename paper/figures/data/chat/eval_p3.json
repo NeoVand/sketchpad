@@ -1,0 +1,99 @@
+{
+ "tag": "p3",
+ "adapter": "p3",
+ "fewshot": false,
+ "ppl": 18.682148377111282,
+ "ppl_stock": 18.463935674928077,
+ "ppl_ratio": 1.0118183201038504,
+ "rows": {
+  "cert": 2446,
+  "of": 2446,
+  "by_op": {
+   "SUM": 242,
+   "MUL": 1100,
+   "ADD": 220,
+   "ADZ": 220,
+   "FLS": 2,
+   "NXT": 11,
+   "SUB": 242,
+   "EST": 400,
+   "DEC": 9
+  },
+  "min_margin": {
+   "SUM": 6.962932586669922,
+   "MUL": 6.122034072875977,
+   "ADD": 9.678606033325195,
+   "ADZ": 7.73377799987793,
+   "FLS": 10.741861343383789,
+   "NXT": 10.207000732421875,
+   "SUB": 6.047395706176758,
+   "EST": 5.780313491821289,
+   "DEC": 9.237608909606934
+  },
+  "fails": []
+ },
+ "seconds": 831,
+ "open_precision": 1.0,
+ "open_recall": 0.9944444444444445,
+ "open_counts": {
+  "tp": 537,
+  "fp": 0,
+  "fn": 3
+ },
+ "families": {
+  "calc": {
+   "n": 120,
+   "opened": 117,
+   "line_right": 116,
+   "quotes_value": 117,
+   "line_rate": 0.9666666666666667
+  },
+  "prose": {
+   "n": 120,
+   "opened": 120,
+   "line_right": 119,
+   "quotes_value": 120,
+   "line_rate": 0.9916666666666667
+  },
+  "word": {
+   "n": 180,
+   "opened": 180,
+   "line_right": 154,
+   "quotes_value": 180,
+   "line_rate": 0.8555555555555555
+  },
+  "equation": {
+   "n": 120,
+   "opened": 120,
+   "line_right": 117,
+   "quotes_value": 120,
+   "line_rate": 0.975
+  },
+  "distract": {
+   "n": 240,
+   "opened": 0,
+   "line_right": 50,
+   "quotes_value": 0,
+   "single_right": 50,
+   "single_n": 50,
+   "line_rate": 0.20833333333333334
+  }
+ },
+ "ifeval": {
+  "n": 541,
+  "prompt_strict": 0.5083179297597042,
+  "prompt_loose": 0.5471349353049908,
+  "inst_strict": 0.6067146282973621,
+  "opened_sheet": 2
+ },
+ "mmlu": {
+  "n": 500,
+  "acc": 0.452
+ },
+ "gsm8k": {
+  "n": 250,
+  "acc": 0.376,
+  "opened_sheet": 250,
+  "note": "sheet blocks run on sheet_ref.py, the host stand-in for the exact sheet"
+ }
+}

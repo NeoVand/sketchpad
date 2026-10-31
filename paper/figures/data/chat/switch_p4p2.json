@@ -1,0 +1,239 @@
+{
+ "tag": "p4p2",
+ "writers": [
+  "p4=/vol/runs/train_p4/files/p4",
+  "p2=/vol/runs/train_p2/files/p2"
+ ],
+ "lora_layers": 150,
+ "scale": 2.0,
+ "selftest": {
+  "gate0_vs_disabled_maxdiff": 0.0,
+  "gate0_bitwise": true,
+  "gate1_vs_float_scale_maxdiff": 0.0,
+  "mixed_vs_single_maxdiff": 0.0,
+  "mixed_bitwise": true,
+  "adapter_moves_logits": 13.941839218139648,
+  "gen16_rows_without_block": 15,
+  "gen16_identical_without_block": 15,
+  "word8_blocks_run": 8,
+  "word8_right": 5,
+  "word8_first_reply": "```sheet\n420.8 + 237.9 + 619.8 \u2212 24\n```\n= 1254.5\n1254.5 cm deep."
+ },
+ "seconds": 2968,
+ "heldout_p4": {
+  "open_precision": 0.9754464285714286,
+  "open_recall": 0.8092592592592592,
+  "open_counts": {
+   "tp": 437,
+   "fp": 11,
+   "fn": 103
+  },
+  "families": {
+   "calc": {
+    "n": 120,
+    "opened": 70,
+    "line_right": 70,
+    "quotes_value": 70,
+    "line_rate": 0.5833333333333334
+   },
+   "prose": {
+    "n": 120,
+    "opened": 80,
+    "line_right": 80,
+    "quotes_value": 80,
+    "line_rate": 0.6666666666666666
+   },
+   "word": {
+    "n": 180,
+    "opened": 176,
+    "line_right": 131,
+    "quotes_value": 176,
+    "line_rate": 0.7277777777777777
+   },
+   "equation": {
+    "n": 120,
+    "opened": 111,
+    "line_right": 111,
+    "quotes_value": 105,
+    "line_rate": 0.925
+   },
+   "distract": {
+    "n": 240,
+    "opened": 11,
+    "line_right": 50,
+    "quotes_value": 0,
+    "single_right": 50,
+    "single_n": 50,
+    "line_rate": 0.20833333333333334
+   }
+  }
+ },
+ "heldout_p2": {
+  "open_precision": 0.9732739420935412,
+  "open_recall": 0.8092592592592592,
+  "open_counts": {
+   "tp": 437,
+   "fp": 12,
+   "fn": 103
+  },
+  "families": {
+   "calc": {
+    "n": 120,
+    "opened": 70,
+    "line_right": 70,
+    "quotes_value": 70,
+    "line_rate": 0.5833333333333334
+   },
+   "prose": {
+    "n": 120,
+    "opened": 80,
+    "line_right": 80,
+    "quotes_value": 80,
+    "line_rate": 0.6666666666666666
+   },
+   "word": {
+    "n": 180,
+    "opened": 176,
+    "line_right": 156,
+    "quotes_value": 176,
+    "line_rate": 0.8666666666666667
+   },
+   "equation": {
+    "n": 120,
+    "opened": 111,
+    "line_right": 111,
+    "quotes_value": 105,
+    "line_rate": 0.925
+   },
+   "distract": {
+    "n": 240,
+    "opened": 12,
+    "line_right": 50,
+    "quotes_value": 0,
+    "single_right": 50,
+    "single_n": 50,
+    "line_rate": 0.20833333333333334
+   }
+  }
+ },
+ "gsm8k_p4": {
+  "n": 250,
+  "acc": 0.148,
+  "opened_sheet": 250,
+  "max_new": 1024,
+  "note": "sheet blocks run on sheet_ref.py, the host stand-in for the exact sheet"
+ },
+ "gsm8k_p2": {
+  "n": 250,
+  "acc": 0.172,
+  "opened_sheet": 250,
+  "max_new": 1024,
+  "note": "sheet blocks run on sheet_ref.py, the host stand-in for the exact sheet"
+ },
+ "cache_p4": {
+  "opened": 450,
+  "identical_blocks": 386,
+  "scored": 437,
+  "right_gate0_cache": 392,
+  "right_gate1_cache": 412,
+  "gsm8k_first_blocks": 250,
+  "gsm8k_identical": 59
+ },
+ "cache_p2": {
+  "opened": 450,
+  "identical_blocks": 404,
+  "scored": 437,
+  "right_gate0_cache": 417,
+  "right_gate1_cache": 421,
+  "gsm8k_first_blocks": 250,
+  "gsm8k_identical": 66
+ },
+ "ifeval_p4": {
+  "n": 541,
+  "prompt_strict": 0.49722735674676527,
+  "prompt_loose": 0.5286506469500925,
+  "inst_strict": 0.6031175059952039,
+  "opened_sheet": 60
+ },
+ "ifeval_stock_fewshot": {
+  "n": 541,
+  "prompt_strict": 0.49168207024029575,
+  "prompt_loose": 0.5249537892791127,
+  "inst_strict": 0.6019184652278178,
+  "opened_sheet": 53
+ },
+ "ifeval_p2": {
+  "n": 541,
+  "prompt_strict": 0.48613678373382624,
+  "prompt_loose": 0.5157116451016636,
+  "inst_strict": 0.5959232613908872,
+  "opened_sheet": 59
+ },
+ "ifeval_opened_prompts": [
+  1005,
+  1147,
+  1154,
+  1203,
+  1248,
+  1281,
+  1332,
+  1367,
+  1377,
+  1393,
+  1446,
+  1537,
+  1548,
+  1591,
+  1653,
+  1656,
+  1675,
+  1733,
+  179,
+  1837,
+  1857,
+  1880,
+  1902,
+  2139,
+  2142,
+  2207,
+  2266,
+  2273,
+  2292,
+  2323,
+  2350,
+  2357,
+  2374,
+  2449,
+  2471,
+  2674,
+  2716,
+  2779,
+  2798,
+  2849,
+  2957,
+  2969,
+  3001,
+  301,
+  3091,
+  3198,
+  3241,
+  331,
+  3326,
+  3415,
+  343,
+  3455,
+  3456,
+  3513,
+  3615,
+  3680,
+  3732,
+  3743,
+  3748,
+  3752,
+  3753
+ ],
+ "mmlu_gate0_sheet_prompt": {
+  "n": 500,
+  "acc": 0.444
+ }
+}

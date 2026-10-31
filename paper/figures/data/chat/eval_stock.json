@@ -1,0 +1,24 @@
+{
+ "tag": "stock",
+ "adapter": "none",
+ "fewshot": false,
+ "ppl": 18.463935674928077,
+ "seconds": 983,
+ "ifeval": {
+  "n": 541,
+  "prompt_strict": 0.5360443622920518,
+  "prompt_loose": 0.5767097966728281,
+  "inst_strict": 0.6402877697841727,
+  "opened_sheet": 0
+ },
+ "mmlu": {
+  "n": 500,
+  "acc": 0.476
+ },
+ "gsm8k": {
+  "n": 250,
+  "acc": 0.516,
+  "opened_sheet": 0,
+  "note": "sheet blocks run on sheet_ref.py, the host stand-in for the exact sheet"
+ }
+}

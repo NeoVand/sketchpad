@@ -1,0 +1,105 @@
+{
+ "tag": "p5",
+ "adapter": "p5",
+ "fewshot": false,
+ "ppl": 18.66424228688265,
+ "ppl_stock": 18.463935674928077,
+ "ppl_ratio": 1.0108485328091001,
+ "rows": {
+  "cert": 2446,
+  "of": 2446,
+  "by_op": {
+   "SUM": 242,
+   "MUL": 1100,
+   "ADD": 220,
+   "ADZ": 220,
+   "FLS": 2,
+   "NXT": 11,
+   "SUB": 242,
+   "EST": 400,
+   "DEC": 9
+  },
+  "min_margin": {
+   "SUM": 6.530094146728516,
+   "MUL": 6.068151473999023,
+   "ADD": 7.683244705200195,
+   "ADZ": 7.095663070678711,
+   "FLS": 10.413251876831055,
+   "NXT": 9.181838989257812,
+   "SUB": 5.196191787719727,
+   "EST": 5.192293167114258,
+   "DEC": 8.770244598388672
+  },
+  "fails": []
+ },
+ "seconds": 1183,
+ "open_precision": 1.0,
+ "open_recall": 0.9462962962962963,
+ "open_counts": {
+  "tp": 511,
+  "fp": 0,
+  "fn": 29
+ },
+ "families": {
+  "calc": {
+   "n": 120,
+   "opened": 118,
+   "line_right": 113,
+   "quotes_value": 118,
+   "line_rate": 0.9416666666666667
+  },
+  "prose": {
+   "n": 120,
+   "opened": 119,
+   "line_right": 118,
+   "quotes_value": 118,
+   "line_rate": 0.9833333333333333
+  },
+  "word": {
+   "n": 180,
+   "opened": 155,
+   "line_right": 122,
+   "quotes_value": 154,
+   "line_rate": 0.6777777777777778
+  },
+  "equation": {
+   "n": 120,
+   "opened": 119,
+   "line_right": 115,
+   "quotes_value": 118,
+   "line_rate": 0.9583333333333334
+  },
+  "distract": {
+   "n": 240,
+   "opened": 0,
+   "line_right": 50,
+   "quotes_value": 0,
+   "single_right": 50,
+   "single_n": 50,
+   "line_rate": 0.20833333333333334
+  }
+ },
+ "ifeval": {
+  "n": 541,
+  "prompt_strict": 0.5212569316081331,
+  "prompt_loose": 0.5656192236598891,
+  "inst_strict": 0.6258992805755396,
+  "opened_sheet": 0
+ },
+ "mmlu": {
+  "n": 500,
+  "acc": 0.454
+ },
+ "gsm8k": {
+  "n": 250,
+  "acc": 0.496,
+  "opened_sheet": 19,
+  "note": "sheet blocks run on sheet_ref.py, the host stand-in for the exact sheet"
+ },
+ "ifbench": {
+  "n": 300,
+  "prompt_strict": 0.17666666666666667,
+  "prompt_loose": 0.22,
+  "inst_strict": 0.18023255813953487
+ }
+}

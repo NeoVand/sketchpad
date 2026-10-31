@@ -1,0 +1,87 @@
+{
+ "tag": "p1",
+ "adapter": "p1",
+ "fewshot": false,
+ "ppl": 18.23391131074989,
+ "ppl_stock": 18.463935674928077,
+ "ppl_ratio": 0.9875419646045163,
+ "rows": {
+  "cert": 1795,
+  "of": 1795,
+  "by_op": {
+   "SUM": 242,
+   "MUL": 1100,
+   "ADD": 220,
+   "ADZ": 220,
+   "FLS": 2,
+   "NXT": 11
+  },
+  "min_margin": {
+   "SUM": 8.408039093017578,
+   "MUL": 6.59490966796875,
+   "ADD": 7.370552062988281,
+   "ADZ": 7.393407821655273,
+   "FLS": 11.3272705078125,
+   "NXT": 10.464702606201172
+  },
+  "fails": []
+ },
+ "seconds": 765,
+ "open_precision": 0.9572953736654805,
+ "open_recall": 0.9962962962962963,
+ "open_counts": {
+  "tp": 538,
+  "fp": 24,
+  "fn": 2
+ },
+ "families": {
+  "calc": {
+   "n": 120,
+   "opened": 118,
+   "line_right": 112,
+   "quotes_value": 118,
+   "line_rate": 0.9333333333333333
+  },
+  "prose": {
+   "n": 120,
+   "opened": 120,
+   "line_right": 118,
+   "quotes_value": 120,
+   "line_rate": 0.9833333333333333
+  },
+  "word": {
+   "n": 180,
+   "opened": 180,
+   "line_right": 157,
+   "quotes_value": 178,
+   "line_rate": 0.8722222222222222
+  },
+  "equation": {
+   "n": 120,
+   "opened": 120,
+   "line_right": 116,
+   "quotes_value": 120,
+   "line_rate": 0.9666666666666667
+  },
+  "distract": {
+   "n": 240,
+   "opened": 24,
+   "line_right": 50,
+   "quotes_value": 0,
+   "single_right": 50,
+   "single_n": 50,
+   "line_rate": 0.20833333333333334
+  }
+ },
+ "ifeval": {
+  "n": 541,
+  "prompt_strict": 0.4879852125693161,
+  "prompt_loose": 0.5249537892791127,
+  "inst_strict": 0.5995203836930456,
+  "opened_sheet": 6
+ },
+ "mmlu": {
+  "n": 500,
+  "acc": 0.41
+ }
+}
