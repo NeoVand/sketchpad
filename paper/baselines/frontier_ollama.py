@@ -18,7 +18,7 @@ MODELS = {
     "glm-5.3": True,
     "gemma4:31b": True,
 }
-WORKERS = 2  # keep it low on the shared cloud
+WORKERS = 8  # Pro plan (BASELINES.md, the running stop); 429s back off
 # USD per million tokens (input, output), https://ollama.com/pricing, 31 Oct 2026; DeepSeek at its peak rate
 RATES = {
     "gpt-oss:120b": (0.15, 0.60),

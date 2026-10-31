@@ -359,3 +359,18 @@ Both pilot replies ran to the 32,768-token cap (+ 1,000: $0.069; × 20: $0.069).
 100 × 0.0693 + 120 × 0.0688 = **$15.19**, over the $8.50 left. The five then project $46.50 + $15.19 = **$61.69**
 (> $55). As registered, the open tier stops here and the decision goes to `QUESTIONS.md` 16. Ollama usage on record:
 $1.24 (the six pilots).
+
+### Open tier: the running stop replaces the projection rule (31 Oct 2026, the orchestrator's decision, before any further call)
+
+Decision on `QUESTIONS.md` 16: run all five open models (`gemma4:31b`, `gpt-oss:120b`, `deepseek-v4-pro:0813`,
+`glm-5.3`, `mistral-large-4`) at 20 per length, with **only the running stop at $55** of recorded Ollama usage; the
+pilot-projection rule no longer gates this tier. Why: the projection prices every sum like the 1,000-digit pilot and
+every product like the 20-digit one, an upper bound; past runs cost 22–45% of theirs; and Neo's Pro plan already
+includes the $60 credit, so the run adds no spending.
+
+- **Order:** one model at a time, cheapest first: `gemma4:31b`, `gpt-oss:120b`, `deepseek-v4-pro:0813` (off-peak by
+  call time), `glm-5.3`, `mistral-large-4`. Within a model, problems in id order (sums 10 → 1,000 digits, then products
+  2 → 20 digits).
+- **Concurrency:** 8 requests per model (Pro plan), backoff on 429 and 5xx as before. The stop refuses new requests once
+  recorded usage passes $55; up to 8 requests already in flight may finish past it, and their usage is recorded.
+- **If the stop fires:** the problems not run are listed here, by model and id, and they are not scored.
