@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Sketchpad">
+	<title>Sketchpad: a sum written on the sheet, its answer in the model's hand</title>
+	<style>
+		.ink { fill: #1f2a44; }
+		.inks { stroke: #1f2a44; }
+		.rose { fill: #d6336c; }
+		@media (prefers-color-scheme: dark) {
+			.ink { fill: #e6eaf2; }
+			.inks { stroke: #e6eaf2; }
+		}
+	</style>
+	<!-- two numbers, the second with its sign -->
+	<rect class="ink" x="11" y="3.5" width="18" height="4.5" rx="1.5" />
+	<path class="inks" d="M3.5 13.25h5.5M6.25 10.5v5.5" stroke-width="2" stroke-linecap="round" fill="none" />
+	<rect class="ink" x="11" y="11" width="18" height="4.5" rx="1.5" />
+	<!-- the rule -->
+	<rect class="ink" x="3" y="19" width="26" height="1.75" rx="0.875" />
+	<!-- the answer: the model's -->
+	<rect class="rose" x="6" y="24" width="23" height="4.5" rx="1.5" />
+</svg>

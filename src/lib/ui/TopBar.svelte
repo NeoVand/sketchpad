@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import Icon from './Icon.svelte';
+	import Mark from './Mark.svelte';
 	import { Book, Github, Play } from './icons.ts';
 
 	const nav = [
@@ -17,7 +18,7 @@
 </script>
 
 <header class="bar">
-	<a class="wordmark" href={resolve('/')}>sketchpad</a>
+	<a class="wordmark" href={resolve('/')}><Mark size={20} />sketchpad</a>
 	<nav aria-label="Primary">
 		{#each nav as item (item.href)}
 			<a
@@ -53,6 +54,10 @@
 		border-bottom: 1px solid var(--color-edge);
 	}
 	.wordmark {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		width: fit-content;
 		font-size: 17px;
 		font-weight: 500;
 		letter-spacing: -0.015em;
@@ -70,7 +75,7 @@
 		align-items: center;
 		gap: 7px;
 		padding: 0 14px;
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 		text-decoration: none;
 		font-size: var(--text-ui);
 		transition: color var(--hover) ease;
@@ -101,7 +106,7 @@
 		width: 30px;
 		height: 30px;
 		border-radius: var(--radius-ui);
-		color: var(--color-blue-grey);
+		color: var(--color-ink-soft);
 		transition:
 			color var(--hover) ease,
 			background var(--hover) ease;

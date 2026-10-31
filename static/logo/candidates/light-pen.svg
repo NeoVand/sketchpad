@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Sketchpad">
+	<title>Sketchpad: Sutherland's light pen on the screen, and the point it draws</title>
+	<style>
+		.ink { stroke: #1f2a44; fill: none; }
+		.rose { fill: #d6336c; }
+		@media (prefers-color-scheme: dark) {
+			.ink { stroke: #e6eaf2; }
+		}
+	</style>
+	<!-- the screen -->
+	<circle class="ink" cx="13.5" cy="18.5" r="11" stroke-width="2.5" />
+	<!-- the light pen, its tip on the point it draws -->
+	<path class="ink" d="M29.5 2.5L18.2 13.8" stroke-width="4" stroke-linecap="round" />
+	<circle class="rose" cx="13.5" cy="18.5" r="3.25" />
+</svg>

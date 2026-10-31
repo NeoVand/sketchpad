@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Sketchpad">
+	<title>Sketchpad: the sheet through a window of three cells, the model writing the third</title>
+	<style>
+		.sheet { fill: #bac5d9; }
+		.ink { fill: #1f2a44; }
+		.rose { fill: #d6336c; }
+		@media (prefers-color-scheme: dark) {
+			.sheet { fill: #4c5b78; }
+			.ink { fill: #e6eaf2; }
+		}
+	</style>
+	<!-- the sheet: two columns of cells -->
+	<rect class="sheet" x="2" y="2" width="8" height="8" rx="1.5" />
+	<rect class="sheet" x="12" y="2" width="8" height="8" rx="1.5" />
+	<rect class="sheet" x="2" y="12" width="8" height="8" rx="1.5" />
+	<rect class="sheet" x="12" y="12" width="8" height="8" rx="1.5" />
+	<rect class="sheet" x="2" y="22" width="8" height="8" rx="1.5" />
+	<rect class="sheet" x="12" y="22" width="8" height="8" rx="1.5" />
+	<!-- the window: two cells it reads, and the third it writes -->
+	<rect class="ink" x="22" y="2" width="8" height="8" rx="1.5" />
+	<rect class="ink" x="22" y="12" width="8" height="8" rx="1.5" />
+	<rect class="rose" x="22" y="22" width="8" height="8" rx="1.5" />
+</svg>
