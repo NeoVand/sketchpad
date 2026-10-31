@@ -352,3 +352,10 @@ off-peak, else at the peak rate. The pilot replies, made before times were recor
 calls still to make: gpt-oss $4.34 + DeepSeek $7.98 + GLM $31.90 + Gemma $2.28 = $46.50, which leaves **$8.50** for
 `mistral-large-4`. Its pilot decides: within $8.50, the five run at 20 per length; otherwise stop and report. The
 running stop stays at $55 of recorded Ollama usage (the Kimi pilot's $0.60 included).
+
+### `mistral-large-4` pilot (31 Oct 2026, 07:31–07:34 UTC): over the rule, stopped
+
+Both pilot replies ran to the 32,768-token cap (+ 1,000: $0.069; × 20: $0.069). Projection by the registered rule:
+100 × 0.0693 + 120 × 0.0688 = **$15.19**, over the $8.50 left. The five then project $46.50 + $15.19 = **$61.69**
+(> $55). As registered, the open tier stops here and the decision goes to `QUESTIONS.md` 16. Ollama usage on record:
+$1.24 (the six pilots).

@@ -102,3 +102,17 @@ From the paper's writer, 31 Oct 2026. Each item says what the draft does today, 
     - **DeepSeek at its off-peak rate** (today is a Saturday, off-peak all day): all five at 10 per length then
       project $54.5. Breaks the conservative peak-rate assumption, and leaves the open tier at 10 per length.
     - **More Ollama credit** beyond the Pro plan's $60, so the registered rule passes as is.
+
+16. **The replacement for Kimi K3 does not fit either.** `mistral-large-4` (Mistral AI, 1,050 B, thinking; $0.70 /
+    $2.10 per million) is the cheapest per output token of the three candidates, and both its pilot replies hit the
+    32,768-token cap: projection $15.19 for 220, against $8.50 left. The other candidates cost more per output token
+    (MiniMax-M3 $2.40, Nemotron-3-Ultra $3.00), so none fits under the cap-based upper bound. Five open models now
+    project $61.69 at 20 per length (DeepSeek off-peak). Options:
+    - **Cut GLM-5.3 to 10 per length** (the open tier's original cut rule, largest projected cost first): $45.74,
+      inside $55. Four open models at 20 per length, GLM-5.3 at 10.
+    - **Swap GLM-5.3 for Nemotron-3-Ultra** (NVIDIA, 550 B, $3.00 output against GLM's $4.40): about $51 if it caps like
+      GLM; needs its own pilot. Changes a second model.
+    - **Run all five at 20 per length with only the running $55 stop.** The projection prices every sum like the
+      1,000-digit pilot; short problems use far fewer tokens, so the actual spend is likely lower, but these models
+      often run to the cap, and the stop could leave the last problems unrun.
+    - **More credit**, beyond the Pro plan's $60.
