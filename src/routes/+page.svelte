@@ -33,7 +33,7 @@
 		<p class="links">
 			<a href={resolve('/demo')}>Run it in your browser</a>
 			<span aria-hidden="true">·</span>
-			<a href={asset('/sketchpad.pdf')}>PDF</a>
+			<a href={asset('sketchpad.pdf')}>PDF</a>
 			<span aria-hidden="true">·</span>
 			<a href="https://huggingface.co/mohsenvand/sketchpad-0.8b-preview">The model</a>
 		</p>
