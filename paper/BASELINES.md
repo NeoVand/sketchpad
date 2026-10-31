@@ -143,3 +143,25 @@ The frontier models will likely solve the short problems; they fail, if at all, 
 
 `ANTHROPIC_API_KEY` in `~/.polyformer_keys` returns `401 authentication_error: invalid x-api-key` on `/v1/models`. The
 OpenAI and Gemini keys work. Claude Opus 5.5 runs only after the key is replaced; until then its row stays "not run".
+
+### Pilot result and the cut (31 Oct 2026, before the full run)
+
+Pilot replies (`raw/frontier/*.jsonl`), usage fields, at the registered prices:
+
+| model | + 1,000 (id 80): output tokens (reasoning), cost | × 20 (id 200): output tokens (reasoning), cost |
+|---|---|---|
+| GPT-6.1 Sol | 11,984 (11,640), $0.121 | 2,093 (2,070), $0.021 |
+| Gemini 4 Argon | 28,517 (27,509), $0.289 | 9,358 (7,756), $0.094 |
+| Claude Opus 5.5 | not run (key fails) | not run |
+
+Projection by the registered rule (sums at the + 1,000 cost, products at the × 20 cost): GPT 100 × 0.121 + 120 × 0.021
+= **$14.6**; Gemini 100 × 0.289 + 120 × 0.094 = **$40.2**. Claude Opus 5.5 could not be piloted; costed at the larger
+of the two pilots' tokens per family at its own prices (28,517 and 9,358 output tokens at $20 per million): **$80.3**
+(deviation: a projection from the other models, not its own pilot). All three at 20 per length: **$135**, over the
+$75 cap. At **10 per length** (110 problems, the first 10 of each cell): $7.3 + $20.1 + $40.2 = **$67.6**, under it.
+
+**The cut:** the frontier models run on the first 10 problems of each cell (`frontier_run.py full gpt gemini
+--per-cell 10`). Claude Opus 5.5 runs the same 110 when its key works, after its own two-problem pilot; if its own
+pilot projects the three over $75 in total, it stops there. The projection is an upper bound (short problems use far
+fewer tokens), so the actual spend is expected well below it; extending to 20 per length later asks only the missing
+problems.

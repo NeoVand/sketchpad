@@ -26,7 +26,9 @@ import sys
 HERE = pathlib.Path(__file__).parent
 SEP = re.compile(r"(?<=\d)(?:\\,|\{,\}|[,   ])(?=\d)")
 DIGITS = re.compile(r"\d+")
-SYSTEMS = [("sketchpad", None), ("0.8b", "thinking"), ("0.8b", "nothink"), ("27b", "thinking")]
+SYSTEMS = [("sketchpad", None), ("0.8b", "thinking"), ("0.8b", "nothink"), ("27b", "thinking"),
+           ("gpt", "high"), ("claude", "high"), ("gemini", "high")]
+FRONTIER = {"gpt", "claude", "gemini"}  # BASELINES.md, "Frontier": reasoning hidden, the visible reply is the reply
 
 
 def clean(s):
@@ -88,14 +90,20 @@ def main(sk_path, raw_paths):
         text = gzip.open(path, "rt").read() if str(path).endswith(".gz") else pathlib.Path(path).read_text()
         for line in text.splitlines():
             g = json.loads(line)
+            if g.get("error"):  # an API error after the retries: reported, never scored
+                notes.append(f"{g['model_key']} id {g['id']}: not scored, {g['error'][:80]}")
+                continue
             p = probs[g["id"]]
-            key = "27b" if g["model_key"] != "0.8b" else "0.8b"
+            key = g["model_key"] if g["model_key"] in FRONTIER else ("27b" if g["model_key"] != "0.8b" else "0.8b")
+            if key in FRONTIER:
+                g = dict(g, mode="high")
             ans, how, closed, loose = parse(g["text"], g["mode"])
             exact = (not g["hit_cap"]) and norm(ans) == p["truth"]
             if loose is not None and ((not g["hit_cap"]) and norm(loose) == p["truth"]) != exact:
                 notes.append(f"{key} {g['mode']} id {g['id']}: the left-cut tail run would change exactness")
             reply = g["text"].rsplit("</think>", 1)[1] if "</think>" in g["text"] else g["text"]
             out.append({"system": f"{key} {g['mode']}", "model": g["model"], "mode": g["mode"], "id": g["id"],
+                        "reasoning_tokens": g.get("reasoning_tokens"), "cost": g.get("cost"),
                         "family": p["family"], "n": p["n"], "a": p["a"], "b": p["b"], "truth": p["truth"],
                         "answer": ans, "exact": exact, "tokens": g["tokens"], "hit_cap": g["hit_cap"],
                         "finish_reason": g["finish_reason"], "parsed_from": how, "think_closed": closed,
@@ -112,7 +120,8 @@ def tables(out):
     head = "| system | " + " | ".join(f"{'+' if f == 'add' else '×'} {n:,}" for f, n in cells) + " |"
     sep = "|---|" + "---|" * len(cells)
     systems = sorted({r["system"] for r in out}, key=lambda s: ["sketchpad", "0.8b thinking", "0.8b nothink",
-                                                                  "27b thinking"].index(s))
+                                                                  "27b thinking", "gpt high", "claude high",
+                                                                  "gemini high"].index(s))
     lines = {"exact": [head, sep], "cap": [head, sep], "tokens": [head, sep], "noans": [head, sep]}
     for s in systems:
         rows = {k: [] for k in lines}

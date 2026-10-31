@@ -62,3 +62,11 @@ From the paper's writer, 31 Oct 2026. Each item says what the draft does today, 
 - Author line: Mostafa 'Neo' Mohsenvand, MIT Media Lab.
 - The fourth theorem as "Transfer across code paths" (sel_eq_of_close, regeneration_of_close, policy_tick_eq): "ok".
 - Frontier baselines in Figure 1c: "yes, add all 3: GPT 6.1 Sol (high), Claude Opus 5.5 (high) and Gemini 4 Argon (high)".
+
+## Frontier baseline (31 Oct 2026)
+
+13. **The Anthropic key does not work.** `ANTHROPIC_API_KEY` in `~/.polyformer_keys` returns `401
+    authentication_error: invalid x-api-key` (request `req_011CgZmVoEiQanpe2F6jQExw`, `/v1/models`). The OpenAI and
+    Gemini keys work. Claude Opus 5.5 is registered (`BASELINES.md`, "Frontier") but cannot run until the key is
+    replaced; `frontier_run.py full claude` then runs it with nothing else to change. Until then the paper says
+    "not run" for it.
