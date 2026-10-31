@@ -11,7 +11,7 @@ export interface Equation {
 export type Statement =
 	| { kind: 'expression'; value: Expr; places?: number }
 	| { kind: 'assign'; name: string; value: Expr; places?: number }
-	| { kind: 'solve'; equations: Equation[] }
+	| { kind: 'solve'; equations: Equation[]; places?: number }
 	| { kind: 'expand'; value: Expr }
 	| { kind: 'factor'; value: Expr };
 export interface WorkOrder {
@@ -250,6 +250,12 @@ class Parser {
 				this.i++;
 				this.need('places');
 			}
+		}
+		if (result.kind === 'solve' && this.take('to')) {
+			if (this.t.text !== '6') this.error('Certified quadratic bounds currently require 6 places');
+			result.places = 6;
+			this.i++;
+			this.need('places');
 		}
 		this.need('<end>');
 		return result;

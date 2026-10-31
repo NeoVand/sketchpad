@@ -25,6 +25,8 @@ export interface RunResult {
 export interface RunOptions {
 	checkMode?: CheckMode;
 	path?: 'textbook' | 'evaluation';
+	/** Opt into the retained certified six-place quadratic brackets. */
+	places?: 6;
 }
 export async function run(
 	source: string | WorkOrder,
@@ -45,7 +47,8 @@ export async function run(
 				env,
 				`d${results.length}`,
 				options.path ?? 'textbook',
-				[...known.values()]
+				[...known.values()],
+				statement.kind === 'solve' ? (statement.places ?? options.places) : options.places
 			);
 		try {
 			let value: Rational | undefined, algebra: AlgebraResult | undefined, text: string;

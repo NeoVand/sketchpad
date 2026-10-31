@@ -44,6 +44,7 @@ export interface DerivationLine {
 	bounds?: { equation: Equation; lower: Rational; upper: Rational }[];
 	given?: Expr | Equation[];
 	candidates?: { constant: Expr; leading: Expr; values: Rational[] };
+	radicalApproximation?: { exact: Expr[]; displayed: Expr[] };
 	approximation?: { expression: Expr; value: Rational; places?: number };
 	conditions?: { expression: Expr; relation: 'zero' | 'nonzero' | 'negative' }[];
 }
@@ -106,7 +107,8 @@ export class DerivationBuilder {
 		readonly env: Environment = new Map(),
 		readonly prefix = 'd0',
 		path: 'textbook' | 'evaluation' = 'textbook',
-		readonly known: Quantity[] = []
+		readonly known: Quantity[] = [],
+		readonly places?: number
 	) {
 		this.derivation = { lines: [], path, traceOffset: trace.calls.length };
 	}
