@@ -23,7 +23,7 @@ M = S["mul"]
 CERT = load("certificate_e7.json")
 EV = load("eval_e7_server.json")
 
-fig = figure(122)
+fig = figure(134)
 cv = canvas(fig)
 
 # ---- a: the sheet --------------------------------------------------------------------------------------------------
@@ -117,65 +117,97 @@ for k, (g, what) in zip(answer_rows, zip(M["answer"], ["digit", "carry", "next s
             fontweight="bold")
     cv.text(L1 + 7.6, ty[k], what, fontsize=5, color=SOFT, ha="left", va="center")
 
-# ---- c: share exact against digits, sums and products apart ------------------------------------------------------
-import collections
+# ---- c: the benchmark: share exact on the same 220 problems ------------------------------------------------------
 import json
 
 BL = load("baselines.json")
 REC = json.loads((DATA.parents[1] / "baselines" / "results.json").read_text())
-truth = collections.defaultdict(lambda: [0, 0])
-for r in REC:
-    truth[(r["system"], r["family"], r["n"])][0] += bool(r["exact"])
-    truth[(r["system"], r["family"], r["n"])][1] += 1
-check(BL["totals"] == {"sketchpad": 220, "27b thinking": 121, "0.8b thinking": 3, "0.8b nothink": 23},
-      "220, 121, 3 and 23 of 220")
-STYLE = {"ours": dict(color=ROSE, lw=1.1, z=5), "strongest": dict(color=COBALT, lw=1.0, z=4),
-         "baseline": dict(color=GREY, lw=0.8, z=3)}
-panels = {"add": (13.0, "sums  $a + b$", (6, 2000), [10, 100, 1000], ["10", "100", "1,000"]),
-          "mul": (45.0, r"products  $a \times b$", (1.6, 26), [2, 5, 10, 20], ["2", "5", "10", "20"])}
-ends = {}
-for fam, (x0c, title, xlim, ticks, tlabels) in panels.items():
-    ax = axes(fig, x0c, 77.0, 25.0, 37.0)
-    clean(ax, left=(fam == "add"))
-    ax.set_xscale("log")
-    ax.set_xlim(*xlim)
-    ax.set_ylim(-0.04, 1.06)
-    ax.set_xticks(ticks)
-    ax.set_xticklabels(tlabels)
-    ax.minorticks_off()
-    ax.set_xlabel("digits per number", labelpad=1.5)
-    if fam == "add":
-        ax.set_yticks([0, 0.5, 1])
-        ax.set_yticklabels(["0", "0.5", "1"])
-        ax.set_ylabel("share exact", labelpad=1.5)
-    ax.text(xlim[0], 1.13, title, fontsize=6, color=INK, ha="left", va="bottom")
-    for ser in BL["series"]:
-        if ser["family"] != fam:
+R_ = fig.canvas.get_renderer()
+
+
+def text_w(sv, size):
+    t = cv.text(0, 0, sv, fontsize=size)
+    w = t.get_window_extent(R_).width / fig.dpi * 25.4
+    t.remove()
+    return w
+
+
+def pct(k, n):
+    v = 100 * k / n
+    return f"{v:.0f}" if abs(v - round(v)) < 1e-9 else f"{v:.1f}"
+
+
+# every shown value, recomputed from the records
+for sysm in BL["systems"]:
+    sh = sysm["shown"]
+    if sh is None:
+        continue
+    rs = [r for r in REC if r["system"] == sh["system"] and r.get("mode") == sh["mode"]]
+    check(sh["n"] == len(rs) and sh["exact"] == sum(bool(r["exact"]) for r in rs), f"{sysm['name']}: total")
+    for key in BL["hard"]:
+        fam, n = key[:3], int(key[3:])
+        c = [r for r in rs if r["family"] == fam and r["n"] == n]
+        check(sh["cells"][key] == [sum(bool(r["exact"]) for r in c), len(c)], f"{sysm['name']}: {key}")
+    if sysm["name"] == "Qwen3.5-0.8B":  # the better of its two settings is shown
+        check(all(sh["exact"] >= o["exact"] for o in sysm["settings"]), "0.8B: the better setting")
+by = {s_["name"]: s_ for s_ in BL["systems"]}
+check(by["Sketchpad"]["shown"]["exact"] == by["Sketchpad"]["shown"]["n"] == 220, "Sketchpad 220 of 220")
+others = [s_ for s_ in BL["systems"] if s_["name"] != "Sketchpad" and s_["shown"]]
+strongest = max(others, key=lambda s_: s_["shown"]["exact"] / s_["shown"]["n"])["name"]
+
+GROUPS = [("ours", None), ("frontier", "frontier models"), ("open", "open models"), ("qwen", "Qwen3.5, the base family")]
+cx0, bx0, bw = 3.0, 37.0, 30.0           # names, main bars (100% = bw mm)
+hx = [(81.0, "+ 1,000 digits", "add1000"), (95.0, "× 20 digits", "mul20")]
+hw = 8.0
+pitch, gap, y = 3.2, 3.0, 78.5
+cv.text(bx0, 72.0, "exact on all 220 problems", fontsize=5.5, color=INK, ha="left", va="bottom")
+cv.text(hx[0][0], 69.0, "the longest sums and products", fontsize=5.5, color=INK, ha="left", va="bottom")
+for x_, lab_, _ in hx:
+    cv.text(x_, 72.0, lab_, fontsize=4.8, color=SOFT, ha="left", va="bottom")
+partial = False
+for g, glabel in GROUPS:
+    members = [s_ for s_ in BL["systems"] if s_["group"] == g]
+    members.sort(key=lambda s_: -(s_["shown"]["exact"] / s_["shown"]["n"]) if s_["shown"] else 1)
+    if glabel:
+        y += gap * 0.55
+        cv.text(cx0, y, glabel, fontsize=4.6, color=GREY, ha="left", va="center", style="italic")
+        y += gap * 0.85
+    for s_ in members:
+        sh = s_["shown"]
+        ours = s_["name"] == "Sketchpad"
+        col = ROSE if ours else (COBALT if s_["name"] == strongest else GREY)
+        cv.text(cx0, y, s_["name"], fontsize=5.4, color=INK, ha="left", va="center",
+                fontweight="bold" if ours else "normal")
+        setting = "Qwen3.5-0.8B on the sheet" if ours else (sh["setting"] if sh else "")
+        if setting:
+            nw = text_w(s_["name"], 5.4) * (1.08 if ours else 1.0)
+            cv.text(cx0 + nw + 1.0, y + 0.1, setting, fontsize=4.3, color=GREY, ha="left", va="center")
+        if sh is None:
+            cv.text(bx0 + 0.6, y, "running", fontsize=4.6, color=MIST, ha="left", va="center", style="italic")
+            y += pitch
             continue
-        st = STYLE[ser["role"]]
-        xs_ = [p[0] for p in ser["points"]]
-        ys_ = []
-        for n, k, tot in ser["points"]:
-            check([k, tot] == truth[(ser["system"], fam, n)] and tot == 20, f"{ser['name']} {fam} {n}: {k}/{tot}")
-            ys_.append(k / tot)
-        ax.plot(xs_, ys_, color=st["color"], lw=st["lw"], ls=(0, (3, 1.6)) if ser["dashed"] else "-",
-                marker="o", ms=1.9, zorder=st["z"], clip_on=False)
-        ends[(ser["name"], fam)] = (xs_[-1], ys_[-1])
-    ax_mul = ax
-# labels at the line ends, in the products panel (the same styles in both)
-lab = {"Sketchpad": (0.0, ROSE), "Qwen3.5-27B, thinking": (0.0, COBALT)}
-check(ends[("Sketchpad", "mul")][1] == 1.0 and abs(ends[("Qwen3.5-27B, thinking", "mul")][1] - 7 / 20) < 1e-12
-      and ends[("Qwen3.5-0.8B, thinking", "mul")][1] == 0 and ends[("Qwen3.5-0.8B, no thinking", "mul")][1] == 0,
-      "the products' line ends: 1, 0.35, 0, 0")
-for name, (dy, col) in lab.items():
-    x_, y_ = ends[(name, "mul")]
-    ax_mul.text(x_ * 1.12, y_ + dy, name.replace("Qwen3.5-", ""), fontsize=4.8, color=col, ha="left",
-                va="center", clip_on=False)
-x_, y_ = ends[("Qwen3.5-0.8B, thinking", "mul")]
-ax_mul.text(x_ * 1.12, y_ + 0.03, "0.8B: thinking,\nno thinking (dashed)", fontsize=4.8, color=GREY, ha="left",
-            va="bottom", linespacing=1.05, clip_on=False)
-check(ends[("Sketchpad", "add")][1] == 1.0 and ends[("Qwen3.5-27B, thinking", "add")][1] == 0.0,
-      "the sums' line ends: 1 and 0")
+        k, n = sh["exact"], sh["n"]
+        L = bw * k / n
+        cv.add_patch(Rectangle((bx0, y - 1.0), L, 2.0, fc=col, ec="none", zorder=3))
+        star = "" if n == 220 else "*"
+        partial |= n != 220
+        cv.text(bx0 + L + 0.8, y, pct(k, n) + "%" + star, fontsize=5.2, color=col if not ours else ROSE,
+                ha="left", va="center", fontweight="bold" if ours else "normal")
+        if ours:
+            cv.text(bx0 + L + 0.8 + text_w("100%", 5.2) + 1.2, y, "certified", fontsize=4.6, color=ROSE, ha="left",
+                    va="center")
+        for x_, _, key in hx:
+            kk, nn = sh["cells"][key]
+            cv.add_patch(Rectangle((x_, y - 0.8), hw, 1.6, fc="#EEF1F6", ec="none", zorder=2))
+            cv.add_patch(Rectangle((x_, y - 0.8), hw * kk / nn, 1.6, fc=col, ec="none", zorder=3))
+            cv.text(x_ + hw + 0.7, y, pct(kk, nn), fontsize=4.6, color=col if kk else GREY, ha="left", va="center")
+        y += pitch
+cv.plot([bx0, bx0], [78.5 - 1.6, y - pitch + 1.6], color=INK, lw=0.4, zorder=4)
+if partial:
+    cv.text(cx0, y + 0.6, "* 10 problems per length so far (110 of 220); the rest are running",
+            fontsize=4.4, color=GREY, ha="left", va="center")
+check(strongest == max(others, key=lambda s_: s_["shown"]["exact"] / s_["shown"]["n"])["name"], "the cobalt bar")
+C_BOTTOM = y
 
 # ---- d: the certificate --------------------------------------------------------------------------------------------
 kinds = CERT["kinds"]
@@ -208,12 +240,12 @@ check(sum(b.size for b in blocks.values()) == 2446, "every view drawn once")
 
 cm = LinearSegmentedColormap.from_list("cert", [cmap_exact(x) for x in np.linspace(0, 0.86, 64)])
 VMAX = 20.0
-cell = 0.64
-dx0, dy0 = 103.0, 77.0
+cell = 0.56
+dx0, dy0 = 116.0, 79.0
 layout = [  # (name, column offset in cells, row offset in cells)
     ("MUL", 0, 0),
     ("SUM", 0, 15), ("ADD", 25, 15), ("ADZ", 48, 15), ("SUB", 71, 15),
-    ("EST", 0, 34), ("NXT", 46, 34), ("FLS", 62, 34), ("DEC", 71, 34),
+    ("EST", 0, 37), ("NXT", 46, 37), ("FLS", 64, 37), ("DEC", 76, 37),
 ]
 names = {"MUL": "MUL 1,100", "SUM": "SUM 242", "ADD": "ADD 220", "ADZ": "ADZ 220", "SUB": "SUB 242",
          "EST": "EST 400", "NXT": "NXT 11", "FLS": "FLS 2", "DEC": "DEC 9"}
@@ -238,13 +270,13 @@ ci, ti, bi = i // (G * G), (i // G) % G, i % G
 check(abs(add_m.min() - 3.016) < 1e-9 and (ci, ti, bi) == (0, 6, 7), "lowest margin: SUM [ ,5,6], 3.016")
 rx, ry = dx0 + (0 + ci * G + ti) * cell, dy0 + (15 + bi) * cell
 cv.add_patch(Rectangle((rx - 0.25, ry - 0.25), cell + 0.5, cell + 0.5, fc="none", ec=INK, lw=0.6, zorder=6))
-ly = dy0 + 28.6 * cell
+ly = dy0 + 30.0 * cell
 cv.plot([rx + cell / 2, rx + cell / 2, rx + cell / 2 + 2.0], [ry + cell + 0.25, ly, ly], color=INK, lw=0.35,
         solid_joinstyle="miter")
 cv.text(rx + cell / 2 + 2.6, ly, f"lowest margin {add_m.min():.2f}: SUM reading 5 and 6, no carry", fontsize=4.8,
         color=INK, ha="left", va="center")
 # the ramp
-ry0 = dy0 + 46.5 * cell
+ry0 = dy0 + 50.5 * cell
 grad = cm(np.linspace(0, 1, 200))[None, :, :]
 cv.imshow(grad, extent=(dx0 + 44 * cell, dx0 + 74 * cell, ry0 + 1.3, ry0), interpolation="bilinear", zorder=3)
 for v in (0, 10, 20):
@@ -260,6 +292,6 @@ cv.text(dx0, dy0 - 5.6, "2,446 of 2,446 views pass on the M4 (WebGPU, fp16)", fo
 # ---- letters -------------------------------------------------------------------------------------------------------
 letter(fig, 2.0, 3.0, "a")
 letter(fig, bx - 2.0, 3.0, "b")
-letter(fig, 2.0, 67.0, "c")
-letter(fig, dx0 - 8.0, 67.0, "d")
+letter(fig, 1.0, 66.0, "c")
+letter(fig, dx0 - 4.0, 66.0, "d")
 save(fig, "fig1")

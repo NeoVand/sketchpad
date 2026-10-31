@@ -36,3 +36,4 @@ nice -n 19 node --import ./paper/figures/ts-resolve.mjs paper/figures/algebra.ts
 for n in 1 2 3 4 5 6; do
 	(cd paper/figures && nice -n 19 "$PY" "fig$n.py" 2>&1 | grep -E "^wrote|Error|error" || true)
 done
+(cd paper/figures && nice -n 19 "$PY" ed1.py 2>&1 | grep -E "^wrote|Error|error" || true)

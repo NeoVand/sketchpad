@@ -46,7 +46,8 @@ def figures(out_dir):
     out_dir = pathlib.Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     pngs = []
-    for svg in sorted((ROOT / "static" / "figures").glob("fig*.svg")):
+    figs = ROOT / "static" / "figures"
+    for svg in sorted(figs.glob("fig*.svg")) + sorted(figs.glob("ed*.svg")):
         png = out_dir / (svg.stem + "_1440.png")
         subprocess.run(["rsvg-convert", "-w", "1440", "-b", "white", "-o", str(png), str(svg)], check=True)
         pngs.append(png)

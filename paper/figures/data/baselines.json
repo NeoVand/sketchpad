@@ -1,303 +1,669 @@
 {
- "source": "paper/baselines/results.json (RESULT.md): 220 problems, 20 per length, four systems",
- "series": [
-  {
-   "system": "sketchpad",
-   "name": "Sketchpad",
-   "role": "ours",
-   "dashed": false,
-   "family": "add",
-   "points": [
-    [
-     10,
-     20,
-     20
-    ],
-    [
-     30,
-     20,
-     20
-    ],
-    [
-     100,
-     20,
-     20
-    ],
-    [
-     300,
-     20,
-     20
-    ],
-    [
-     1000,
-     20,
-     20
-    ]
-   ]
-  },
-  {
-   "system": "sketchpad",
-   "name": "Sketchpad",
-   "role": "ours",
-   "dashed": false,
-   "family": "mul",
-   "points": [
-    [
-     2,
-     20,
-     20
-    ],
-    [
-     4,
-     20,
-     20
-    ],
-    [
-     6,
-     20,
-     20
-    ],
-    [
-     10,
-     20,
-     20
-    ],
-    [
-     15,
-     20,
-     20
-    ],
-    [
-     20,
-     20,
-     20
-    ]
-   ]
-  },
-  {
-   "system": "27b thinking",
-   "name": "Qwen3.5-27B, thinking",
-   "role": "strongest",
-   "dashed": false,
-   "family": "add",
-   "points": [
-    [
-     10,
-     18,
-     20
-    ],
-    [
-     30,
-     12,
-     20
-    ],
-    [
-     100,
-     8,
-     20
-    ],
-    [
-     300,
-     1,
-     20
-    ],
-    [
-     1000,
-     0,
-     20
-    ]
-   ]
-  },
-  {
-   "system": "27b thinking",
-   "name": "Qwen3.5-27B, thinking",
-   "role": "strongest",
-   "dashed": false,
-   "family": "mul",
-   "points": [
-    [
-     2,
-     20,
-     20
-    ],
-    [
-     4,
-     20,
-     20
-    ],
-    [
-     6,
-     15,
-     20
-    ],
-    [
-     10,
-     14,
-     20
-    ],
-    [
-     15,
-     6,
-     20
-    ],
-    [
-     20,
-     7,
-     20
-    ]
-   ]
-  },
-  {
-   "system": "0.8b thinking",
-   "name": "Qwen3.5-0.8B, thinking",
-   "role": "baseline",
-   "dashed": false,
-   "family": "add",
-   "points": [
-    [
-     10,
-     0,
-     20
-    ],
-    [
-     30,
-     0,
-     20
-    ],
-    [
-     100,
-     0,
-     20
-    ],
-    [
-     300,
-     0,
-     20
-    ],
-    [
-     1000,
-     0,
-     20
-    ]
-   ]
-  },
-  {
-   "system": "0.8b thinking",
-   "name": "Qwen3.5-0.8B, thinking",
-   "role": "baseline",
-   "dashed": false,
-   "family": "mul",
-   "points": [
-    [
-     2,
-     3,
-     20
-    ],
-    [
-     4,
-     0,
-     20
-    ],
-    [
-     6,
-     0,
-     20
-    ],
-    [
-     10,
-     0,
-     20
-    ],
-    [
-     15,
-     0,
-     20
-    ],
-    [
-     20,
-     0,
-     20
-    ]
-   ]
-  },
-  {
-   "system": "0.8b nothink",
-   "name": "Qwen3.5-0.8B, no thinking",
-   "role": "baseline",
-   "dashed": true,
-   "family": "add",
-   "points": [
-    [
-     10,
-     0,
-     20
-    ],
-    [
-     30,
-     0,
-     20
-    ],
-    [
-     100,
-     0,
-     20
-    ],
-    [
-     300,
-     0,
-     20
-    ],
-    [
-     1000,
-     0,
-     20
-    ]
-   ]
-  },
-  {
-   "system": "0.8b nothink",
-   "name": "Qwen3.5-0.8B, no thinking",
-   "role": "baseline",
-   "dashed": true,
-   "family": "mul",
-   "points": [
-    [
-     2,
-     15,
-     20
-    ],
-    [
-     4,
-     8,
-     20
-    ],
-    [
-     6,
-     0,
-     20
-    ],
-    [
-     10,
-     0,
-     20
-    ],
-    [
-     15,
-     0,
-     20
-    ],
-    [
-     20,
-     0,
-     20
-    ]
-   ]
-  }
+ "source": "paper/baselines/results.json (BASELINES.md, RESULT.md); 20 problems per length when complete",
+ "hard": [
+  "add1000",
+  "mul20"
  ],
- "totals": {
-  "sketchpad": 220,
-  "27b thinking": 121,
-  "0.8b thinking": 3,
-  "0.8b nothink": 23
- }
+ "systems": [
+  {
+   "name": "Sketchpad",
+   "group": "ours",
+   "settings": [
+    {
+     "system": "sketchpad",
+     "mode": null,
+     "setting": "",
+     "exact": 220,
+     "n": 220,
+     "cells": {
+      "add10": [
+       20,
+       20
+      ],
+      "add30": [
+       20,
+       20
+      ],
+      "add100": [
+       20,
+       20
+      ],
+      "add300": [
+       20,
+       20
+      ],
+      "add1000": [
+       20,
+       20
+      ],
+      "mul2": [
+       20,
+       20
+      ],
+      "mul4": [
+       20,
+       20
+      ],
+      "mul6": [
+       20,
+       20
+      ],
+      "mul10": [
+       20,
+       20
+      ],
+      "mul15": [
+       20,
+       20
+      ],
+      "mul20": [
+       20,
+       20
+      ]
+     },
+     "model": null
+    }
+   ],
+   "shown": {
+    "system": "sketchpad",
+    "mode": null,
+    "setting": "",
+    "exact": 220,
+    "n": 220,
+    "cells": {
+     "add10": [
+      20,
+      20
+     ],
+     "add30": [
+      20,
+      20
+     ],
+     "add100": [
+      20,
+      20
+     ],
+     "add300": [
+      20,
+      20
+     ],
+     "add1000": [
+      20,
+      20
+     ],
+     "mul2": [
+      20,
+      20
+     ],
+     "mul4": [
+      20,
+      20
+     ],
+     "mul6": [
+      20,
+      20
+     ],
+     "mul10": [
+      20,
+      20
+     ],
+     "mul15": [
+      20,
+      20
+     ],
+     "mul20": [
+      20,
+      20
+     ]
+    },
+    "model": null
+   }
+  },
+  {
+   "name": "GPT-6.1 Sol",
+   "group": "frontier",
+   "settings": [
+    {
+     "system": "gpt high",
+     "mode": "high",
+     "setting": "high reasoning",
+     "exact": 108,
+     "n": 110,
+     "cells": {
+      "add10": [
+       10,
+       10
+      ],
+      "add30": [
+       10,
+       10
+      ],
+      "add100": [
+       10,
+       10
+      ],
+      "add300": [
+       9,
+       10
+      ],
+      "add1000": [
+       9,
+       10
+      ],
+      "mul2": [
+       10,
+       10
+      ],
+      "mul4": [
+       10,
+       10
+      ],
+      "mul6": [
+       10,
+       10
+      ],
+      "mul10": [
+       10,
+       10
+      ],
+      "mul15": [
+       10,
+       10
+      ],
+      "mul20": [
+       10,
+       10
+      ]
+     },
+     "model": "gpt-6.1-sol"
+    }
+   ],
+   "shown": {
+    "system": "gpt high",
+    "mode": "high",
+    "setting": "high reasoning",
+    "exact": 108,
+    "n": 110,
+    "cells": {
+     "add10": [
+      10,
+      10
+     ],
+     "add30": [
+      10,
+      10
+     ],
+     "add100": [
+      10,
+      10
+     ],
+     "add300": [
+      9,
+      10
+     ],
+     "add1000": [
+      9,
+      10
+     ],
+     "mul2": [
+      10,
+      10
+     ],
+     "mul4": [
+      10,
+      10
+     ],
+     "mul6": [
+      10,
+      10
+     ],
+     "mul10": [
+      10,
+      10
+     ],
+     "mul15": [
+      10,
+      10
+     ],
+     "mul20": [
+      10,
+      10
+     ]
+    },
+    "model": "gpt-6.1-sol"
+   }
+  },
+  {
+   "name": "Claude Opus 5.5",
+   "group": "frontier",
+   "settings": [],
+   "shown": null
+  },
+  {
+   "name": "Gemini 4 Argon",
+   "group": "frontier",
+   "settings": [
+    {
+     "system": "gemini high",
+     "mode": "high",
+     "setting": "high reasoning",
+     "exact": 104,
+     "n": 110,
+     "cells": {
+      "add10": [
+       10,
+       10
+      ],
+      "add30": [
+       10,
+       10
+      ],
+      "add100": [
+       10,
+       10
+      ],
+      "add300": [
+       9,
+       10
+      ],
+      "add1000": [
+       5,
+       10
+      ],
+      "mul2": [
+       10,
+       10
+      ],
+      "mul4": [
+       10,
+       10
+      ],
+      "mul6": [
+       10,
+       10
+      ],
+      "mul10": [
+       10,
+       10
+      ],
+      "mul15": [
+       10,
+       10
+      ],
+      "mul20": [
+       10,
+       10
+      ]
+     },
+     "model": "gemini-4-argon (gemini-4-argon)"
+    }
+   ],
+   "shown": {
+    "system": "gemini high",
+    "mode": "high",
+    "setting": "high reasoning",
+    "exact": 104,
+    "n": 110,
+    "cells": {
+     "add10": [
+      10,
+      10
+     ],
+     "add30": [
+      10,
+      10
+     ],
+     "add100": [
+      10,
+      10
+     ],
+     "add300": [
+      9,
+      10
+     ],
+     "add1000": [
+      5,
+      10
+     ],
+     "mul2": [
+      10,
+      10
+     ],
+     "mul4": [
+      10,
+      10
+     ],
+     "mul6": [
+      10,
+      10
+     ],
+     "mul10": [
+      10,
+      10
+     ],
+     "mul15": [
+      10,
+      10
+     ],
+     "mul20": [
+      10,
+      10
+     ]
+    },
+    "model": "gemini-4-argon (gemini-4-argon)"
+   }
+  },
+  {
+   "name": "gpt-oss-120b",
+   "group": "open",
+   "settings": [],
+   "shown": null
+  },
+  {
+   "name": "DeepSeek-V4-Pro",
+   "group": "open",
+   "settings": [],
+   "shown": null
+  },
+  {
+   "name": "Kimi K3",
+   "group": "open",
+   "settings": [],
+   "shown": null
+  },
+  {
+   "name": "GLM-5.3",
+   "group": "open",
+   "settings": [],
+   "shown": null
+  },
+  {
+   "name": "Gemma 4 31B",
+   "group": "open",
+   "settings": [],
+   "shown": null
+  },
+  {
+   "name": "Qwen3.5-27B",
+   "group": "qwen",
+   "settings": [
+    {
+     "system": "27b thinking",
+     "mode": "thinking",
+     "setting": "thinking",
+     "exact": 121,
+     "n": 220,
+     "cells": {
+      "add10": [
+       18,
+       20
+      ],
+      "add30": [
+       12,
+       20
+      ],
+      "add100": [
+       8,
+       20
+      ],
+      "add300": [
+       1,
+       20
+      ],
+      "add1000": [
+       0,
+       20
+      ],
+      "mul2": [
+       20,
+       20
+      ],
+      "mul4": [
+       20,
+       20
+      ],
+      "mul6": [
+       15,
+       20
+      ],
+      "mul10": [
+       14,
+       20
+      ],
+      "mul15": [
+       6,
+       20
+      ],
+      "mul20": [
+       7,
+       20
+      ]
+     },
+     "model": "Qwen/Qwen3.5-27B-FP8@97f5941b"
+    }
+   ],
+   "shown": {
+    "system": "27b thinking",
+    "mode": "thinking",
+    "setting": "thinking",
+    "exact": 121,
+    "n": 220,
+    "cells": {
+     "add10": [
+      18,
+      20
+     ],
+     "add30": [
+      12,
+      20
+     ],
+     "add100": [
+      8,
+      20
+     ],
+     "add300": [
+      1,
+      20
+     ],
+     "add1000": [
+      0,
+      20
+     ],
+     "mul2": [
+      20,
+      20
+     ],
+     "mul4": [
+      20,
+      20
+     ],
+     "mul6": [
+      15,
+      20
+     ],
+     "mul10": [
+      14,
+      20
+     ],
+     "mul15": [
+      6,
+      20
+     ],
+     "mul20": [
+      7,
+      20
+     ]
+    },
+    "model": "Qwen/Qwen3.5-27B-FP8@97f5941b"
+   }
+  },
+  {
+   "name": "Qwen3.5-0.8B",
+   "group": "qwen",
+   "settings": [
+    {
+     "system": "0.8b nothink",
+     "mode": "nothink",
+     "setting": "no thinking",
+     "exact": 23,
+     "n": 220,
+     "cells": {
+      "add10": [
+       0,
+       20
+      ],
+      "add30": [
+       0,
+       20
+      ],
+      "add100": [
+       0,
+       20
+      ],
+      "add300": [
+       0,
+       20
+      ],
+      "add1000": [
+       0,
+       20
+      ],
+      "mul2": [
+       15,
+       20
+      ],
+      "mul4": [
+       8,
+       20
+      ],
+      "mul6": [
+       0,
+       20
+      ],
+      "mul10": [
+       0,
+       20
+      ],
+      "mul15": [
+       0,
+       20
+      ],
+      "mul20": [
+       0,
+       20
+      ]
+     },
+     "model": "Qwen/Qwen3.5-0.8B"
+    },
+    {
+     "system": "0.8b thinking",
+     "mode": "thinking",
+     "setting": "thinking",
+     "exact": 3,
+     "n": 220,
+     "cells": {
+      "add10": [
+       0,
+       20
+      ],
+      "add30": [
+       0,
+       20
+      ],
+      "add100": [
+       0,
+       20
+      ],
+      "add300": [
+       0,
+       20
+      ],
+      "add1000": [
+       0,
+       20
+      ],
+      "mul2": [
+       3,
+       20
+      ],
+      "mul4": [
+       0,
+       20
+      ],
+      "mul6": [
+       0,
+       20
+      ],
+      "mul10": [
+       0,
+       20
+      ],
+      "mul15": [
+       0,
+       20
+      ],
+      "mul20": [
+       0,
+       20
+      ]
+     },
+     "model": "Qwen/Qwen3.5-0.8B"
+    }
+   ],
+   "shown": {
+    "system": "0.8b nothink",
+    "mode": "nothink",
+    "setting": "no thinking",
+    "exact": 23,
+    "n": 220,
+    "cells": {
+     "add10": [
+      0,
+      20
+     ],
+     "add30": [
+      0,
+      20
+     ],
+     "add100": [
+      0,
+      20
+     ],
+     "add300": [
+      0,
+      20
+     ],
+     "add1000": [
+      0,
+      20
+     ],
+     "mul2": [
+      15,
+      20
+     ],
+     "mul4": [
+      8,
+      20
+     ],
+     "mul6": [
+      0,
+      20
+     ],
+     "mul10": [
+      0,
+      20
+     ],
+     "mul15": [
+      0,
+      20
+     ],
+     "mul20": [
+      0,
+      20
+     ]
+    },
+    "model": "Qwen/Qwen3.5-0.8B"
+   }
+  }
+ ]
 }
