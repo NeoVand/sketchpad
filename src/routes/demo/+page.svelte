@@ -12,7 +12,8 @@
 	import Machine from '#lib/sketchpad/Machine.svelte';
 	import Procedure from '#lib/sketchpad/Procedure.svelte';
 	import StateSpace from '#lib/sketchpad/StateSpace.svelte';
-	import WorkOrder from '#lib/sketchpad/WorkOrder.svelte';
+	import Derivation from '#lib/sketchpad/Derivation.svelte';
+	import DigitWork from '#lib/sketchpad/DigitWork.svelte';
 	import '#lib/sketchpad/panel.css';
 	import { HAS_CALC, HF_CARD, HF_ROOT, MODELS, PROGRAM, type Kind } from '#lib/sketchpad/models.ts';
 	import { pad } from '#lib/sketchpad/pad.svelte.ts';
@@ -69,8 +70,9 @@
 	];
 
 	/**
-	 * Algebra: the featured work orders are the beats the cost model puts under about 12 s on an M4 (program/NOTES.md);
-	 * the slower ones stay, with their time.
+	 * Algebra's work orders, grouped by the cost model's seconds on an M4 for textbook steps with the light check
+	 * (program/NOTES.md): under 12 s first (FEATURED holds them until the page has counted), the slower ones after,
+	 * each with its time.
 	 */
 	const FEATURED = [
 		'solve 3(x-2)+5=2x+14',
@@ -88,6 +90,8 @@
 		'expand (x+1)^10'
 	];
 	let order = $state(FEATURED[0]);
+	/** where the line the algebra's arithmetic feeds sits (Derivation reports it; DigitWork follows it) */
+	let activeTop = $state<number | null>(null);
 	const MODES = ['light', 'strong'] as const;
 	/** the cost model's seconds for each preset, in each check mode (the reference arithmetic counts the steps) */
 	let modelled = $state<Record<string, number>>({});
@@ -135,6 +139,12 @@
 		modelled = out;
 	}
 	const secondsOf = (o: string) => modelled[`${pad.checkMode}:${o}`];
+	const BEATS = [...FEATURED, ...SLOWER];
+	const groups = $derived.by(() => {
+		const light = (o: string) => modelled[`light:${o}`];
+		if (light(BEATS[0]) === undefined) return [FEATURED, SLOWER];
+		return [BEATS.filter((o) => light(o) < 12), BEATS.filter((o) => light(o) >= 12)];
+	});
 
 	/** this page's path; a part adds only its hash */
 	const DEMO = resolve('/demo');
@@ -148,14 +158,18 @@
 			await setOp('calc');
 			pad.clearRun();
 			if (p === 'calc') pad.stageCalc(line);
+			else void pad.stageAlgebra(order);
 		}
 	}
 
-	/** the line typed in Calculate is laid out on its sheet a moment after typing stops */
+	/** the line typed in Calculate (or Algebra) is laid out a moment after typing stops */
 	let staging = 0;
 	function retype() {
 		clearTimeout(staging);
-		staging = window.setTimeout(() => part === 'calc' && pad.stageCalc(line), 250);
+		staging = window.setTimeout(
+			() => (part === 'calc' ? pad.stageCalc(line) : part === 'algebra' && pad.stageAlgebra(order)),
+			250
+		);
 	}
 
 	const source = $derived(
@@ -195,11 +209,6 @@
 		'a ÷ b': 'long division',
 		'√a': 'square root'
 	};
-	/** the procedure the algebra run is on: the title of the sheet it works on */
-	const working = $derived.by(() => {
-		void pad.version;
-		return pad.sheet instanceof Grid ? pad.sheet.title : null;
-	});
 
 	const fmt = (n: number) => n.toLocaleString('en-US');
 	/** a download size as a visitor reads it: KB below a megabyte, MB below a gigabyte, GB above */
@@ -346,6 +355,129 @@
 				>off: {fmt(cert.rows - cert.pass)} views fail on this device</span
 			>{/if}
 	{/if}
+{/snippet}
+
+{#snippet status()}
+	<!-- two fixed lines: the answer, then the facts behind it -->
+	<div class="sp-foot status num" aria-live="polite">
+		{#if calcOff}
+			<p>&nbsp;</p>
+		{:else if pad.running}
+			<p class="verdict">
+				<span>{fmt(pad.ticks)} {pad.ticks === 1 ? 'view' : 'views'}</span><span
+					>{(pad.computeMs / Math.max(1, pad.ticks)).toFixed(0)} ms a view</span
+				><span>{progress}</span>
+			</p>
+			<p>
+				{#if pad.recovering}<span>the GPU was reset: loading the model again</span
+					>{/if}{#if pad.sheet && !(pad.sheet instanceof Grid) && pad.sheet.edits}<span
+						>{pad.sheet.edits} {pad.sheet.edits === 1 ? 'digit' : 'digits'} changed</span
+					>{/if}{#if pad.pushes}<span
+						>{pad.pushes} {pad.pushes === 1 ? 'view' : 'views'} pushed</span
+					>{/if}
+			</p>
+		{:else if part === 'algebra' && pad.algebra}
+			{@const r = pad.algebra}
+			{@const refused = r.results.some((x) => x.status === 'refused')}
+			<p class="verdict">
+				{#if refused}<strong>Refused.</strong> A check failed, so the answer is withheld.
+				{:else}<strong class:ok={r.ok}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
+					{#if !r.ok}The page’s own arithmetic says <span class="ref">{r.want.join('; ')}</span
+						>.{:else}Every line matches the page’s own arithmetic.{/if}{/if}
+			</p>
+			<p>
+				<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span><span
+					>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every view it
+						read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
+							? 'view'
+							: 'views'}{/if}</span
+				>
+			</p>
+		{:else if part === 'calc' && pad.calcResult}
+			{@const r = pad.calcResult}
+			<p class="verdict">
+				<strong class:ok={r.ok}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
+				{r.text} =
+				<span class="got">{r.got.length > 48 ? `${r.got.slice(0, 48)}…` : r.got}</span>{#if !r.ok}
+					(the page’s own arithmetic says <span class="ref">{r.want}</span>){/if}
+			</p>
+			<p>
+				<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span><span
+					>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every view it
+						read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
+							? 'view'
+							: 'views'}{/if}</span
+				>
+			</p>
+		{:else if part === 'machine' && pad.result}
+			{@const r = pad.result}
+			<p class="verdict">
+				<strong class:ok={r.ok}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
+				{#if r.ok}
+					{#if r.operands[0].length + r.operands[1].length + r.got.length <= 48}
+						{r.operands[0]}
+						{pad.op === 'add' ? '+' : '×'}
+						{r.operands[1]} = <span class="got">{r.got}</span>
+					{:else}
+						All {fmt(r.got.length)} digits of the {pad.op === 'add' ? 'sum' : 'product'} match.
+					{/if}
+				{:else if r.pushes}
+					Pushed off course: the sheet says <span class="got"
+						>{r.got.length > 30 ? `${r.got.slice(0, 30)}…` : r.got}</span
+					>, not
+					<span class="ref">{r.want.length > 30 ? `${r.want.slice(0, 30)}…` : r.want}</span>.
+				{:else}
+					The sheet says {r.got.length > 30 ? `${r.got.slice(0, 30)}…` : r.got}.
+				{/if}
+			</p>
+			<p>
+				<span>{fmt(r.ticks)} views in {fmt(r.steps ?? r.ticks)} steps, {duration(r.seconds)}</span
+				><span
+					>{#if r.certified && r.certSource === 'shipped'}certified (shipped, checked again here){:else if r.certified}certified
+						on this device{:else if r.unchecked === 0}every view it read passed{:else}{r.unchecked}
+						unchecked {r.unchecked === 1 ? 'view' : 'views'}{/if}</span
+				>{#if r.pushes}<span>{r.pushes} pushed</span>{/if}{#if r.edits}<span>{r.edits} changed</span
+					>{/if}
+			</p>
+		{:else if pad.runError}
+			<p class="verdict">{pad.runError === 'stopped' ? 'Stopped.' : pad.runError}</p>
+			{#if part === 'calc' && pad.runError !== 'stopped'}<p>
+					Try a + b, a − b, a × b, a ÷ b to k places, √a to k places or gcd(a, b).
+				</p>{/if}
+		{:else if part === 'calc' && pad.ready}
+			<p class="verdict">
+				{pad.certifying
+					? 'Checking the three tables it reads on this device first.'
+					: 'Every digit is the model’s; signs and decimal points are layout.'}
+			</p>
+			<p>a + b, a − b, a × b, a ÷ b to k places, √a to k places, gcd(a, b)</p>
+		{:else if part === 'algebra' && pad.ready}
+			<p class="verdict">
+				{pad.certifying
+					? 'Checking the three tables it reads on this device first.'
+					: 'The runtime plans the steps; every number in rose is the model’s.'}
+			</p>
+			<p>an expression, solve … (up to three unknowns), expand …, factor …</p>
+		{:else if part === 'machine' && pad.ready && !certBusy}
+			<p class="verdict">
+				{pad.op === 'add'
+					? 'Run, then click an unread digit to change it,'
+					: 'Run, then click a later digit of b to change it,'}
+			</p>
+			<p>
+				{pad.op === 'add'
+					? 'or a number in the state space to push the next view.'
+					: 'or a digit on the multiply map to push a step.'}
+			</p>
+		{:else if !pad.ready}
+			<p class="verdict">Load the model to {part === 'algebra' ? 'solve it' : 'run it'}.</p>
+			<p>
+				{part === 'calc'
+					? 'a + b, a − b, a × b, a ÷ b to k places, √a to k places, gcd(a, b)'
+					: 'It downloads once; this browser keeps it.'}
+			</p>
+		{/if}
+	</div>
 {/snippet}
 
 {#snippet pace()}
@@ -529,6 +661,7 @@
 				<input
 					class="line"
 					bind:value={order}
+					oninput={retype}
 					onkeydown={(e) => e.key === 'Enter' && calc(order, true)}
 					autocomplete="off"
 					spellcheck="false"
@@ -545,22 +678,26 @@
 							class="plain"
 							aria-pressed={pad.checkMode === m}
 							disabled={pad.running}
-							onclick={() => (pad.checkMode = m)}>{m}</button
+							onclick={() => {
+								pad.checkMode = m;
+								void pad.stageAlgebra(order);
+							}}>{m}</button
 						>
 					{/each}
 				</span>
 				{@render pace()}
 			</div>
 			<div class="beats">
-				{#each [FEATURED, SLOWER] as group, gi (gi)}
+				{#each groups as group, gi (gi)}
 					<div class="beat-row">
-						<span class="hint beat-k">{gi === 0 ? 'Featured' : 'Slower'}</span>
+						<span class="hint beat-k">{gi === 0 ? 'Under 12 s' : 'Slower'}</span>
 						{#each group as o (o)}
 							<button
 								class="plain beat"
 								disabled={pad.running || calcOff}
 								onclick={() => {
 									order = o;
+									void pad.stageAlgebra(o);
 									calc(o, true);
 								}}
 								><span class="mono">{pretty(o)}</span>{#if secondsOf(o) !== undefined}<span
@@ -571,8 +708,8 @@
 					</div>
 				{/each}
 				<p class="hint">
-					≈ the cost model’s time on an M4 (0.065 s a decoder call, 0.037 s a view,
-					program/NOTES.md); each run reports the time it took here.
+					≈ the cost model’s time on an M4 for these steps and this check (0.065 s a decoder call,
+					0.037 s a view); each run reports the time it took here.
 				</p>
 			</div>
 		</div>
@@ -627,6 +764,29 @@
 				</p>
 			</section>
 		</div>
+	{:else if part === 'algebra'}
+		<!-- algebra: the derivation, and beside the line it feeds, the arithmetic under way -->
+		<div class="band algebra">
+			<Derivation
+				plan={pad.algebraPlan}
+				final={pad.algebra}
+				live={pad.algebraLive}
+				liveVersion={pad.liveVersion}
+				running={pad.running}
+				onactive={(top) => (activeTop = top)}
+				foot={status}
+			/>
+			<DigitWork
+				source={pad.sheet ? sourceOf(pad.sheet) : null}
+				version={pad.version}
+				{tickMs}
+				sprites={SPRITES}
+				last={pad.last}
+				{next}
+				top={activeTop}
+				running={pad.running}
+			/>
+		</div>
 	{:else}
 		<!-- the top row: the sheet (the model's only memory), one tick, and the machine; panels on one grid -->
 		<div class="band" class:tall={calcPart} class:calc={part === 'calc'}>
@@ -642,140 +802,10 @@
 				<div class="sp-body sheet-body">
 					<Sheet {source} version={pad.version} {tickMs} sprites={SPRITES} onedit={edit} compact />
 				</div>
-				<!-- two fixed lines: the answer, then the facts behind it -->
-				<div class="sp-foot status num" aria-live="polite">
-					{#if calcOff}
-						<p>&nbsp;</p>
-					{:else if pad.running}
-						<p class="verdict">
-							<span>{fmt(pad.ticks)} {pad.ticks === 1 ? 'view' : 'views'}</span><span
-								>{(pad.computeMs / Math.max(1, pad.ticks)).toFixed(0)} ms a view</span
-							><span>{progress}</span>
-						</p>
-						<p>
-							{#if pad.recovering}<span>the GPU was reset: loading the model again</span
-								>{/if}{#if pad.sheet && !(pad.sheet instanceof Grid) && pad.sheet.edits}<span
-									>{pad.sheet.edits} {pad.sheet.edits === 1 ? 'digit' : 'digits'} changed</span
-								>{/if}{#if pad.pushes}<span
-									>{pad.pushes} {pad.pushes === 1 ? 'view' : 'views'} pushed</span
-								>{/if}
-						</p>
-					{:else if part === 'algebra' && pad.algebra}
-						{@const r = pad.algebra}
-						<p class="verdict">
-							<strong class:ok={r.ok}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
-							{#if !r.ok}The page’s own arithmetic says <span class="ref">{r.want.join('; ')}</span
-								>.{:else}Every line matches the page’s own arithmetic.{/if}
-						</p>
-						<p>
-							<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span><span
-								>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every
-									view it read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
-										? 'view'
-										: 'views'}{/if}</span
-							>
-						</p>
-					{:else if part === 'calc' && pad.calcResult}
-						{@const r = pad.calcResult}
-						<p class="verdict">
-							<strong class:ok={r.ok}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
-							{r.text} =
-							<span class="got">{r.got.length > 48 ? `${r.got.slice(0, 48)}…` : r.got}</span
-							>{#if !r.ok}
-								(the page’s own arithmetic says <span class="ref">{r.want}</span>){/if}
-						</p>
-						<p>
-							<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span><span
-								>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every
-									view it read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
-										? 'view'
-										: 'views'}{/if}</span
-							>
-						</p>
-					{:else if part === 'machine' && pad.result}
-						{@const r = pad.result}
-						<p class="verdict">
-							<strong class:ok={r.ok}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
-							{#if r.ok}
-								{#if r.operands[0].length + r.operands[1].length + r.got.length <= 48}
-									{r.operands[0]}
-									{pad.op === 'add' ? '+' : '×'}
-									{r.operands[1]} = <span class="got">{r.got}</span>
-								{:else}
-									All {fmt(r.got.length)} digits of the {pad.op === 'add' ? 'sum' : 'product'} match.
-								{/if}
-							{:else if r.pushes}
-								Pushed off course: the sheet says <span class="got"
-									>{r.got.length > 30 ? `${r.got.slice(0, 30)}…` : r.got}</span
-								>, not
-								<span class="ref">{r.want.length > 30 ? `${r.want.slice(0, 30)}…` : r.want}</span>.
-							{:else}
-								The sheet says {r.got.length > 30 ? `${r.got.slice(0, 30)}…` : r.got}.
-							{/if}
-						</p>
-						<p>
-							<span
-								>{fmt(r.ticks)} views in {fmt(r.steps ?? r.ticks)} steps, {duration(
-									r.seconds
-								)}</span
-							><span
-								>{#if r.certified && r.certSource === 'shipped'}certified (shipped, checked again
-									here){:else if r.certified}certified on this device{:else if r.unchecked === 0}every
-									view it read passed{:else}{r.unchecked}
-									unchecked {r.unchecked === 1 ? 'view' : 'views'}{/if}</span
-							>{#if r.pushes}<span>{r.pushes} pushed</span>{/if}{#if r.edits}<span
-									>{r.edits} changed</span
-								>{/if}
-						</p>
-					{:else if pad.runError}
-						<p class="verdict">{pad.runError === 'stopped' ? 'Stopped.' : pad.runError}</p>
-						{#if part === 'calc' && pad.runError !== 'stopped'}<p>
-								Try a + b, a − b, a × b, a ÷ b to k places, √a to k places or gcd(a, b).
-							</p>{/if}
-					{:else if part === 'calc' && pad.ready}
-						<p class="verdict">
-							{pad.certifying
-								? 'Checking the three tables it reads on this device first.'
-								: 'Every digit is the model’s; signs and decimal points are layout.'}
-						</p>
-						<p>a + b, a − b, a × b, a ÷ b to k places, √a to k places, gcd(a, b)</p>
-					{:else if part === 'algebra' && pad.ready}
-						<p class="verdict">
-							{pad.certifying
-								? 'Checking the three tables it reads on this device first.'
-								: 'The runtime plans; every digit of every evaluation is the model’s.'}
-						</p>
-						<p>an expression, solve … (up to three unknowns), expand …, factor …</p>
-					{:else if part === 'machine' && pad.ready && !certBusy}
-						<p class="verdict">
-							{pad.op === 'add'
-								? 'Run, then click an unread digit to change it,'
-								: 'Run, then click a later digit of b to change it,'}
-						</p>
-						<p>
-							{pad.op === 'add'
-								? 'or a number in the state space to push the next view.'
-								: 'or a digit on the multiply map to push a step.'}
-						</p>
-					{:else if !pad.ready}
-						<p class="verdict">Load the model to run it.</p>
-						<p>
-							{part === 'calc'
-								? 'a + b, a − b, a × b, a ÷ b to k places, √a to k places, gcd(a, b)'
-								: 'It downloads once; this browser keeps it.'}
-						</p>
-					{/if}
-				</div>
+				{@render status()}
 			</figure>
 			<Inset last={pad.last} {next} sprites={SPRITES} />
-			{#if part === 'algebra'}
-				<WorkOrder
-					order={pretty(pad.algebra?.text ?? order)}
-					result={pad.algebra}
-					running={pad.running}
-					{working}
-				/>
-			{:else if part === 'calc'}
+			{#if part === 'calc'}
 				<Procedure
 					sheet={pad.sheet}
 					version={pad.version}
@@ -843,10 +873,12 @@
 			<p>
 				Calculate lays long subtraction, long division (Knuth’s Algorithm D), square roots digit by
 				digit and gcd (Euclid’s algorithm, one division after another) over those five tables. Signs
-				and decimal points are layout. Algebra goes one level up: the runtime evaluates both sides
-				of a typed equation at a few numbers on the sheet and reads the polynomial off the values.
-				Every arithmetic step is the model’s and certified; the work order, the choice of procedure
-				and the layout are not.
+				and decimal points are layout. Algebra goes one level up: a fixed runtime writes the steps a
+				textbook would (expand, collect, move a term across, divide, the quadratic formula,
+				synthetic division, elimination), and every number in them is worked on the sheet by the
+				model. Each answer is checked by putting it back: into the collected equation (light) or
+				into both typed sides (strong). Every arithmetic step is the model’s and certified; the work
+				order, the steps and the layout are not.
 			</p>
 			<p>
 				Inside, the program’s graph also returns the state at every layer. The lens reads each layer
@@ -1120,6 +1152,14 @@
 		gap: 10px var(--col-gap);
 		margin-top: 22px;
 	}
+	/*
+	 * algebra: the derivation as tall as its lines (laid out whole when a run starts, so nothing moves while it fills
+	 * in), and the digit work beside it
+	 */
+	.band.algebra {
+		grid-template-columns: minmax(0, 1fr) 300px;
+		grid-template-rows: auto auto 44px;
+	}
 	/* the calculator's sheets have up to ten rows: a taller (still fixed) sheet row */
 	.band.tall {
 		grid-template-rows: auto 272px 44px;
@@ -1249,6 +1289,10 @@
 		.band > :global(:nth-child(3)) {
 			grid-column: 1 / -1;
 		}
+		.band.algebra {
+			grid-template-columns: minmax(0, 1fr) 260px;
+			grid-template-rows: auto auto 44px;
+		}
 		.chat-band {
 			grid-template-rows: auto minmax(188px, auto) auto auto auto auto;
 		}
@@ -1310,6 +1354,10 @@
 		}
 		.band.calc {
 			grid-template-rows: repeat(9, auto);
+		}
+		.band.algebra {
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: repeat(6, auto);
 		}
 		.chat-band {
 			grid-template-rows: auto minmax(160px, auto) auto auto auto auto;

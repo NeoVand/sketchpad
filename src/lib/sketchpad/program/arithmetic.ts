@@ -7,9 +7,12 @@ export interface Rational {
 }
 export type Environment = ReadonlyMap<string, Rational>;
 export class CheckFailed extends Error {
-	constructor(message: string) {
+	/** the failed check as TeX (e.g. a substitution that does not give 0), when the check can say it */
+	readonly check?: string;
+	constructor(message: string, check?: string) {
 		super(message);
 		this.name = 'CheckFailed';
+		this.check = check;
 	}
 }
 // Sign and decimal placement are layout. No arithmetic answer digits are computed here.

@@ -15,9 +15,19 @@
 		onedit?: (r: number, c: number, by: number) => boolean;
 		/** smaller cells, for a page that shows the inside of the model beside the sheet */
 		compact?: boolean;
+		/** smaller cells still, for a sheet beside other work */
+		small?: boolean;
 	}
 
-	let { source, version, tickMs, sprites, onedit, compact = false }: Props = $props();
+	let {
+		source,
+		version,
+		tickMs,
+		sprites,
+		onedit,
+		compact = false,
+		small = false
+	}: Props = $props();
 
 	let canvas: HTMLCanvasElement;
 	let paper: HTMLDivElement;
@@ -45,6 +55,7 @@
 	onMount(() => {
 		const v = new SheetView(canvas);
 		v.compact = compact;
+		v.small = small;
 		v.reserve = compact ? LABEL_ROOM : 0;
 		v.onMetrics = (m) => (metrics = m);
 		v.onWindow = (from, to) => {
@@ -128,7 +139,7 @@
 </script>
 
 <!-- a compact sheet writes its row labels inside the paper, beside the problem; a full sheet keeps them in the margin -->
-<div class="sheet" class:inline>
+<div class="sheet" class:inline class:small>
 	<div class="labels" aria-hidden="true">
 		{#if metrics && source && !inline}
 			{#each source.rows as row, r (row.key)}
@@ -194,6 +205,11 @@
 	.sheet-paper {
 		position: relative;
 		min-width: 0;
+	}
+	/* a small sheet changes often (one per procedure): its labels move with it, at a size its rows hold */
+	.sheet.small .labels span {
+		font-size: var(--text-2xs);
+		transition: none;
 	}
 	canvas {
 		display: block;

@@ -11,6 +11,8 @@ export interface StatementResult {
 	value?: Rational;
 	algebra?: AlgebraResult;
 	error?: string;
+	/** a refusal's failed check as TeX, when the check can say it */
+	failedCheck?: string;
 	trace: CalcCall[];
 	derivation: Derivation;
 }
@@ -107,6 +109,7 @@ export async function run(
 				line: refused ? '= check failed' : `= error: ${error}`,
 				status: refused ? 'refused' : 'error',
 				error,
+				failedCheck: e instanceof CheckFailed ? e.check : undefined,
 				trace: traced.calls.slice(start),
 				derivation: { ...b.derivation, lines: b.derivation.lines.filter((l) => l.kind === 'given') }
 			});

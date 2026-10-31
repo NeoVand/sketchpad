@@ -135,6 +135,8 @@ export class SheetView {
 
 	/** a smaller sheet (24 px cells, down to 18 to fit a problem whole), so the inside of the model fits beside it */
 	compact = false;
+	/** smaller still (18 px cells at most): a sheet shown beside other work, like the Algebra tab's digit work */
+	small = false;
 	/** room kept inside the paper, left of the problem, for the row labels (compact sheets) */
 	reserve = 0;
 	/** the largest cell size for this screen; compact sheets go smaller only to fit a problem whole */
@@ -146,6 +148,7 @@ export class SheetView {
 		const narrow = cssW < 520 || this.compact;
 		// whole device pixels per sprite pixel where possible, so the glyphs stay crisp
 		this.csMax = narrow ? (this.dpr >= 2.5 ? 64 / this.dpr : 24) : 32;
+		if (this.small) this.csMax = Math.min(this.csMax, 18);
 		this.padX = narrow ? 12 : 20;
 		this.padY = narrow ? (this.compact ? 8 : 12) : 18;
 		this.ruleGap = narrow ? (this.compact ? 6 : 10) : 14;

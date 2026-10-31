@@ -27,8 +27,11 @@ import {
 	type Kind
 } from './models.ts';
 import { SheetCalc } from './sheet-calc.ts';
+import { callKey, type Live } from './derivation-view.ts';
 import {
 	RefCalc,
+	type Calc,
+	type CalcCall,
 	run as runWorkOrder,
 	type CheckMode,
 	type StatementResult
@@ -322,6 +325,71 @@ export interface CalcResult {
 	uncheckedLabels: string[];
 }
 
+/**
+ * A work order planned on the page's own arithmetic (RefCalc), to lay its derivation out before and while the model
+ * works it: `staged` before a run (only its given lines show), else the plan the run's reveal follows.
+ */
+export interface AlgebraPlan {
+	text: string;
+	checkMode: CheckMode;
+	results: StatementResult[];
+	trace: CalcCall[];
+	staged: boolean;
+}
+
+/**
+ * A Calc that says when each call starts and returns (the derivation reveals the model's numbers as they come). On a
+ * dev page `lie` corrupts one call's answer (+1), to see a refusal without a faulty model.
+ */
+class Watched implements Calc {
+	private n = 0;
+	constructor(
+		private inner: Calc,
+		private on: {
+			start: (key: string) => void;
+			done: (key: string, r: CalcCall['result']) => void;
+		},
+		private lie: number | null
+	) {}
+	wave<T>(jobs: (() => Promise<T>)[]) {
+		return this.inner.wave(jobs);
+	}
+	private async call<T extends CalcCall['result']>(
+		op: CalcCall['op'],
+		operands: bigint[],
+		work: () => Promise<T>
+	) {
+		const key = callKey(op, operands);
+		const index = this.n++;
+		this.on.start(key);
+		let r: CalcCall['result'] = await work();
+		if (index === this.lie)
+			r =
+				typeof r === 'bigint'
+					? r + 1n
+					: 'q' in r
+						? { ...r, q: r.q + 1n }
+						: { ...r, root: r.root + 1n };
+		this.on.done(key, r);
+		return r as T;
+	}
+	add(a: bigint, b: bigint) {
+		return this.call('add', [a, b], () => this.inner.add(a, b));
+	}
+	sub(a: bigint, b: bigint) {
+		return this.call('sub', [a, b], () => this.inner.sub(a, b));
+	}
+	mul(a: bigint, b: bigint) {
+		return this.call('mul', [a, b], () => this.inner.mul(a, b));
+	}
+	divmod(a: bigint, b: bigint) {
+		return this.call('divmod', [a, b], () => this.inner.divmod(a, b));
+	}
+	isqrt(a: bigint) {
+		return this.call('isqrt', [a], () => this.inner.isqrt(a));
+	}
+}
+
 /** One work order run on the sheet (program/run.ts): its lines, checked against the page's own arithmetic. */
 export interface AlgebraRun {
 	text: string;
@@ -419,6 +487,13 @@ class Pad {
 	algebra = $state.raw<AlgebraRun | null>(null);
 	/** how work orders check their roots: light (the default) or strong (program/NOTES.md) */
 	checkMode = $state<CheckMode>('light');
+	/** the work order's derivation as planned on the page's own arithmetic (see AlgebraPlan) */
+	algebraPlan = $state.raw<AlgebraPlan | null>(null);
+	/** the model's calls in the work order under way; `liveVersion` bumps as they start and return */
+	algebraLive: Live = { started: new Map(), done: new Map() };
+	liveVersion = $state(0);
+	/** dev only: corrupt this call of the next work order (0-based), to see a refusal */
+	lie: number | null = null;
 	/** the first view of a calculator line laid out but not run (the One view panel shows it before a run) */
 	preview = $state.raw<View | null>(null);
 	/** one quiet line about GPU resets this session (null: none) */
@@ -1533,6 +1608,7 @@ class Pad {
 		} catch (e) {
 			// a work order the parser cannot read never reaches the sheet
 			this.clearRun();
+			this.algebraPlan = null;
 			this.runError = (e as Error).message;
 			return null;
 		}
@@ -1541,8 +1617,35 @@ class Pad {
 		const t0 = performance.now();
 		const read: Record<string, { kind: Kind; row: number; ok: boolean }> = {};
 		const calc = this.sheetCalc(read, t0);
+		// the derivation is laid out from the plan and revealed as the model's calls return
+		this.algebraPlan = {
+			text: source,
+			checkMode,
+			results: reference.results,
+			trace: reference.trace,
+			staged: false
+		};
+		const live: Live = { started: new Map(), done: new Map() };
+		this.algebraLive = live;
+		this.liveVersion++;
+		const watched = new Watched(
+			calc,
+			{
+				start: (key) => {
+					live.started.set(key, (live.started.get(key) ?? 0) + 1);
+					this.liveVersion++;
+				},
+				done: (key, r) => {
+					const got = live.done.get(key);
+					if (got) got.push(r);
+					else live.done.set(key, [r]);
+					this.liveVersion++;
+				}
+			},
+			import.meta.env?.DEV ? this.lie : null
+		);
 		try {
-			const r = await runWorkOrder(source, calc, { checkMode });
+			const r = await runWorkOrder(source, watched, { checkMode });
 			const want = reference.lines;
 			this.algebra = {
 				text: source,
@@ -1568,6 +1671,31 @@ class Pad {
 			this.wallMs = performance.now() - t0;
 			this.version++;
 			finish();
+		}
+	}
+
+	/**
+	 * Lay a work order out before it runs: its given lines, from a plan on the page's own arithmetic (a few
+	 * milliseconds). A line the parser cannot read yet shows nothing.
+	 */
+	async stageAlgebra(text: string) {
+		if (this.running) return;
+		const checkMode = this.checkMode;
+		const token = ++this.stageToken;
+		this.algebra = null;
+		this.runError = null;
+		try {
+			const reference = await runWorkOrder(text.trim(), new RefCalc(), { checkMode });
+			if (token !== this.stageToken || this.running) return;
+			this.algebraPlan = {
+				text: text.trim(),
+				checkMode,
+				results: reference.results,
+				trace: reference.trace,
+				staged: true
+			};
+		} catch {
+			if (token === this.stageToken) this.algebraPlan = null;
 		}
 	}
 

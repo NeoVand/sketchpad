@@ -74,9 +74,13 @@ export async function verifyRoot(
 				),
 			[...cs, root]
 		);
-		if (value.value.n !== 0n) throw new CheckFailed('Root does not satisfy collected coefficients');
 		const expression = coefficientExpr(b, cs),
 			at = substitute(expression, replace);
+		if (value.value.n !== 0n)
+			throw new CheckFailed(
+				'Root does not satisfy collected coefficients',
+				`${b.plain(at)} = ${b.plain(b.expr(value))} \\neq 0`
+			);
 		b.line(
 			'check',
 			(r) => `${r(at)} = ${r(b.expr(value))}\\quad\\checkmark`,
@@ -94,10 +98,13 @@ export async function verifyRoot(
 		() => b.compute((a) => a.evaluate(eq.left, env, { exact: true }), [root]),
 		() => b.compute((a) => a.evaluate(eq.right, env, { exact: true }), [root])
 	]);
-	if (!(await new Arithmetic(b.trace).equal(left.value, right.value)))
-		throw new CheckFailed('Root does not satisfy the typed equation');
 	const lhs = substitute(eq.left, replace),
 		rhs = substitute(eq.right, replace);
+	if (!(await new Arithmetic(b.trace).equal(left.value, right.value)))
+		throw new CheckFailed(
+			'Root does not satisfy the typed equation',
+			`${b.plain(lhs)} = ${b.plain(b.expr(left))} \\neq ${b.plain(b.expr(right))} = ${b.plain(rhs)}`
+		);
 	b.line(
 		'check',
 		(r) =>
@@ -315,9 +322,11 @@ export async function textbookSolve(b: DerivationBuilder, eq: Equation): Promise
 	if (d <= 1) {
 		const la = l[1] ?? literal(0n),
 			ra = r[1] ?? literal(0n);
+		// a side with nothing to move keeps its one term (no "− 0x", no "− 0"); the arithmetic below is unchanged
+		const xTerm = (q: Quantity) => binary('*', b.expr(q), variable('x'));
 		const move = qEq(
-			binary('-', binary('*', b.expr(la), variable('x')), binary('*', b.expr(ra), variable('x'))),
-			binary('-', b.expr(r[0]), b.expr(l[0]))
+			ra.value.n === 0n ? xTerm(la) : binary('-', xTerm(la), xTerm(ra)),
+			l[0].value.n === 0n ? b.expr(r[0]) : binary('-', b.expr(r[0]), b.expr(l[0]))
 		);
 		b.equation('move', move, normalized.equation);
 		const [aa, bb] = await b.trace.wave([() => b.add(la, ra, true), () => b.add(r[0], l[0], true)]);

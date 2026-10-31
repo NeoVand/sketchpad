@@ -61,6 +61,14 @@ describe.each(['light', 'strong'] as const)('%s textbook derivations', (checkMod
 		expect(bad.results[0].status).toBe('refused');
 		expect(bad.results[0].derivation.lines.every((l) => l.kind === 'given')).toBe(true);
 	});
+	it('shows a failed root check as a substitution that does not hold', async () => {
+		// the 21st call computes a root's square in the quadratic's checks: off by one, the check refuses it
+		const bad = await run('solve x^2-x-6=0', new LyingCalc(new RefCalc(), 20), { checkMode });
+		expect(bad.results[0].status).toBe('refused');
+		const check = bad.results[0].failedCheck ?? '';
+		expect(check).toContain('\\neq');
+		expect(() => renderToString(check, { throwOnError: true, strict: 'ignore' })).not.toThrow();
+	});
 	it('exports the exact demo lines for review', async () => {
 		const derivations = [];
 		for (const source of examples) {

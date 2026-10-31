@@ -11,9 +11,11 @@
 		/** the view the model will read next (shown before the first tick) */
 		next: { op: TickOp; cells: string[] } | null;
 		sprites: string;
+		/** only the strip and the answer, for a panel that has its own caption (the Algebra tab's digit work) */
+		bare?: boolean;
 	}
 
-	let { last, next, sprites }: Props = $props();
+	let { last, next, sprites, bare = false }: Props = $props();
 
 	let img = $state.raw<HTMLImageElement | null>(null);
 
@@ -59,46 +61,50 @@
 	const shown = $derived(last ?? next);
 </script>
 
-<figure class="sp-panel eye">
-	<figcaption class="sp-cap">
-		<span class="sp-title">One view</span>
-		<span class="sp-sub">what the model reads, and what it writes</span>
-	</figcaption>
-	<div class="sp-body">
-		{#if shown}
-			<div class="tick">
-				<!-- the strip on white needs its edge: one hairline, inside the panel so nothing clips it -->
-				<div class="frame">
-					<canvas {@attach paint} width={CELL} height={3 * CELL}></canvas>
-				</div>
-				<div class="writes">
-					<p class="asked">
-						<code>{showOp(shown.op)}</code><span>{STEP[shown.op]}</span>
-					</p>
-					{#if last}
-						<div class="tokens" aria-label="The model's answer">
-							{#each tokens as t, i (i)}<span>{t}</span>{/each}
-						</div>
-						<p class="means">{explain(last.op, last.out)}</p>
-						<p class="meta num">
-							{last.margin !== null ? `margin ${last.margin.toFixed(2)} · ` : ''}{last.ms.toFixed(
-								0
-							)} ms
-						</p>
-					{:else}
-						<p class="means idle">Its answer appears here when it runs.</p>
-					{/if}
-				</div>
+{#snippet view()}
+	{#if shown}
+		<div class="tick" class:bare>
+			<!-- the strip on white needs its edge: one hairline, inside the panel so nothing clips it -->
+			<div class="frame">
+				<canvas {@attach paint} width={CELL} height={3 * CELL}></canvas>
 			</div>
-		{:else}
-			<p class="empty">The view the model reads appears here.</p>
-		{/if}
-	</div>
-	<p class="sp-foot">
-		{#if shown}Left: the model’s input pixels, exactly as it reads them, between the step’s word and
-			“=”.{/if}
-	</p>
-</figure>
+			<div class="writes">
+				<p class="asked">
+					<code>{showOp(shown.op)}</code><span>{STEP[shown.op]}</span>
+				</p>
+				{#if last}
+					<div class="tokens" aria-label="The model's answer">
+						{#each tokens as t, i (i)}<span>{t}</span>{/each}
+					</div>
+					<p class="means">{explain(last.op, last.out)}</p>
+					<p class="meta num">
+						{last.margin !== null ? `margin ${last.margin.toFixed(2)} · ` : ''}{last.ms.toFixed(0)} ms
+					</p>
+				{:else}
+					<p class="means idle">Its answer appears here when it runs.</p>
+				{/if}
+			</div>
+		</div>
+	{:else}
+		<p class="empty">The view the model reads appears here.</p>
+	{/if}
+{/snippet}
+
+{#if bare}
+	{@render view()}
+{:else}
+	<figure class="sp-panel eye">
+		<figcaption class="sp-cap">
+			<span class="sp-title">One view</span>
+			<span class="sp-sub">what the model reads, and what it writes</span>
+		</figcaption>
+		<div class="sp-body">{@render view()}</div>
+		<p class="sp-foot">
+			{#if shown}Left: the model’s input pixels, exactly as it reads them, between the step’s word
+				and “=”.{/if}
+		</p>
+	</figure>
+{/if}
 
 <style>
 	.tick {
@@ -124,6 +130,24 @@
 	}
 	.writes {
 		min-width: 0;
+	}
+	/* beside other work: the strip at its own pixel size, the answer a size down */
+	.tick.bare {
+		column-gap: 14px;
+	}
+	.tick.bare canvas {
+		width: 32px;
+		height: 96px;
+	}
+	.tick.bare .tokens {
+		margin-top: 6px;
+		height: 22px;
+		font-size: 18px;
+		line-height: 22px;
+	}
+	.tick.bare .means {
+		height: auto;
+		max-height: 2.6em;
 	}
 	/* the step: the word the model reads, then what it means */
 	.asked {
