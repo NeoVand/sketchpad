@@ -5,6 +5,8 @@ Billed output = candidates + thoughts (ai.google.dev/gemini-api/docs/pricing: "O
 tokens)").
 """
 
+import threading
+
 from google import genai
 from google.genai import errors, types
 
@@ -12,13 +14,15 @@ MODEL = "gemini-4-argon"
 PRICE_IN, PRICE_OUT = 2.00, 10.00  # USD per million tokens through 30 Nov 2026, ai.google.dev/gemini-api/docs/pricing
 
 _client = None
+_lock = threading.Lock()  # one client for all threads: a second one, once dropped, closes its connection pool
 
 
 def client():
     global _client
-    if _client is None:
-        _client = genai.Client(http_options=types.HttpOptions(timeout=1_800_000))  # reads GEMINI_API_KEY
-    return _client
+    with _lock:
+        if _client is None:
+            _client = genai.Client(http_options=types.HttpOptions(timeout=1_800_000))  # reads GEMINI_API_KEY
+        return _client
 
 
 def call(prompt, cap):

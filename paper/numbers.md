@@ -63,6 +63,13 @@ published model `mohsenvand/sketchpad-0.8b-preview` at `2df87172`, whose certifi
 | Sketchpad baseline run | 64,700 views, 0 off the table, 1,001 batched passes | S `paper/baselines/RESULT.md` 48–52 |
 | Baseline spend | about $7.1 | S `paper/baselines/RESULT.md` 117 |
 | 27B slot: FP8, bf16 holds 8 replies | as stated | S `paper/baselines/DECISIONS.md` (probe section) |
+| Frontier: GPT-6.1 Sol 108/110, Gemini 4 Argon 104/110 (10 per cell); cells as in Extended Data Table 5 | as stated | S `paper/BASELINES.md` "Frontier result"; `paper/baselines/results.json` (systems `gpt high`, `gemini high`) |
+| Frontier cap hits | GPT 0; Gemini 5 (+300: 1, +1,000: 4) | same |
+| GPT-6.1 Sol's errors | id 64 (+300), 4 wrong digits; id 84 (+1,000), wrong from the 73rd digit from the right; replies 3,212 and 10,162 tokens | Derived from `results.json` (answer vs truth, compared from the right) |
+| Gemini's misses | 5 at the cap; id 82 wrong from the 25th digit | same |
+| Frontier settings and IDs | `gpt-6.1-sol` (reasoning.effort high; created 2026-09-27 in `/v1/models`); `gemini-4-argon` (thinkingLevel high); `claude-opus-5-5` (effort high, not run) | S `paper/BASELINES.md` "Frontier" |
+| Frontier cut to 10 per length | projection $135 for three at 20 per cell, $67.6 at 10 | S `paper/BASELINES.md` "Pilot result and the cut" |
+| Frontier spend | $10.46 (GPT $2.18, Gemini $8.27), from usage at the registered prices | S `paper/BASELINES.md` "Frontier result"; `python frontier_run.py cost` |
 
 ## Algebra
 

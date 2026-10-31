@@ -3,19 +3,23 @@
 reasoning.effort "high"; max_output_tokens covers reasoning and the visible reply. No sampling parameters.
 """
 
+import threading
+
 import openai
 
 MODEL = "gpt-6.1-sol"
 PRICE_IN, PRICE_OUT = 2.00, 10.00  # USD per million tokens, developers.openai.com/api/docs/pricing
 
 _client = None
+_lock = threading.Lock()  # one client for all threads: a second one, once dropped, closes its connection pool
 
 
 def client():
     global _client
-    if _client is None:
-        _client = openai.OpenAI(max_retries=0, timeout=1800)  # retries are the driver's
-    return _client
+    with _lock:
+        if _client is None:
+            _client = openai.OpenAI(max_retries=0, timeout=1800)  # retries are the driver's
+        return _client
 
 
 def call(prompt, cap):

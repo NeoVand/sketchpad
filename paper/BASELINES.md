@@ -165,3 +165,30 @@ $75 cap. At **10 per length** (110 problems, the first 10 of each cell): $7.3 + 
 pilot projects the three over $75 in total, it stops there. The projection is an upper bound (short problems use far
 fewer tokens), so the actual spend is expected well below it; extending to 20 per length later asks only the missing
 problems.
+
+### Frontier result (31 Oct 2026; per problem in `results.json`, raw replies in `raw/frontier/`)
+
+Run 10 per length as registered after the pilot (110 problems), concurrency 8 per provider. Seven Gemini requests
+failed at once on a client-side bug in the runner (a second SDK client was dropped and closed its connection pool;
+fixed with a lock); they cost nothing and were asked again, and every problem has exactly one scored reply.
+
+| system | + 10 | + 30 | + 100 | + 300 | + 1,000 | × 2 | × 4 | × 6 | × 10 | × 15 | × 20 | total |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| GPT-6.1 Sol (high), exact / 10 | 10 | 10 | 10 | 9 | 9 | 10 | 10 | 10 | 10 | 10 | 10 | 108 / 110 |
+| Gemini 4 Argon (high), exact / 10 | 10 | 10 | 10 | 9 | 5 | 10 | 10 | 10 | 10 | 10 | 10 | 104 / 110 |
+| GPT-6.1 Sol, replies at the cap | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Gemini 4 Argon, replies at the cap | 0 | 0 | 0 | 1 | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 5 |
+| GPT-6.1 Sol, median output tokens | 73 | 244 | 1,872 | 3,468 | 12,752 | 29 | 77 | 146 | 556 | 788 | 1,721 | |
+| Gemini 4 Argon, median output tokens | 632 | 2,004 | 5,152 | 13,206 | 32,211 | 313 | 1,266 | 2,838 | 4,262 | 7,408 | 12,161 | |
+
+- **GPT-6.1 Sol's two errors:** id 64 (+ 300), four wrong digits in a 301-digit answer; id 84 (+ 1,000), every digit
+  wrong from the 73rd from the right on (523 of 1,001). Both replies finished well inside the budget (3,212 and
+  10,162 tokens).
+- **Gemini 4 Argon's six misses:** five replies ran out of budget (ids 63, 83, 84, 86, 87); id 82 (+ 1,000) finished
+  with 872 wrong digits from the 25th on.
+- **Claude Opus 5.5:** not run (the key fails; `QUESTIONS.md` 13).
+- **Spend, from the usage fields at the registered prices:** GPT-6.1 Sol $2.18 (215,663 output tokens), Gemini 4
+  Argon $8.27 (820,188), **$10.46 in all** of the $75 cap; the projection's upper bound was $27.4 for these two.
+
+Against the predictions: both are better than predicted on long sums and products (GPT 0.9 at + 300 and + 1,000
+against 0.6 and 0.1 predicted; both 1.0 on every product length against 0.3–0.9).

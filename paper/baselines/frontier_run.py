@@ -97,7 +97,7 @@ def cost():
 
 
 if __name__ == "__main__":
-    cmd, keys = sys.argv[1], [k for k in sys.argv[2:] if not k.startswith("--")]
+    cmd, keys = sys.argv[1], [k for k in sys.argv[2:] if k in MODULES]
     if cmd == "cost":
         cost()
         sys.exit()

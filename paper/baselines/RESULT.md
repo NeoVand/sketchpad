@@ -130,3 +130,12 @@ Per-job costs are estimates from container wall time at $3.95/h. No frontier mod
 - `raw/`: every job's output as written on the volume (`raw.jsonl.gz` holds every full reply), so `python score.py
   raw/sketchpad_e7/results.json raw/stock_0.8b/raw.jsonl.gz raw/stock_27b_fp8/raw.jsonl.gz` rebuilds `results.json`.
 - `DECISIONS.md`: what was fixed before scoring, and the bf16 probe.
+
+## Frontier models (added 31 Oct 2026; registration and result in `paper/BASELINES.md`, "Frontier")
+
+GPT-6.1 Sol (`gpt-6.1-sol`, reasoning effort high) and Gemini 4 Argon (`gemini-4-argon`, thinking level high), the
+same prompt, scorer and 32,768-token cap including reasoning, on the first 10 problems of each cell (the registered
+cut): **108 / 110** and **104 / 110** exact; cap hits 0 and 5. Claude Opus 5.5 is registered and not yet run (the
+Anthropic key fails). Runner `frontier_run.py` with one module per provider; raw replies `raw/frontier/*.jsonl`;
+`python score.py raw/sketchpad_e7/results.json raw/stock_0.8b/raw.jsonl.gz raw/stock_27b_fp8/raw.jsonl.gz
+raw/frontier/gpt.jsonl raw/frontier/gemini.jsonl` rebuilds `results.json`. Spend $10.46 (API, from usage).
