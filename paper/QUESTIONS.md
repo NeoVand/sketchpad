@@ -56,3 +56,9 @@ From the paper's writer, 31 Oct 2026. Each item says what the draft does today, 
     `paper/paper.md` §6 and Extended Data Table 4.
 12. **The PDF is not linked from the page.** `paper/tex/main.pdf` builds; serving it needs a copy under `static/` at
     publish time. Say if you want the link.
+
+## Decided by Neo (31 Oct 2026)
+
+- Author line: Mostafa 'Neo' Mohsenvand, MIT Media Lab.
+- The fourth theorem as "Transfer across code paths" (sel_eq_of_close, regeneration_of_close, policy_tick_eq): "ok".
+- Frontier baselines in Figure 1c: "yes, add all 3: GPT 6.1 Sol (high), Claude Opus 5.5 (high) and Gemini 4 Argon (high)".

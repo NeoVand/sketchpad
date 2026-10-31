@@ -1,7 +1,7 @@
 ---
 title: Sketchpad: a small vision-language model that computes exactly on its own sheet
-authors: Author line to be confirmed
-affiliation: Draft for review
+authors: Mostafa 'Neo' Mohsenvand
+affiliation: MIT Media Lab
 date: 31 October 2026
 ---
 
