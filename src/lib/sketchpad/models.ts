@@ -51,6 +51,8 @@ export const PUBLISHED: Program = {
 	revision: 'fe9d599ad5f4c2717340a45cde56b3bb1b36b99f',
 	// the base, unchanged since E7 (the commit visitors have cached)
 	baseRevision: '2df871728a9d24d1e102a327d1f1475457c53962',
+	// E8's device certificate, measured on an Apple M4 (one commit after `revision`)
+	certificateRevision: '3d67aa84c84dcde300dd5c720a5761e70f7881ad',
 	calculator: true,
 	chat: true
 };
