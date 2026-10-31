@@ -17,6 +17,8 @@ import { hashText } from './hash.ts';
 import {
 	CERT_FORMAT,
 	DTYPE,
+	HF_REPO,
+	PUBLISHED,
 	FILE_CACHE,
 	KINDS,
 	MODELS,
@@ -41,7 +43,14 @@ import {
 	type StatementResult
 } from './program/index.ts';
 import { MUL_DOMAIN, MulSheet, MulWave, outChars, type MulOut, type Op } from './multiplier.ts';
-import type { InsideTick } from './inside.ts';
+import { insideMetaOf, type InsideTick } from './inside.ts';
+import {
+	RECORDING_FORMAT,
+	compactInside,
+	type RecordedCall,
+	type RecordedRound,
+	type Recording
+} from './recording.ts';
 import type { FromWorker, InsideMeta, LoadedInfo, TickOp, ToWorker } from './protocol.ts';
 import { B, GLYPHS } from './sprites.ts';
 
@@ -426,6 +435,8 @@ export interface ChatTurn {
 	gate: 0 | 1;
 	/** the sheet blocks it opened: the work order, its result lines (null while the sheet works) and the seconds */
 	blocks: { source: string; result: string | null; seconds: number | null }[];
+	/** a recorded reply, played back (recording.ts) */
+	recorded: boolean;
 }
 
 interface Pending {
@@ -472,8 +483,11 @@ class Pad {
 	loadError = $state<string | null>(null);
 	/** the newest load that read or downloaded something (not one that found the program already loaded) */
 	lastLoad = $state.raw<LoadedInfo | null>(null);
-	/** a certificate cannot be cached because a file's fingerprint is missing */
-	cacheNote = $state<string | null>(null);
+	/**
+	 * a certificate cannot be cached because a file's fingerprint is missing (plain, not state: `keyFor` writes it, and
+	 * `certified` reads `keyFor` from the template, where a state write is an error)
+	 */
+	cacheNote: string | null = null;
 
 	certs: Record<Kind, Cert> = {
 		add: new Cert('add'),
@@ -575,6 +589,8 @@ class Pad {
 	 * tables: the adder's, the multiplier's and its own)
 	 */
 	get certified() {
+		// a recording plays without the model: its answers are the recorded run's, made under the shipped certificate
+		if (this.replaying) return true;
 		return this.ready && this.tablesOf(this.op).every((k) => this.tableCertified(k));
 	}
 
@@ -923,7 +939,13 @@ class Pad {
 		if (lid !== this.latest?.lid) return;
 		this.loadedId = info.id;
 		this.loading = null;
-		this.insideMeta = info.inside;
+		// the maps the page read before the load stay (the same pinned file): nothing on show is redrawn by the load
+		if (
+			!this.insideMeta ||
+			!info.inside ||
+			JSON.stringify(info.inside) !== JSON.stringify(this.insideMeta)
+		)
+			this.insideMeta = info.inside;
 		if (!info.reused) this.lastLoad = info;
 		void this.refreshCosts();
 		void this.ensureFor(this.op);
@@ -1250,6 +1272,7 @@ class Pad {
 
 	private tick(op: TickOp, cells: string[], push: string | null, inside = true) {
 		const rid = ++this.rid;
+		const asked = { op, cells: [...cells] };
 		return this.request<Extract<FromWorker, { type: 'tick' }>>({
 			type: 'tick',
 			rid,
@@ -1257,7 +1280,146 @@ class Pad {
 			cells,
 			push,
 			inside
+		}).then((r) => {
+			this.recorder?.calls.push({
+				batch: false,
+				items: [asked],
+				outs: [r.out],
+				margin: r.margin,
+				ms: Math.round(r.ms),
+				inside: [compactInside(r.inside)]
+			});
+			return r;
 		});
+	}
+
+	// ---- recordings (recording.ts): playing one, and (dev page) making one ------------------------------------------
+	/** a recording is being answered from: runs read its outputs, not the model's */
+	replaying = $state(false);
+	/** what the panels show is a recording (until the visitor's own run replaces it) */
+	recordedShown = $state.raw<Recording | null>(null);
+	/** the run being recorded (scripts/record-demo.mjs through the dev page) */
+	private recorder: { calls: RecordedCall[]; rounds: RecordedRound[]; roundT0: number } | null =
+		null;
+
+	/** answer the next runs from a recording, its times multiplied by `speed` (0: at once) */
+	playRecording(rec: Recording, speed: number, sprites: string) {
+		this.replaying = true;
+		this.recordedShown = rec;
+		this.send({
+			type: 'replay',
+			calls: rec.calls,
+			rounds: rec.chat?.rounds ?? [],
+			speed,
+			sprites
+		});
+	}
+
+	/** back to the model: the panels keep the recording on show until a run of the visitor's own */
+	stopPlayback() {
+		if (!this.replaying) return;
+		this.replaying = false;
+		this.worker?.postMessage({
+			type: 'replay',
+			calls: null,
+			speed: 0,
+			sprites: ''
+		} satisfies ToWorker);
+	}
+
+	/**
+	 * Before the model loads, the certificate panel shows the shipped certificate (the table measured on the reference
+	 * device; nothing on this device yet): what the recordings ran under, and what a load checks again here.
+	 */
+	async showShipped() {
+		const sc = (await fetch(`${HF_CERT_ROOT}${PUBLISHED.folder}/certificate.json`)
+			.then((r) => (r.ok ? r.json() : null))
+			.catch(() => null)) as ShippedCert | null;
+		if (!sc) return;
+		for (const k of KINDS) {
+			const t = sc.kinds[k];
+			const c = this.certs[k];
+			if (!t || c.status !== 'none' || t.margins.length !== c.rows) continue;
+			c.margins.set(t.margins);
+			c.checked = t.rows;
+			c.pass = t.pass;
+			c.minMargin = Math.min(...t.margins);
+			c.shippedFrom = { device: sc.device, when: sc.when };
+			c.status = 'shipped';
+			c.version++;
+		}
+	}
+
+	/**
+	 * Before the model loads, the inside panels draw the recordings' readouts on the program's own maps: its
+	 * inside.json (about 100 KB, the file the worker reads with the model, at the same pinned revision).
+	 */
+	async showInside(root: string) {
+		if (this.insideMeta) return;
+		const ij = await fetch(`${root}${MODELS.mul.id}/inside.json`)
+			.then((r) => (r.ok ? r.json() : null))
+			.catch(() => null);
+		if (!ij || this.insideMeta) return;
+		try {
+			this.insideMeta = insideMetaOf(ij);
+		} catch {
+			// a program without maps: the panels say so, as before
+		}
+	}
+
+	/** dev page: record the next run */
+	startRecording() {
+		this.recorder = {
+			calls: [],
+			rounds: [{ deltas: [], block: null }],
+			roundT0: performance.now()
+		};
+	}
+
+	/** dev page: the run just made, as a recording (scripts/record-demo.mjs writes it to static/recordings/) */
+	finishRecording(input: Recording['input']): Recording | null {
+		const rec = this.recorder;
+		this.recorder = null;
+		const info = this.loadedId ? this.infos[this.loadedId] : null;
+		if (!rec || !info) return null;
+		const tab = input.tab;
+		const turn = tab === 'chat' ? this.chat[this.chat.length - 1] : null;
+		const alg = tab === 'algebra' || tab === 'chat' ? this.algebra : null;
+		const run = tab === 'machine' ? this.result : tab === 'calc' ? this.calcResult : (alg ?? null);
+		return {
+			format: RECORDING_FORMAT,
+			tab,
+			input,
+			provenance: {
+				device: info.gpu,
+				date: new Date().toISOString(),
+				repo: HF_REPO,
+				revision: PUBLISHED.revision,
+				baseRevision: PUBLISHED.baseRevision ?? PUBLISHED.revision,
+				certificateRevision: PUBLISHED.certificateRevision ?? PUBLISHED.revision,
+				program: info.id,
+				transformers: info.transformers,
+				files: { ...info.prints }
+			},
+			calls: rec.calls,
+			chat: turn ? { rounds: rec.rounds, ms: Math.round(turn.ms ?? 0) } : null,
+			result: {
+				lines:
+					tab === 'machine' && this.result
+						? [
+								`${this.result.operands.join(this.op === 'add' ? ' + ' : ' × ')} = ${this.result.got}`
+							]
+						: tab === 'calc' && this.calcResult
+							? [`${this.calcResult.text} = ${this.calcResult.got}`]
+							: tab === 'chat' && turn
+								? [turn.a]
+								: (alg?.lines ?? []),
+				derivation: alg ? alg.results.flatMap((r) => r.derivation.lines.map((l) => l.tex)) : [],
+				views: run?.ticks ?? 0,
+				steps: (run && 'steps' in run ? run.steps : null) ?? run?.ticks ?? 0,
+				seconds: Math.round((run?.seconds ?? 0) * 10) / 10
+			}
+		};
 	}
 
 	/** wait between ticks; a stop cuts it short */
@@ -1274,12 +1436,23 @@ class Pad {
 		insideRows?: number
 	) {
 		const rid = ++this.rid;
+		const asked = items.map((it) => ({ op: it.op, cells: [...it.cells] }));
 		return this.request<Extract<FromWorker, { type: 'tick-batch' }>>({
 			type: 'tick-batch',
 			rid,
 			items,
 			inside,
 			insideRows
+		}).then((r) => {
+			this.recorder?.calls.push({
+				batch: true,
+				items: asked,
+				outs: r.outs,
+				margin: null,
+				ms: Math.round(r.ms),
+				inside: r.inside.map((x) => compactInside(x))
+			});
+			return r;
 		});
 	}
 
@@ -1297,6 +1470,13 @@ class Pad {
 
 	stop() {
 		this.stopRun = true;
+	}
+
+	/** stop the run under way, and wait until it has stopped */
+	async halt() {
+		if (!this.running) return;
+		this.stop();
+		await this.runDone;
 	}
 
 	/** a multiplier answer must be glyphs and a step name; anything else stops the run */
@@ -1395,6 +1575,7 @@ class Pad {
 		this.runDone = new Promise((r) => (finish = r));
 		this.running = true;
 		this.runs++;
+		if (!this.replaying) this.recordedShown = null;
 		this.stopRun = false;
 		const t0 = performance.now();
 		// every table row this run reads, and whether each passed on this device
@@ -1492,6 +1673,7 @@ class Pad {
 		this.preview = null;
 		this.running = true;
 		this.runs++;
+		if (!this.replaying) this.recordedShown = null;
 		this.stopRun = false;
 		this.result = null;
 		this.calcResult = null;
@@ -1754,7 +1936,8 @@ class Pad {
 	 */
 	async ask(question: string) {
 		const q = question.trim();
-		if (!q || !this.chatReady || this.chatBusy || this.running) return;
+		if (!q || (!this.chatReady && !this.replaying) || this.chatBusy || this.running) return;
+		if (!this.replaying) this.recordedShown = null;
 		const turn: ChatTurn = {
 			q,
 			a: '',
@@ -1762,7 +1945,8 @@ class Pad {
 			ms: null,
 			error: null,
 			gate: this.chatGate,
-			blocks: []
+			blocks: [],
+			recorded: this.replaying
 		};
 		this.asks++;
 		this.chat = [...this.chat.slice(-2), turn];
@@ -1773,8 +1957,14 @@ class Pad {
 			const done = await this.request<{ ms: number }>(
 				ask,
 				(m) => {
-					if (m.type === 'chat-delta') live.a += m.text;
-					else if (m.type === 'chat-block') void this.sheetBlock(live, rid, m.block);
+					const rec = this.recorder;
+					if (m.type === 'chat-delta') {
+						live.a += m.text;
+						rec?.rounds.at(-1)!.deltas.push([Math.round(performance.now() - rec.roundT0), m.text]);
+					} else if (m.type === 'chat-block') {
+						if (rec) rec.rounds.at(-1)!.block = m.block;
+						void this.sheetBlock(live, rid, m.block);
+					}
 				},
 				// after a GPU reset the answer starts again
 				() => {
@@ -1783,12 +1973,23 @@ class Pad {
 					return ask;
 				}
 			);
-			live.ms = done.ms;
+			// a replayed reply's time is the recording's (the page's clock ran at the playback's pace)
+			live.ms = this.replaying && this.recordedShown?.chat ? this.recordedShown.chat.ms : done.ms;
 		} catch (e) {
 			live.error = (e as Error).message;
 		} finally {
 			live.busy = false;
 		}
+	}
+
+	/**
+	 * the seconds a replayed reply's k-th sheet block took when it was recorded (a recording made before rounds kept
+	 * them has its one block's time as the run's; with several blocks and no times, none is shown)
+	 */
+	private recordedBlockSeconds(k: number) {
+		const rec = this.recordedShown;
+		const blocks = rec?.chat?.rounds.filter((r) => r.block !== null) ?? [];
+		return blocks[k]?.seconds ?? (rec && blocks.length === 1 ? rec.result.seconds : null);
 	}
 
 	/** run a reply's sheet block on the sheet, then hand its result lines back to the reply */
@@ -1799,7 +2000,8 @@ class Pad {
 		const t0 = performance.now();
 		// a fraction and four places unless the block asks for more (run.ts, defaultPlaces): seconds, not minutes
 		const r = await this.runAlgebra(source, { defaultPlaces: 4 }).catch(() => null);
-		entry.seconds = (performance.now() - t0) / 1000;
+		const seconds = (performance.now() - t0) / 1000;
+		entry.seconds = this.replaying ? this.recordedBlockSeconds(live.blocks.length - 1) : seconds;
 		// a stop ends the run (the runtime writes the stop as the statement's error line) and the reply with it
 		if (this.stopRun) {
 			// stopped on the sheet: the reply ends there
@@ -1812,6 +2014,11 @@ class Pad {
 			: `= error: ${this.runError ?? 'the sheet could not run this'}`;
 		entry.result = result;
 		live.a += `\n${result}\n`;
+		if (this.recorder) {
+			this.recorder.rounds.at(-1)!.seconds = Math.round(seconds * 10) / 10;
+			this.recorder.rounds.push({ deltas: [], block: null });
+			this.recorder.roundT0 = performance.now();
+		}
 		this.send({ type: 'chat-continue', rid, result });
 	}
 }

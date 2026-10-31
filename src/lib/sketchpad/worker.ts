@@ -30,11 +30,12 @@ import {
 import {
 	analyse,
 	DEPTH,
+	insideMetaOf,
 	parseAssets,
-	steerCodes,
 	steerVector,
 	type InsideAssets
 } from './inside.ts';
+import { expandInside, type RecordedCall, type RecordedRound } from './recording.ts';
 import { CALC_DOMAIN, CALC_OPS, calcRef, isCalcOp, type CalcOp } from './calc-tables.ts';
 import { MUL_DOMAIN, outChars, reference, type Op } from './multiplier.ts';
 import type { FromWorker, InsideMeta, LoadedInfo, TickOp, ToWorker } from './protocol.ts';
@@ -592,25 +593,7 @@ async function loadInside(spec: SketchModel, root: string) {
 		get('inside.bin').then((r) => r.arrayBuffer())
 	]);
 	inside = parseAssets(lj, lb, ij, ib);
-	insideMeta = {
-		steerLayer: ij.steerLayer,
-		steerCodes: steerCodes(ij.steerCodes),
-		families: Object.fromEntries(
-			Object.entries(ij.families as Record<string, NonNullable<InsideMeta['families']['SUM']>>).map(
-				([k, f]) => [
-					k,
-					{
-						cloud: f.cloud,
-						cloudLabels: f.cloudLabels,
-						cloudViews: f.cloudViews,
-						labels: f.labels,
-						radius: f.radius,
-						separation: f.separation
-					}
-				]
-			)
-		) as InsideMeta['families']
-	};
+	insideMeta = insideMetaOf(ij);
 }
 
 /**
@@ -851,6 +834,7 @@ async function mulBatch(items: { op: BatchOp; cells: string[] }[]) {
 }
 
 async function tickBatch(m: Extract<ToWorker, { type: 'tick-batch' }>) {
+	if (replay) return replayBatch(m);
 	const r = await exclusive(async () => {
 		const items = m.items as { op: BatchOp; cells: string[]; push?: string | null }[];
 		const off = items.find((it) => !serves(kindOf(it.op)));
@@ -1155,7 +1139,103 @@ async function certify(rid: number, k: Kind, only?: number[], from = 0) {
 	post({ type: 'cert-done', rid, seconds: compute / 1000 });
 }
 
+// ---- replay: a recorded run answered from its recording, without the model ----------------------------------------
+/**
+ * While a recording plays, every view the page asks is answered with the recorded model's output for that view, after
+ * the recorded time (times `speed`), with the strip assembled from the cells as for a live tick and the recorded
+ * inside readouts. A view the recording does not have is an error: the page stops the playback.
+ */
+let replay: {
+	calls: RecordedCall[];
+	next: number;
+	speed: number;
+	rounds: RecordedRound[];
+	round: number;
+} | null = null;
+const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** the sprites a replayed strip is drawn from (the first ticks may come before they are in) */
+let replaySprites: Promise<void> = Promise.resolve();
+
+function startReplay(m: Extract<ToWorker, { type: 'replay' }>) {
+	if (!m.calls) {
+		replay = null;
+		return;
+	}
+	// set at once: the page's first tick may follow this message before the sprites are read
+	replay = { calls: m.calls, next: 0, speed: m.speed, rounds: m.rounds ?? [], round: 0 };
+	if (!sprites) replaySprites = loadSprites(m.sprites);
+}
+
+function recordedCall(items: { op: TickOp; cells: string[] }[], batch: boolean) {
+	const r = replay!;
+	const same = (c: RecordedCall) =>
+		c.batch === batch &&
+		c.items.length === items.length &&
+		c.items.every(
+			(it, i) => it.op === items[i].op && it.cells.join('') === items[i].cells.join('')
+		);
+	for (let i = r.next; i < r.calls.length; i++)
+		if (same(r.calls[i])) {
+			r.next = i + 1;
+			return r.calls[i];
+		}
+	throw new Error('the recording has no such view');
+}
+
+async function replayTick(m: Extract<ToWorker, { type: 'tick' }>) {
+	const c = recordedCall([{ op: m.op, cells: m.cells }], false);
+	await pause(c.ms * replay!.speed);
+	await replaySprites;
+	const strip = assembleStrip(sprites!, m.cells);
+	post(
+		{
+			type: 'tick',
+			rid: m.rid,
+			out: c.outs[0],
+			margin: c.margin,
+			ms: c.ms,
+			strip,
+			inside: expandInside(c.inside[0] ?? null, m.op)
+		},
+		[strip.buffer]
+	);
+}
+
+async function replayBatch(m: Extract<ToWorker, { type: 'tick-batch' }>) {
+	const c = recordedCall(m.items, true);
+	await pause(c.ms * replay!.speed);
+	await replaySprites;
+	const strips = m.items.map((it) => assembleStrip(sprites!, it.cells));
+	post(
+		{
+			type: 'tick-batch',
+			rid: m.rid,
+			outs: c.outs,
+			strips,
+			inside: m.items.map((it, b) => expandInside(c.inside[b] ?? null, it.op)),
+			ms: c.ms
+		},
+		strips.map((s) => s.buffer)
+	);
+}
+
+/** a recorded reply's next round: its text as it streamed, then its sheet block or its end */
+async function replayRound(rid: number) {
+	const r = replay!;
+	const round = r.rounds[r.round++];
+	if (!round) throw new Error('the recording has no more of this reply');
+	let at = 0;
+	for (const [t, text] of round.deltas) {
+		await pause(Math.max(0, t - at) * r.speed);
+		at = t;
+		post({ type: 'chat-delta', rid, text });
+	}
+	if (round.block !== null) post({ type: 'chat-block', rid, block: round.block, index: r.round });
+	else post({ type: 'done', rid, ms: at });
+}
+
 async function tick(m: Extract<ToWorker, { type: 'tick' }>) {
+	if (replay) return replayTick(m);
 	const r = await exclusive(async () => {
 		if (!serves(kindOf(m.op))) throw new Error(`${MODELS[kindOf(m.op)].name} is not loaded`);
 		const t = performance.now();
@@ -1219,6 +1299,7 @@ const closedBlocks = (text: string) =>
 	[...text.matchAll(/```sheet[^\n]*\n([\s\S]*?)```/g)].map((m) => m[1].trim());
 
 async function chat(m: Extract<ToWorker, { type: 'chat' }>) {
+	if (replay) return replayRound(m.rid);
 	await exclusive(async () => {
 		if (!model || !processor || !tjs || !tok) throw new Error('no model is loaded');
 		const text = processor.apply_chat_template(
@@ -1241,6 +1322,7 @@ async function chat(m: Extract<ToWorker, { type: 'chat' }>) {
 
 /** the result lines of the block the reply stopped at: append them and go on */
 async function chatContinue(m: Extract<ToWorker, { type: 'chat-continue' }>) {
+	if (replay) return replayRound(m.rid);
 	await exclusive(async () => {
 		if (!reply || reply.rid !== m.rid) throw new Error('no reply is waiting for its sheet');
 		const add = tok!.encode(`\n${m.result}\n`, { add_special_tokens: false });
@@ -1304,6 +1386,7 @@ self.onmessage = async (ev: MessageEvent<ToWorker>) => {
 	if (m.type === 'cancel') return void cancelled.add(m.rid);
 	if (m.type === 'lose-device') return void device?.destroy();
 	if (m.type === 'states-via') return void (statesVia = m.via);
+	if (m.type === 'replay') return void startReplay(m);
 	try {
 		if (m.type === 'certify') await certify(m.rid, m.kind, m.rows, m.from);
 		else if (m.type === 'tick') await tick(m);

@@ -13,7 +13,7 @@
  *
  * Pure functions: the worker runs them on device states, the tests on synthetic ones.
  */
-import type { TickOp } from './protocol.ts';
+import type { InsideMeta, TickOp } from './protocol.ts';
 
 export const DEPTH = 25;
 export const DIM = 1024;
@@ -258,6 +258,35 @@ export function analyse(
 /** inside.json's pushable families and their codes, from either form */
 export const steerCodes = (c: string | Partial<Record<Family, string>>) =>
 	typeof c === 'string' ? { SUM: c } : c;
+
+/**
+ * What the panels draw from inside.json: each family's map (the table's views at the last layer) and what can be
+ * pushed. The worker reads it with the model; the page reads the same pinned file before a load, so a recording's
+ * inside readouts are drawn on the maps they were made against.
+ */
+export function insideMetaOf(ij: {
+	steerLayer: number;
+	steerCodes: string | Partial<Record<Family, string>>;
+	families: Partial<Record<Family, NonNullable<InsideMeta['families']['SUM']>>>;
+}): InsideMeta {
+	return {
+		steerLayer: ij.steerLayer,
+		steerCodes: steerCodes(ij.steerCodes),
+		families: Object.fromEntries(
+			Object.entries(ij.families).map(([k, f]) => [
+				k,
+				{
+					cloud: f!.cloud,
+					cloudLabels: f!.cloudLabels,
+					cloudViews: f!.cloudViews,
+					labels: f!.labels,
+					radius: f!.radius,
+					separation: f!.separation
+				}
+			])
+		) as InsideMeta['families']
+	};
+}
 
 /** The push that moves a family's stream entering the steer layer from one answer's class mean to another's. */
 export function steerVector(

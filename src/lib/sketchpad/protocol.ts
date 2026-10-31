@@ -1,5 +1,6 @@
 /** Messages between the page and the worker that holds the sketchpad model (worker.ts, pad.svelte.ts). */
 import type { Family, InsideTick, Point } from './inside.ts';
+import type { RecordedCall, RecordedRound } from './recording.ts';
 import type { Kind } from './models.ts';
 import type { Op } from './multiplier.ts';
 import type { CalcOp } from './calc-tables.ts';
@@ -84,6 +85,17 @@ export type ToWorker =
 	| { type: 'chat'; rid: number; question: string; maxNew: number; gate: 0 | 1 }
 	/** the result lines of the sheet block a reply stopped at; the reply goes on from them */
 	| { type: 'chat-continue'; rid: number; result: string }
+	/**
+	 * play a recording (recording.ts): every tick, batch and chat round is answered from it until `calls` is null; the
+	 * recorded times are multiplied by `speed`
+	 */
+	| {
+			type: 'replay';
+			calls: RecordedCall[] | null;
+			rounds?: RecordedRound[];
+			speed: number;
+			sprites: string;
+	  }
 	/** the visitor stopped a reply's sheet block: the reply ends there */
 	| { type: 'chat-stop'; rid: number }
 	| { type: 'cancel'; rid: number }

@@ -40,10 +40,22 @@
 		foot?: Snippet;
 		/** the run under way: within a run the derivation only grows (ratchet.ts) */
 		run: number;
+		/** before there is a problem: what to type (the chat's sheet has nothing to type, and says nothing) */
+		hint?: string | null;
 	}
 
-	let { plan, final, live, liveVersion, running, onactive, onanswered, foot, run }: Props =
-		$props();
+	let {
+		plan,
+		final,
+		live,
+		liveVersion,
+		running,
+		onactive,
+		onanswered,
+		foot,
+		run,
+		hint = 'Type a problem: an expression, solve …, expand … or factor ….'
+	}: Props = $props();
 
 	onMount(loadMathFonts);
 
@@ -172,8 +184,8 @@
 				A number came back different from the page’s own arithmetic; the model’s own working shows
 				when the run ends.
 			</p>
-		{:else if !lines.length}
-			<p class="wait">Type a problem: an expression, solve …, expand … or factor ….</p>
+		{:else if !lines.length && hint}
+			<p class="wait">{hint}</p>
 		{/if}
 	</div>
 	{@render foot?.()}

@@ -81,7 +81,10 @@
 						{last.margin !== null ? `margin ${last.margin.toFixed(2)} · ` : ''}{last.ms.toFixed(0)} ms
 					</p>
 				{:else}
+					<!-- the answer's rows held open, so the panel keeps its height when a new sheet is laid out -->
+					<div class="tokens" aria-hidden="true"></div>
 					<p class="means idle">Its answer appears here when it runs.</p>
+					<p class="meta num" aria-hidden="true">&nbsp;</p>
 				{/if}
 			</div>
 		</div>
@@ -189,9 +192,6 @@
 		line-height: 1.3;
 		color: var(--color-ink-soft);
 		transition: color var(--hover) ease;
-	}
-	.means.idle {
-		margin-top: 8px;
 	}
 	.meta {
 		margin-top: 4px;

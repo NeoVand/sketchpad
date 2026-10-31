@@ -10,8 +10,9 @@
  * How it measures: a ResizeObserver on every element of the band and below logs a height that shrinks; once a frame,
  * every element's top on the page (getBoundingClientRect().top + scrollY, transforms included) is compared with the
  * frame before, and a top that went up is logged. A run is seen starting when the page's `data-run` changes (a run on
- * the sheet, or a question to the chat): the layout may then let go once, so the probe takes its baseline two frames
- * later. Drawings (the insides of an SVG
+ * the sheet, a question to the chat; on the demo page also a switch of tab, which lays out another part, and the model
+ * coming in, which turns the recorded panels into the visitor's own): the layout may then let go once, so the probe
+ * takes its baseline two frames later. Drawings (the insides of an SVG
  * or a canvas) are not layout and are skipped.
  */
 (() => {

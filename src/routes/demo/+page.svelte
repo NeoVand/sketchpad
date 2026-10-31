@@ -16,7 +16,16 @@
 	import { ratchet } from '#lib/sketchpad/ratchet.ts';
 	import DigitWork from '#lib/sketchpad/DigitWork.svelte';
 	import '#lib/sketchpad/panel.css';
-	import { HAS_CALC, HF_CARD, HF_ROOT, MODELS, PROGRAM, type Kind } from '#lib/sketchpad/models.ts';
+	import {
+		HAS_CALC,
+		HF_CARD,
+		HF_ROOT,
+		MODELS,
+		PROGRAM,
+		PUBLISHED,
+		type Kind
+	} from '#lib/sketchpad/models.ts';
+	import { RECORDING_FORMAT, type Recording } from '#lib/sketchpad/recording.ts';
 	import { pad } from '#lib/sketchpad/pad.svelte.ts';
 	import { RefCalc, run as runWorkOrder } from '#lib/sketchpad/program/index.ts';
 	import type { TickOp } from '#lib/sketchpad/protocol.ts';
@@ -147,11 +156,103 @@
 		void pad.probe(modelsBase);
 		pad.stage(a, b);
 		const fromHash = PARTS.find((p) => `#${p.id}` === location.hash);
-		if (fromHash) void setPart(fromHash.id, false);
+		const opened = fromHash ? setPart(fromHash.id, false, false) : Promise.resolve();
 		// local checks and the screenshot script drive the page through this handle
 		if (import.meta.env.DEV) Object.assign(globalThis, { sketchpad: pad });
 		void costs();
+		// open on something visible: the certificate panel shows the shipped table and the inside panels their maps, then
+		// the tab's recorded run plays (in that order, so no panel changes its layout once the run is under way)
+		void Promise.all([opened, pad.showShipped(), pad.showInside(modelsBase)]).then(() =>
+			play(part, RECORDED_PACE)
+		);
 	});
+
+	// ---- the recordings: what each tab shows before the model loads, and whenever Recorded is chosen -----------------
+	/** each tab's recording, fetched when the tab is first shown (a few tens of KB) */
+	const recordings: Partial<Record<Part, Promise<Recording | null>>> = {};
+	function recordingFor(p: Part) {
+		return (recordings[p] ??= fetch(RECORDING_URLS[p])
+			.then((r) => (r.ok ? (r.json() as Promise<Recording>) : null))
+			.then((r) => (r?.format === RECORDING_FORMAT ? r : null))
+			.catch(() => null));
+	}
+	const RECORDING_URLS: Record<Part, string> = {
+		machine: asset('recordings/machine.json'),
+		calc: asset('recordings/calc.json'),
+		algebra: asset('recordings/algebra.json'),
+		chat: asset('recordings/chat.json')
+	};
+	/** the tab has no recording to show (it could not be read): the panels ask for the model instead */
+	let unrecorded = $state(false);
+	/** the recording last played (the header names where and when it was made) */
+	let lastRecording = $state.raw<Recording | null>(null);
+	/** a recording plays at its recorded times, a little slower, so it can be followed */
+	const RECORDED_PACE = 1.5;
+	/** after the model loads: the visitor's own runs (Live, the default) or the tabs' recordings */
+	let wantLive = $state(true);
+	const loaded = $derived(pad.chatReady);
+	const showing = $derived<'recorded' | 'live'>(loaded && wantLive ? 'live' : 'recorded');
+
+	/**
+	 * Play a tab's recording: the page runs it as it would live, every answer from the recording. With the model
+	 * loaded and Live chosen it plays at once (a tab switched to shows its recorded run until the visitor runs one).
+	 */
+	async function play(p: Part, pace: number) {
+		const rec = await recordingFor(p);
+		if (part === p) unrecorded = !rec;
+		if (!rec || part !== p || pad.chatBusy || pad.loading) return;
+		if (pad.running) await pad.halt();
+		const i = rec.input;
+		lastRecording = rec;
+		pad.playRecording(rec, pace, spritesUrl);
+		try {
+			if (i.tab === 'machine') {
+				if (!(await setOp(i.op))) return;
+				a = i.a;
+				b = i.b;
+				pad.stage(a, b);
+				await pad.run(a, b);
+			} else if (i.tab === 'calc') {
+				line = i.line;
+				await pad.runCalc(i.line);
+			} else if (i.tab === 'algebra') {
+				pad.checkMode = i.checkMode;
+				order = i.order;
+				await pad.runAlgebra(i.order);
+			} else {
+				pad.chatGate = i.gate;
+				await pad.ask(i.question);
+			}
+		} finally {
+			// the model answers the visitor's runs again; the recording stays on show until one replaces it
+			if (loaded && wantLive) pad.stopPlayback();
+		}
+	}
+
+	/** the switch: Recorded plays the tab's recording; Live loads the model if it is not loaded yet */
+	async function show(mode: 'recorded' | 'live') {
+		if (mode === 'live') {
+			wantLive = true;
+			if (!loaded) return load();
+			if (pad.replaying && pad.running) await pad.halt();
+			pad.stopPlayback();
+		} else {
+			wantLive = false;
+			void play(part, RECORDED_PACE);
+		}
+	}
+
+	/** when and where the recordings were made, and whether they ran under the certificate this page loads */
+	const recordedOn = (rec: Recording, article = false) => {
+		const where = rec.provenance.machine ?? rec.provenance.device;
+		const when = new Date(rec.provenance.date).toLocaleDateString('en-GB', {
+			day: 'numeric',
+			month: 'short'
+		});
+		return `${article ? (/^[aeiou]/i.test(where) ? 'an ' : 'a ') : ''}${where}, ${when}`;
+	};
+	const sameCertificate = (rec: Recording) =>
+		rec.provenance.certificateRevision === (PUBLISHED.certificateRevision ?? PUBLISHED.revision);
 
 	/** the cost model's time for every algebra preset, in both check modes (pure BigInt arithmetic, a few ms) */
 	async function costs() {
@@ -174,8 +275,13 @@
 
 	/** this page's path; a part adds only its hash */
 	const DEMO = resolve('/demo');
-	async function setPart(p: Part, write = true) {
+	async function setPart(p: Part, write = true, autoplay = true) {
 		if (p === part) return;
+		// the last tab's run stops and its results go before the new tab is laid out: nothing of it (a long derivation in
+		// a narrower column) sets the new tab's height, which only grows until its own run starts (ratchet.ts)
+		if (pad.running) await pad.halt();
+		pad.clearRun();
+		if (p !== 'algebra') pad.algebraPlan = null;
 		part = p;
 		// the part shown is in the address, so a link (or a reload) opens it
 		if (write) void goto(`${DEMO}#${p}` as typeof DEMO, { replace: true, shallow: true });
@@ -187,6 +293,8 @@
 			else if (p === 'algebra') void pad.stageAlgebra(order);
 			else pad.algebraPlan = null;
 		}
+		// the tab opens on its recorded run (at once, when the visitor has the model and Live)
+		if (autoplay) void play(p, showing === 'live' ? 0 : RECORDED_PACE);
 	}
 
 	/** the line typed in Calculate (or Algebra) is laid out a moment after typing stops */
@@ -343,8 +451,23 @@
 		return pad.bump(row, x, by);
 	}
 
-	function load() {
+	async function load() {
+		// a recording playing stops for the load (the load starts when no run is under way)
+		if (pad.running) await pad.halt();
 		pad.load(modelsBase, spritesUrl);
+		await new Promise<void>((done) => {
+			const wait = setInterval(() => {
+				if (pad.chatReady || pad.loadError || !pad.loading) {
+					clearInterval(wait);
+					done();
+				}
+			}, 200);
+		});
+		if (!pad.chatReady) return;
+		// loaded: Live, the default; the tab shows its recorded run, whole, until the visitor runs one of their own
+		wantLive = true;
+		pad.stopPlayback();
+		void play(part, 0);
 	}
 </script>
 
@@ -401,8 +524,10 @@
 			</p>
 		{:else if pad.running && (part === 'algebra' || part === 'chat') && answeredNow}
 			<p class="verdict live">
-				<strong class="ok">Answered</strong>
-				in {duration(answeredNow.seconds)}{answeredNow.more
+				<!-- a recording plays at its own pace: the page's clock would not be the recorded time -->
+				<strong class="ok">Answered</strong>{pad.replaying
+					? ''
+					: ` in ${duration(answeredNow.seconds)}`}{answeredNow.more
 					? '; the decimal display follows.'
 					: '.'}
 			</p>
@@ -434,15 +559,17 @@
 					{#if !r.ok}The page’s own arithmetic says <span class="ref">{r.want.join('; ')}</span
 						>.{:else}Every line matches the page’s own arithmetic.{/if}{/if}
 			</p>
-			<p>
-				<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span
-				>{#if answeredNow?.more}<span>answered in {duration(answeredNow.seconds)}</span>{/if}<span
-					>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every view it
-						read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
-							? 'view'
-							: 'views'}{/if}</span
-				>
-			</p>
+			{#if pad.recordedShown}{@render recordedFacts(pad.recordedShown)}{:else}
+				<p>
+					<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span
+					>{#if answeredNow?.more}<span>answered in {duration(answeredNow.seconds)}</span>{/if}<span
+						>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every view
+							it read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
+								? 'view'
+								: 'views'}{/if}</span
+					>
+				</p>
+			{/if}
 		{:else if part === 'calc' && pad.calcResult}
 			{@const r = pad.calcResult}
 			<p class="verdict">
@@ -451,14 +578,16 @@
 				<span class="got">{r.got.length > 48 ? `${r.got.slice(0, 48)}…` : r.got}</span>{#if !r.ok}
 					(the page’s own arithmetic says <span class="ref">{r.want}</span>){/if}
 			</p>
-			<p>
-				<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span><span
-					>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every view it
-						read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
-							? 'view'
-							: 'views'}{/if}</span
-				>
-			</p>
+			{#if pad.recordedShown}{@render recordedFacts(pad.recordedShown)}{:else}
+				<p>
+					<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span><span
+						>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every view
+							it read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
+								? 'view'
+								: 'views'}{/if}</span
+					>
+				</p>
+			{/if}
 		{:else if part === 'machine' && pad.result}
 			{@const r = pad.result}
 			<p class="verdict">
@@ -480,15 +609,18 @@
 					The sheet says {r.got.length > 30 ? `${r.got.slice(0, 30)}…` : r.got}.
 				{/if}
 			</p>
-			<p>
-				<span>{fmt(r.ticks)} views in {fmt(r.steps ?? r.ticks)} steps, {duration(r.seconds)}</span
-				><span
-					>{#if r.certified && r.certSource === 'shipped'}certified (shipped, checked again here){:else if r.certified}certified
-						on this device{:else if r.unchecked === 0}every view it read passed{:else}{r.unchecked}
-						unchecked {r.unchecked === 1 ? 'view' : 'views'}{/if}</span
-				>{#if r.pushes}<span>{r.pushes} pushed</span>{/if}{#if r.edits}<span>{r.edits} changed</span
-					>{/if}
-			</p>
+			{#if pad.recordedShown}{@render recordedFacts(pad.recordedShown)}{:else}
+				<p>
+					<span>{fmt(r.ticks)} views in {fmt(r.steps ?? r.ticks)} steps, {duration(r.seconds)}</span
+					><span
+						>{#if r.certified && r.certSource === 'shipped'}certified (shipped, checked again here){:else if r.certified}certified
+							on this device{:else if r.unchecked === 0}every view it read passed{:else}{r.unchecked}
+							unchecked {r.unchecked === 1 ? 'view' : 'views'}{/if}</span
+					>{#if r.pushes}<span>{r.pushes} pushed</span>{/if}{#if r.edits}<span
+							>{r.edits} changed</span
+						>{/if}
+				</p>
+			{/if}
 		{:else if pad.runError}
 			<p class="verdict">{pad.runError === 'stopped' ? 'Stopped.' : pad.runError}</p>
 			{#if part === 'calc' && pad.runError !== 'stopped'}<p>
@@ -528,7 +660,7 @@
 					? 'or a number in the state space to push the next view.'
 					: 'or a digit on the multiply map to push a step.'}
 			</p>
-		{:else if !pad.ready}
+		{:else if !pad.ready && unrecorded}
 			<p class="verdict">Load the model to {part === 'algebra' ? 'solve it' : 'run it'}.</p>
 			<p>
 				{part === 'calc'
@@ -537,6 +669,39 @@
 			</p>
 		{/if}
 	</div>
+{/snippet}
+
+{#snippet recordedFacts(rec: Recording)}
+	<!-- a finished recording says what it is: where and when it ran, and under which certificate -->
+	<p>
+		<span
+			>recorded on {recordedOn(rec)}: {fmt(rec.result.views)} views in {fmt(rec.result.steps)} steps,
+			{duration(rec.result.seconds)}</span
+		><span
+			>{sameCertificate(rec)
+				? `under the certificate this page loads (${rec.provenance.certificateRevision.slice(0, 8)})`
+				: `under an older certificate (${rec.provenance.certificateRevision.slice(0, 8)})`}</span
+		>
+	</p>
+{/snippet}
+
+{#snippet shownSwitch()}
+	<!-- Recorded and Live under one switch: Live loads the model the first time -->
+	<span class="opts" role="group" aria-label="What the panels show">
+		<button
+			class="plain"
+			aria-pressed={showing === 'recorded'}
+			onclick={() => show('recorded')}
+			title="A run recorded on the reference device, played back">Recorded</button
+		>
+		<button
+			class="plain"
+			aria-pressed={showing === 'live'}
+			disabled={pad.gpuOk !== true || !!pad.loading}
+			onclick={() => show('live')}
+			title="The model on your GPU">Live</button
+		>
+	</span>
 {/snippet}
 
 {#snippet pace()}
@@ -557,8 +722,9 @@
 	</span>
 {/snippet}
 
-<!-- data-run changes when a run or a question starts (scripts/layout-probe.js reads it) -->
-<main class="demo" data-run="{pad.runs}.{pad.asks}">
+<!-- data-run changes when a run or a question starts, the tab changes or the model comes in: the moments the layout
+	may let go once (scripts/layout-probe.js reads it) -->
+<main class="demo" data-run="{part}.{pad.runs}.{pad.asks}.{loaded ? 1 : 0}">
 	<header class="head">
 		<div class="title">
 			<h1>Sketchpad</h1>
@@ -606,10 +772,22 @@
 					>
 				</div>
 			{:else if !pad.ready}
-				<button class="primary" onclick={load} disabled={pad.gpuOk === null}>
-					Load the model{cost === null ? '' : cost === 0 ? ' · cached' : ` · ${bytes(cost)}`}
-				</button>
+				<!-- before a load: the recorded runs play, and one quiet line says where they were made -->
+				{@render shownSwitch()}
+				<p class="note num">
+					{#if lastRecording}Recorded on {recordedOn(lastRecording, true)} ·&nbsp;{/if}<button
+						class="link"
+						onclick={load}
+						disabled={pad.gpuOk === null}>Load the model</button
+					>
+					to run it on your GPU ({cost === null
+						? '1.9 GB'
+						: cost === 0
+							? 'from this browser’s cache'
+							: bytes(cost)}).
+				</p>
 			{:else}
+				{@render shownSwitch()}
 				<p class="note num">{loadNote}</p>
 			{/if}
 			{#if pad.loadError}<p class="note err">{pad.loadError}</p>{/if}
@@ -823,6 +1001,7 @@
 				onanswered={(more) => (answered = { run: pad.runs, seconds: pad.wallMs / 1000, more })}
 				foot={status}
 				run={pad.runs}
+				hint={null}
 			/>
 			<DigitWork
 				source={pad.sheet ? sourceOf(pad.sheet) : null}
@@ -1026,6 +1205,25 @@
 		font-style: normal;
 		font-weight: 500;
 		color: var(--color-ink);
+	}
+	/* the load, as a word in the line that says what is shown */
+	.model .link {
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--color-ink);
+		font: inherit;
+		font-weight: 500;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		cursor: pointer;
+	}
+	.model .link:disabled {
+		color: var(--color-ink-soft);
+		cursor: default;
+	}
+	.model .opts {
+		font-size: var(--text-xs);
 	}
 	.model {
 		display: grid;
