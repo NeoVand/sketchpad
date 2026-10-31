@@ -76,3 +76,70 @@ only 8 replies at full length; the registered worst case would have cost about $
 
 Sketchpad read 64,700 views, all of them certified rows, in 1,001 batched forward passes. Replies at the token cap:
 0.8B thinking 217/220, 0.8B no thinking 174/220, 27B-FP8 93/220; of the 27B's 127 finished replies, 121 were exact.
+
+## Frontier (registered 31 Oct 2026, before any generation call)
+
+Neo, 31 Oct 2026: "yes, add all 3: GPT 6.1 Sol (high), Claude Opus 5.5 (high) and Gemini 4 Argon (high)". Only the
+providers' model-list endpoints have been called so far (no generation, no cost), to read the exact IDs.
+
+### Models and settings
+
+| system | API model ID | how it was found | reasoning "high" | cap (output incl. reasoning) | API |
+|---|---|---|---|---|---|
+| GPT-6.1 Sol | `gpt-6.1-sol` (no dated snapshot; `created` 2026-09-27 in `/v1/models`) | OpenAI `/v1/models`; model page developers.openai.com/api/docs/models/gpt-6.1-sol | `reasoning.effort = "high"` (values low, medium default, high, xhigh, max) | `max_output_tokens = 32768`; reasoning tokens count toward it (developers.openai.com/api/docs/guides/reasoning) | Responses API, official `openai` Python SDK |
+| Claude Opus 5.5 | `claude-opus-5-5` | Anthropic model table (claude-api skill, platform.claude.com/docs/en/about-claude/pricing) | `output_config.effort = "high"`; thinking is always on for this model (adaptive); no `thinking` parameter sent | `max_tokens = 32768`; thinking tokens count toward it | Messages API, streamed, official `anthropic` Python SDK |
+| Gemini 4 Argon | `gemini-4-argon` (model `version` 3.0 in the model list) | Gemini `/v1beta/models` (`outputTokenLimit` 32768, `thinking: true`); ai.google.dev/gemini-api/docs/models | `thinkingConfig.thinkingLevel = "high"` (values low, medium default, high) | `maxOutputTokens = 32768`; thought tokens count toward it (ai.google.dev/gemini-api/docs/thinking) | `generateContent`, official `google-genai` Python SDK |
+
+- **Problems, prompt, scorer:** the same 220 problems (`problems.json`, seed 20261031), the same user turn, no system
+  prompt; scored by `score.py` exactly as registered above (the last `\boxed{}` in the visible reply, else the last
+  digit run in the final 300 characters, separators removed). Reasoning is hidden by these APIs, so the visible reply
+  is the whole reply.
+- **The cap:** 32,768 output tokens including reasoning, as for Qwen3.5-27B. A reply that stops at the cap (OpenAI
+  `status: incomplete`, reason `max_output_tokens`; Anthropic `stop_reason: max_tokens`; Gemini `finishReason:
+  MAX_TOKENS`) is wrong and counted.
+- **Sampling:** each provider's defaults; one sample per problem; no sampling parameters are sent (these reasoning
+  models reject or ignore them).
+- **No fallback model:** Anthropic's server-side refusal fallback is not enabled, because a fallback model would
+  answer in Claude Opus 5.5's place. A refusal (`stop_reason: refusal`) counts as no answer and is reported.
+- **Names in the paper:** the model's product name and the API ID, "accessed 31 October 2026"; GPT-6.1 Sol also with
+  its listed creation date.
+
+### Prices (per million tokens, standard tier, read 31 Oct 2026)
+
+| model | input | output (incl. reasoning) | source |
+|---|---|---|---|
+| GPT-6.1 Sol | $2.00 | $10.00 | developers.openai.com/api/docs/pricing; developers.openai.com/api/docs/models/gpt-6.1-sol |
+| Claude Opus 5.5 | $4.00 | $20.00 | platform.claude.com/docs/en/about-claude/pricing |
+| Gemini 4 Argon | $2.00 | $10.00 (through 30 Nov 2026) | ai.google.dev/gemini-api/docs/pricing |
+
+Worst case, every reply at the cap: 220 × 32,768 = 7.2 M output tokens per model, about $72 (GPT), $144 (Claude), $72
+(Gemini), $288 in all, over the **$75 cap** for the three together.
+
+### Pilot, projection and the cut rule
+
+1. Pilot: 2 problems per model at the hardest lengths, the first + 1,000 problem (id 80) and the first × 20 problem
+   (id 200). Tokens from the usage fields.
+2. Projection: every one of the 220 problems is costed at the pilot's mean tokens per reply for its family (sums at
+   the + 1,000 mean, products at the × 20 mean), an upper bound since shorter problems need fewer tokens.
+3. If the projection for all three is at most $75, run all 220. If not, run 10 problems per length (the first 10 of
+   each cell, 110 problems) if that projection is at most $75, and record the cut here before running. If neither
+   fits, stop and write it in `QUESTIONS.md`.
+4. Concurrency at most 8 requests per provider, exponential backoff on rate limits and server errors (up to 6
+   retries); a reply that still fails is recorded as an error, not scored as wrong without saying so.
+5. Actual cost from the usage fields at the prices above; raw replies kept in `baselines/raw/frontier/`.
+
+### Predictions (share exact, before any reply)
+
+| system | + 10 | + 30 | + 100 | + 300 | + 1,000 | × 2 | × 4 | × 6 | × 10 | × 15 | × 20 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| GPT-6.1 Sol (high) | 1 | 1 | 1 | 0.6 | 0.1 | 1 | 1 | 1 | 0.9 | 0.6 | 0.4 |
+| Claude Opus 5.5 (high) | 1 | 1 | 0.95 | 0.5 | 0.05 | 1 | 1 | 1 | 0.85 | 0.5 | 0.3 |
+| Gemini 4 Argon (high) | 1 | 1 | 0.95 | 0.5 | 0.05 | 1 | 1 | 1 | 0.85 | 0.5 | 0.3 |
+
+The frontier models will likely solve the short problems; they fail, if at all, by the length of the work against a
+32,768-token budget. Sketchpad's claim is the certificate at every length, not a win on short problems.
+
+### Credential note (at registration)
+
+`ANTHROPIC_API_KEY` in `~/.polyformer_keys` returns `401 authentication_error: invalid x-api-key` on `/v1/models`. The
+OpenAI and Gemini keys work. Claude Opus 5.5 runs only after the key is replaced; until then its row stays "not run".
