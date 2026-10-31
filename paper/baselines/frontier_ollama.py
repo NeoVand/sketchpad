@@ -2,7 +2,7 @@
 
 `think: "high"` for gpt-oss, `think: true` for the other four (all five report the thinking capability in
 /api/show). `options.num_predict = 32768` caps every generated token, thinking included (`eval_count`). The answer is
-scored on `message.content`; the thinking text is kept in the raw record. Free tier: cost 0, usage recorded.
+scored on `message.content`; the thinking text is kept in the raw record. Usage is costed at the ollama.com/pricing rates below.
 """
 
 import os
@@ -17,7 +17,16 @@ MODELS = {
     "glm-5.3": True,
     "gemma4:31b": True,
 }
-WORKERS = 2  # the free tier rate-limits; keep it low
+WORKERS = 2  # keep it low on the shared cloud
+# USD per million tokens (input, output), https://ollama.com/pricing, 31 Oct 2026; DeepSeek at its peak rate
+RATES = {
+    "gpt-oss:120b": (0.15, 0.60),
+    "deepseek-v4-pro:0813": (1.32, 3.96),
+    "kimi-k3": (3.00, 15.00),
+    "glm-5.3": (1.40, 4.40),
+    "gemma4:31b": (0.14, 0.40),
+}
+BUDGET = 55.0  # USD of Ollama usage (BASELINES.md): no new request past it
 
 _client = None
 _lock = threading.Lock()  # one client for all threads
@@ -63,7 +72,7 @@ def make(model):
                 "prompt_tokens": r.prompt_eval_count,
                 "hit_cap": r.done_reason == "length",
                 "finish_reason": r.done_reason,
-                "cost": 0.0,
+                "cost": ((r.prompt_eval_count or 0) * RATES[model][0] + (r.eval_count or 0) * RATES[model][1]) / 1e6,
             }
 
         @staticmethod
@@ -74,4 +83,6 @@ def make(model):
                                         "ConnectTimeout", "WriteError")
 
     Mod.WORKERS = WORKERS
+    Mod.BUDGET = BUDGET
+    Mod.GROUP = "ollama"
     return Mod

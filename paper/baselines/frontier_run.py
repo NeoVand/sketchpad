@@ -26,7 +26,11 @@ MODULES = {"gpt": "frontier_openai", "claude": "frontier_anthropic", "gemini": "
 PILOT_IDS = [80, 200]
 STOP_AT = 60.0  # USD across every frontier reply so far (BASELINES.md, extension): no new request past it
 lock = threading.Lock()
-spent_total = [0.0]
+spent_total = {"api": 0.0, "ollama": 0.0}
+
+
+def group(key):
+    return "ollama" if key.startswith("ollama") else "api"
 
 
 def problems():
@@ -59,7 +63,7 @@ def retryable(mod, e):
 
 def ask(mod, key, p):
     with lock:
-        if spent_total[0] > STOP_AT:
+        if spent_total[group(key)] > getattr(mod, "BUDGET", STOP_AT):
             return None
     t0 = time.time()
     for attempt in range(7):
@@ -90,7 +94,7 @@ def run(key, ids):
                 continue
             with lock, raw_path(key).open("a") as f:
                 f.write(json.dumps(rec) + "\n")
-                spent_total[0] += rec.get("cost") or 0
+                spent_total[group(key)] += rec.get("cost") or 0
             spent += rec.get("cost") or 0
             tag = rec["error"] or f"{rec['tokens']} tok, cap {rec['hit_cap']}, {rec['finish_reason']}"
             print(f"  {key} id {rec['id']}: {tag}; spent ${spent:.2f}", flush=True)
@@ -121,9 +125,9 @@ if __name__ == "__main__":
     else:
         per = int(sys.argv[sys.argv.index("--per-cell") + 1]) if "--per-cell" in sys.argv else 20
         ids = {p["id"] for p in problems() if p["k"] < per}
-    for f in RAW.glob("*.jsonl"):  # spend already on record counts toward the stop
-        spent_total[0] += sum(json.loads(x).get("cost") or 0 for x in f.read_text().splitlines() if x.strip())
-    print(f"spent so far ${spent_total[0]:.2f}; no new request past ${STOP_AT:.0f}", flush=True)
+    for f in RAW.glob("*.jsonl"):  # spend already on record counts toward its group's stop
+        spent_total[group(f.stem)] += sum(json.loads(x).get("cost") or 0 for x in f.read_text().splitlines() if x.strip())
+    print(f"spent so far: API ${spent_total['api']:.2f} (stop ${STOP_AT:.0f}), Ollama ${spent_total['ollama']:.2f} (stop $55)", flush=True)
     with cf.ThreadPoolExecutor(len(keys)) as ex:
         list(ex.map(lambda k: run(k, ids), keys))
     cost()

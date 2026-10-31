@@ -287,3 +287,26 @@ predictions: all three are better than predicted (Claude 216 against 200; its + 
 12).
 
 **Open tier:** not run. `/api/chat` returns 402 "Add usage credits or subscribe" for all five models (`QUESTIONS.md` 14).
+
+### Open tier: usage and the stop (31 Oct 2026, before any further Ollama call)
+
+Neo subscribed to Ollama Pro ($60 of usage credit a month). Rates from `https://ollama.com/pricing` (read 31 Oct
+2026; "Prices are per million tokens"; "Usage is measured in tokens at each model's rates"):
+
+| model | input | output | note |
+|---|---|---|---|
+| `gpt-oss:120b` | $0.15 | $0.60 | |
+| `deepseek-v4-pro:0813` | $1.32 | $3.96 | peak rate; off-peak $0.66 / $1.98 (outside 12:00–18:00 UTC on weekdays, all weekend) |
+| `kimi-k3` | $3.00 | $15.00 | |
+| `glm-5.3` | $1.40 | $4.40 | |
+| `gemma4:31b` | $0.14 | $0.40 | the page lists `gemma4` |
+
+Usage per reply is costed as `prompt_eval_count` × input + `eval_count` × output (thinking included), at the peak
+rate for DeepSeek, so the recorded usage is an upper bound on what Ollama meters.
+
+1. Pilot: ids 80 (+ 1,000) and 200 (× 20) per model.
+2. Projection by the registered rule (100 × the + 1,000 cost + 120 × the × 20 cost per model). If the five project
+   over **$55**, the most expensive models are cut to 10 per length (the first 10 of each cell), largest projected
+   cost first, until the total projects under $55; the cut is recorded here before the run. If even that does not fit,
+   stop and write it in `QUESTIONS.md`.
+3. The runner refuses new Ollama requests once the recorded Ollama usage passes $55.
