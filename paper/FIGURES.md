@@ -93,3 +93,15 @@ The text fills in as the CHAT stream reports. This figure may move to Extended D
 - the chat runs P1 to P7;
 - the fault populations;
 - the Lean statement list.
+
+## Writer's notes (31 Oct, after the draft)
+
+- **Order in the text.** The paper numbers figures by first mention, and §6 (the gate) comes before §7 (inside), so
+  `fig6.svg` is Fig. 5 and `fig5.svg` is Fig. 6 in the text. Rename the files to match, or tell the writer to swap
+  the sections (QUESTIONS.md 5).
+- **Figure 1c.** The registered baseline has run: `paper/baselines/results.json` (per problem) and `RESULT.md`.
+  Sketchpad 220/220; Qwen3.5-27B-FP8, thinking, 121/220 (cobalt); Qwen3.5-0.8B 3/220 thinking and 23/220 without
+  (blue-grey, dashed without). Sums (10–1,000 digits) and products (2–20 digits) are two families: draw each system
+  as two series (solid sums, a second mark for products) or split c into sums and products. Points are exact / 20.
+- **Figure 5c (inside, Fig. 6 in the text).** The dashed line says "layer 19 full attention" (0-based index); the
+  text counts depth as layers applied, so the same line is "full attention, ends at depth 20". Please relabel.
