@@ -271,3 +271,19 @@ size, so the tier is defined by access (open weights, free endpoint), not by siz
 + 1,000 (id 80): 8,737 output tokens, $0.178; × 20 (id 200): 2,661 tokens, $0.053. Projection at 20 per length
 by the registered rule: 100 × 0.178 + 120 × 0.053 = **$24.2**. With GPT-6.1 Sol and Gemini 4 Argon at $18.6 on record
 and about $21 when their extension ends, the three total about **$45**, inside $75: Claude Opus 5.5 runs all 220.
+
+### Results at 20 per length (31 Oct 2026; per problem in `results.json`)
+
+| system | + 10 | + 30 | + 100 | + 300 | + 1,000 | × 2 | × 4 | × 6 | × 10 | × 15 | × 20 | total | at cap | cost |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| GPT-6.1 Sol (high) | 20 | 20 | 20 | 18 | 19 | 20 | 20 | 20 | 20 | 20 | 20 | **217** | 0 | $4.56 |
+| Claude Opus 5.5 (high) | 20 | 20 | 20 | 19 | 17 | 20 | 20 | 20 | 20 | 20 | 20 | **216** | 0 | $9.17 |
+| Gemini 4 Argon (high) | 20 | 20 | 20 | 18 | 9 | 20 | 20 | 20 | 20 | 20 | 20 | **207** | 9 | $16.30 |
+
+All three are exact on every product length; every miss is a sum of 300 or 1,000 digits. GPT-6.1 Sol's misses (ids 64,
+71, 84) and Claude Opus 5.5's (ids 64, 83, 90, 93) ended inside the budget with 1 to 637 wrong digits; 9 of Gemini 4
+Argon's 13 misses hit the cap. Frontier spend **$30.03** of the $75 cap (stop at $60 never reached). Against the
+predictions: all three are better than predicted (Claude 216 against 200; its + 1,000 17 against 4 and × 20 20 against
+12).
+
+**Open tier:** not run. `/api/chat` returns 402 "Add usage credits or subscribe" for all five models (`QUESTIONS.md` 14).

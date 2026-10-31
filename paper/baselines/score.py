@@ -94,8 +94,9 @@ def main(sk_path, raw_paths):
                 notes.append(f"{g['model_key']} id {g['id']}: not scored, {g['error'][:80]}")
                 continue
             p = probs[g["id"]]
-            key = g["model_key"] if g["model_key"] in FRONTIER else ("27b" if g["model_key"] != "0.8b" else "0.8b")
-            if key in FRONTIER:
+            mk = g["model_key"]
+            key = mk if (mk in FRONTIER or mk.startswith("ollama/")) else ("27b" if mk != "0.8b" else "0.8b")
+            if key in FRONTIER or key.startswith("ollama/"):
                 g = dict(g, mode="high")
             ans, how, closed, loose = parse(g["text"], g["mode"])
             exact = (not g["hit_cap"]) and norm(ans) == p["truth"]
@@ -109,8 +110,9 @@ def main(sk_path, raw_paths):
                         "finish_reason": g["finish_reason"], "parsed_from": how, "think_closed": closed,
                         "no_answer": ans is None, "prompt_tokens": g["prompt_tokens"], "seed": g["seed"],
                         "reply_tail": reply[-400:]})
-    out.sort(key=lambda r: ([s for s, _ in SYSTEMS].index(r["system"].split()[0]),
-                            r.get("mode") != "thinking", r["id"]))
+    order = [s for s, _ in SYSTEMS]
+    out.sort(key=lambda r: (order.index(r["system"].split()[0]) if r["system"].split()[0] in order else len(order),
+                            r["system"], r.get("mode") != "thinking", r["id"]))
     (HERE / "results.json").write_text(json.dumps(out, indent=1) + "\n")
     return out, notes
 
@@ -119,9 +121,8 @@ def tables(out):
     cells = [("add", n) for n in (10, 30, 100, 300, 1000)] + [("mul", n) for n in (2, 4, 6, 10, 15, 20)]
     head = "| system | " + " | ".join(f"{'+' if f == 'add' else '×'} {n:,}" for f, n in cells) + " |"
     sep = "|---|" + "---|" * len(cells)
-    systems = sorted({r["system"] for r in out}, key=lambda s: ["sketchpad", "0.8b thinking", "0.8b nothink",
-                                                                  "27b thinking", "gpt high", "claude high",
-                                                                  "gemini high"].index(s))
+    known = ["sketchpad", "0.8b thinking", "0.8b nothink", "27b thinking", "gpt high", "claude high", "gemini high"]
+    systems = sorted({r["system"] for r in out}, key=lambda s: (known.index(s) if s in known else len(known), s))
     lines = {"exact": [head, sep], "cap": [head, sep], "tokens": [head, sep], "noans": [head, sep]}
     for s in systems:
         rows = {k: [] for k in lines}
