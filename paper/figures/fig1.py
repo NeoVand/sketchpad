@@ -117,52 +117,65 @@ for k, (g, what) in zip(answer_rows, zip(M["answer"], ["digit", "carry", "next s
             fontweight="bold")
     cv.text(L1 + 7.6, ty[k], what, fontsize=5, color=SOFT, ha="left", va="center")
 
-# ---- c: share exact against digits ---------------------------------------------------------------------------------
-ax = axes(fig, 13.0, 74.0, 68.0, 40.0)
-clean(ax)
-sums = [(10, EV["sum_10"]), (100, EV["sum_100"]), (1000, EV["sum_1000"])]
-prods = [(4, EV["mul_4x4"]), (6, EV["mul_6x6"]), (10, EV["mul_10x10"])]
-tally = {}
-for key, ser in (("sums", sums), ("products", prods)):
-    k = sum(int(f.split("/")[0]) for _, f in ser)
-    n = sum(int(f.split("/")[1]) for _, f in ser)
-    check(k == n, f"Sketchpad exact on every {key}")
-    tally[key] = n
-check(tally == {"sums": 27, "products": 35}, "27 sums and 35 products")
-ax.set_xscale("log")
-ax.set_xlim(3, 20000)
-ax.set_ylim(-0.03, 1.08)
-ax.set_yticks([0, 0.5, 1])
-ax.set_yticklabels(["0", "0.5", "1"])
-ax.set_xticks([10, 100, 1000, 10000])
-ax.set_xticklabels(["10", "100", "1,000", "10,000"])
-ax.minorticks_off()
-ax.set_xlabel("digits per number", labelpad=1.5)
-ax.set_ylabel("share exact", labelpad=1.5)
-# measured: solid; beyond the longest run: dotted (the certificate covers every length)
-ax.plot([4, 1000], [1, 1], color=ROSE, lw=1.0, zorder=3, solid_capstyle="round")
-ax.plot([1000, 20000], [1, 1], color=ROSE, lw=1.0, ls=(0, (1, 1.6)), zorder=3)
-ax.scatter([d for d, _ in sums], [1] * 3, s=10, color=ROSE, zorder=4, lw=0)
-ax.scatter([d for d, _ in prods], [1] * 3, s=10, facecolor="white", edgecolor=ROSE, lw=0.8, zorder=4)
-ax.text(5.0, 0.95, f"products, 4 to 10 digits: {tally['products']} of {tally['products']}", fontsize=5,
-        color=ROSE, ha="left", va="top")
-ax.text(100, 1.045, f"sums, 10 to 1,000 digits: {tally['sums']} of {tally['sums']}", fontsize=5, color=ROSE,
-        ha="center", va="bottom")
-ax.text(1400, 0.95, "certified at\nevery length", fontsize=5, color=ROSE, ha="left", va="top", linespacing=1.1)
-ax.text(4.0, 0.80, "Sketchpad", fontsize=6.5, color=ROSE, ha="left", va="top")
-# baselines (paper/BASELINES.md, the writer's registered run), once they exist, as
-# {"series": [{"name": ..., "role": "strongest" | "baseline", "dashed": bool, "points": [[digits, share], ...]}]}
-bl = DATA / "baselines.json"
-if bl.exists():
-    import json
-    for ser in json.loads(bl.read_text())["series"]:
-        col = COBALT if ser["role"] == "strongest" else GREY
-        ls = (0, (3, 1.5)) if ser.get("dashed", False) else "-"
-        xs_, ys_ = zip(*ser["points"])
-        check(all(0 <= y <= 1 for y in ys_), f"{ser['name']}: shares in [0, 1]")
-        ax.plot(xs_, ys_, color=col, lw=0.9 if ser["role"] == "strongest" else 0.8, ls=ls, marker="o", ms=2.0,
-                zorder=2)
-        ax.text(xs_[-1] * 1.15, ys_[-1], ser["name"], fontsize=5, color=col, va="center")
+# ---- c: share exact against digits, sums and products apart ------------------------------------------------------
+import collections
+import json
+
+BL = load("baselines.json")
+REC = json.loads((DATA.parents[1] / "baselines" / "results.json").read_text())
+truth = collections.defaultdict(lambda: [0, 0])
+for r in REC:
+    truth[(r["system"], r["family"], r["n"])][0] += bool(r["exact"])
+    truth[(r["system"], r["family"], r["n"])][1] += 1
+check(BL["totals"] == {"sketchpad": 220, "27b thinking": 121, "0.8b thinking": 3, "0.8b nothink": 23},
+      "220, 121, 3 and 23 of 220")
+STYLE = {"ours": dict(color=ROSE, lw=1.1, z=5), "strongest": dict(color=COBALT, lw=1.0, z=4),
+         "baseline": dict(color=GREY, lw=0.8, z=3)}
+panels = {"add": (13.0, "sums  $a + b$", (6, 2000), [10, 100, 1000], ["10", "100", "1,000"]),
+          "mul": (45.0, r"products  $a \times b$", (1.6, 26), [2, 5, 10, 20], ["2", "5", "10", "20"])}
+ends = {}
+for fam, (x0c, title, xlim, ticks, tlabels) in panels.items():
+    ax = axes(fig, x0c, 77.0, 25.0, 37.0)
+    clean(ax, left=(fam == "add"))
+    ax.set_xscale("log")
+    ax.set_xlim(*xlim)
+    ax.set_ylim(-0.04, 1.06)
+    ax.set_xticks(ticks)
+    ax.set_xticklabels(tlabels)
+    ax.minorticks_off()
+    ax.set_xlabel("digits per number", labelpad=1.5)
+    if fam == "add":
+        ax.set_yticks([0, 0.5, 1])
+        ax.set_yticklabels(["0", "0.5", "1"])
+        ax.set_ylabel("share exact", labelpad=1.5)
+    ax.text(xlim[0], 1.13, title, fontsize=6, color=INK, ha="left", va="bottom")
+    for ser in BL["series"]:
+        if ser["family"] != fam:
+            continue
+        st = STYLE[ser["role"]]
+        xs_ = [p[0] for p in ser["points"]]
+        ys_ = []
+        for n, k, tot in ser["points"]:
+            check([k, tot] == truth[(ser["system"], fam, n)] and tot == 20, f"{ser['name']} {fam} {n}: {k}/{tot}")
+            ys_.append(k / tot)
+        ax.plot(xs_, ys_, color=st["color"], lw=st["lw"], ls=(0, (3, 1.6)) if ser["dashed"] else "-",
+                marker="o", ms=1.9, zorder=st["z"], clip_on=False)
+        ends[(ser["name"], fam)] = (xs_[-1], ys_[-1])
+    ax_mul = ax
+# labels at the line ends, in the products panel (the same styles in both)
+lab = {"Sketchpad": (0.0, ROSE), "Qwen3.5-27B, thinking": (0.0, COBALT)}
+check(ends[("Sketchpad", "mul")][1] == 1.0 and abs(ends[("Qwen3.5-27B, thinking", "mul")][1] - 7 / 20) < 1e-12
+      and ends[("Qwen3.5-0.8B, thinking", "mul")][1] == 0 and ends[("Qwen3.5-0.8B, no thinking", "mul")][1] == 0,
+      "the products' line ends: 1, 0.35, 0, 0")
+for name, (dy, col) in lab.items():
+    x_, y_ = ends[(name, "mul")]
+    ax_mul.text(x_ * 1.12, y_ + dy, name.replace("Qwen3.5-", ""), fontsize=4.8, color=col, ha="left",
+                va="center", clip_on=False)
+x_, y_ = ends[("Qwen3.5-0.8B, thinking", "mul")]
+ax_mul.text(x_ * 1.12, y_ + 0.03, "0.8B: thinking,\nno thinking (dashed)", fontsize=4.8, color=GREY, ha="left",
+            va="bottom", linespacing=1.05, clip_on=False)
+check(ends[("Sketchpad", "add")][1] == 1.0 and ends[("Qwen3.5-27B, thinking", "add")][1] == 0.0,
+      "the sums' line ends: 1 and 0")
 
 # ---- d: the certificate --------------------------------------------------------------------------------------------
 kinds = CERT["kinds"]
@@ -195,8 +208,8 @@ check(sum(b.size for b in blocks.values()) == 2446, "every view drawn once")
 
 cm = LinearSegmentedColormap.from_list("cert", [cmap_exact(x) for x in np.linspace(0, 0.86, 64)])
 VMAX = 20.0
-cell = 0.66
-dx0, dy0 = 100.0, 77.0
+cell = 0.64
+dx0, dy0 = 103.0, 77.0
 layout = [  # (name, column offset in cells, row offset in cells)
     ("MUL", 0, 0),
     ("SUM", 0, 15), ("ADD", 25, 15), ("ADZ", 48, 15), ("SUB", 71, 15),

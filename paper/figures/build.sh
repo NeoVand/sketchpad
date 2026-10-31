@@ -22,11 +22,15 @@
 #   e7_gate_identity_summary.json cdc202a3 polyformer research/sketch/e7_gate_identity_summary.json
 #   chat_runs.json               transcribed from polyformer-wt/chat research/sketch/chat/CHAT3.md at b392d24d
 #                                (lines named in the file)
+#   algebra_m4.json              the algebra presets timed on the M4 on 31 Oct by the demo agent (sketchpad 7f82207),
+#                                relayed by the orchestrator
+#   baselines.json               written by baselines.py from paper/baselines/results.json (the registered run)
 #   sheets.json, algebra.json    written by sheets.ts and algebra.ts from the runtime in src/lib/sketchpad
 # Algebra costs and refusals are read in place from src/lib/sketchpad/program/round3-*.json.
 set -e
 cd "$(dirname "$0")/../.."
 PY=${PY:-/Users/neo/.claude-science/conda/envs/python/bin/python}
+nice -n 19 "$PY" paper/figures/baselines.py
 nice -n 19 node paper/figures/sheets.ts
 nice -n 19 node --import ./paper/figures/ts-resolve.mjs paper/figures/algebra.ts
 for n in 1 2 3 4 5 6; do

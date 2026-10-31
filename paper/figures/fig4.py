@@ -6,8 +6,9 @@ a  the textbook derivation of x^3 - 6x^2 + 11x - 6 = (x - 1)(x - 2)(x - 3), line
    runtime's own layout and the training sprites), threaded to the line.
 b  refusals under planted faults (src/lib/sketchpad/program/round3-{path}-{mode}.json): wrong roots offered, and one
    corrupted arithmetic call; light and strong checks give the same counts
-c  seconds per work order, textbook against evaluation, from the M4 cost model (0.065 s a pass + 0.037 s a view; the
-   same round-3 files). Times measured on the M4 for these orders are not yet recorded.
+c  seconds per work order: textbook measured and modelled, evaluation modelled (0.065 s a pass + 0.037 s a view; the
+   same round-3 files), beside the times measured on the M4 on 31 Oct (data/algebra_m4.json, the demo agent at sketchpad
+   7f82207); light check, the default
 """
 import json
 import re
@@ -388,29 +389,40 @@ ev = {d["source"]: d for d in R3[("evaluation", "light")]["demos"]}
 check(set(tb) == set(ev) == set(names), "eleven work orders")
 for d in list(tb.values()) + list(ev.values()):
     check(abs(d["seconds"] - (0.037 * d["rows"] + 0.065 * d["calls"])) < 1e-6, "seconds = cost model")
-order = sorted(names, key=lambda s: tb[s]["seconds"])
-ax = axes(fig, 140.0, 52.0, 37.0, 54.0)
+M4 = load("algebra_m4.json")
+meas = {r["source"]: r for r in M4["rows"]}
+check(set(meas) == set(names) and M4["path"] == "textbook", "the eleven presets, measured on the M4")
+order = sorted(names, key=lambda s: meas[s]["light"])
+ax = axes(fig, 140.0, 55.0, 37.0, 51.0)
 clean(ax, left=False)
 for k, s in enumerate(order):
-    a, b = tb[s]["seconds"], ev[s]["seconds"]
-    ax.plot([a, b], [k, k], color=MIST, lw=0.7, zorder=1)
+    m, a, b = meas[s]["light"], tb[s]["seconds"], ev[s]["seconds"]
+    ax.plot([min(m, a, b), max(m, a, b)], [k, k], color=MIST, lw=0.7, zorder=1)
     ax.scatter([b], [k], s=8, color=COBALT, lw=0, zorder=3)
-    ax.scatter([a], [k], s=8, color=ROSE, lw=0, zorder=4)
+    ax.scatter([a], [k], s=9, facecolor="white", edgecolor=ROSE, lw=0.7, zorder=4)
+    ax.scatter([m], [k], s=9, color=ROSE, lw=0, zorder=5)
     ax.text(1.55, k, names[s], fontsize=4.8, color=INK, ha="right", va="center")
 ax.set_xscale("log")
 ax.set_xlim(1.6, 200)
-ax.set_ylim(len(order) - 0.4, -1.4)
+ax.set_ylim(len(order) - 0.4, -0.6)
 ax.set_xticks([2, 12, 50, 150])
 ax.set_xticklabels(["2", "12", "50", "150"])
 ax.minorticks_off()
 ax.axvline(12, color=VIOLET, lw=0.6, ls=(0, (1, 1.5)), zorder=0)
-ax.set_xlabel("seconds on the M4 (cost model)", labelpad=1.5)
+ax.set_xlabel("seconds per work order (light check)", labelpad=1.5)
 both = sum(1 for s in names if tb[s]["seconds"] < 12 and ev[s]["seconds"] < 12)
-tb_under = sum(1 for s in names if tb[s]["seconds"] < 12)
-check(both == 6 and tb_under == 6, "six of eleven under 12 s")
-ax.text(12.6, -0.95, "12 s", fontsize=4.8, color=VIOLET, ha="left", va="center")
-ax.text(190, -0.95, "textbook", fontsize=5, color=ROSE, ha="right", va="center")
-ax.text(190, 0.15, "evaluation", fontsize=5, color=COBALT, ha="right", va="center")
-letter(fig, 118.0, 45.0, "c")
+check(both == 6, "cost model: six of eleven under 12 s on both paths")
+under = sum(1 for s in names if meas[s]["light"] < 12)
+check(under == 8, "measured: eight of eleven under 12 s")
+ax.text(12.6, len(order) - 0.75, "12 s", fontsize=4.8, color=VIOLET, ha="left", va="center")
+# the key, above the panel: marks with their words
+cv.scatter([127.5], [46.4], s=9, color=ROSE, lw=0)
+cv.text(128.6, 46.4, f"textbook, measured on the M4: {under} of 11 under 12 s", fontsize=4.8, color=ROSE,
+        ha="left", va="center")
+cv.scatter([127.5], [48.8], s=9, facecolor="white", edgecolor=ROSE, lw=0.7)
+cv.text(128.6, 48.8, "textbook, cost model", fontsize=4.8, color=ROSE, ha="left", va="center")
+cv.scatter([127.5], [51.2], s=8, color=COBALT, lw=0)
+cv.text(128.6, 51.2, "evaluation, cost model", fontsize=4.8, color=COBALT, ha="left", va="center")
+letter(fig, 118.0, 43.0, "c")
 
 save(fig, "fig4")
