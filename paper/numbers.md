@@ -118,3 +118,4 @@ published model `mohsenvand/sketchpad-0.8b-preview` at `2df87172`, whose certifi
 | Prior-art search | 50 arXiv abstracts, 30 Oct 2026 | P `research/audit/sketchpad3_gate/out.md` 3 |
 | Lewandowski et al. checked rules | 1,857 | P `research/audit/priorart_all/out.md` 121–125 |
 | References verified | 100 entries, 31 Oct 2026 | S `paper/refs_verified.md` |
+| Algebra measured on the M4 (light check): 8 of 11 under 12 s; (x+2)^5 9.5 s, (2x−3)^4 10.4 s, (x+1)^10 17.1 s, factor 16.0 s, 3×3 21.5 s | as stated | `paper/figures/data/algebra_m4.json` (demo agent, 31 Oct, sketchpad `7f82207`) |
