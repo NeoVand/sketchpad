@@ -34,6 +34,7 @@ x = ±√2 ≈ ±1.4142
    Every product and sum goes through Calc. This is the check for irrational roots in both light and strong mode. Say
    in `NOTES.md` why it is complete: Vieta plus a quadratic with integer coefficients pins the pair. Keep the
    substitution check for rational roots as it is.
+
 4. **The approximation.**
    - Show `≈` to 4 decimal places, from √m to about 5 digits: isqrt(m·10^10), then one division by the reduced
      denominator.
