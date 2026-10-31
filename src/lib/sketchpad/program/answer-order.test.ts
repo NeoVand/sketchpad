@@ -1,5 +1,8 @@
 import { afterAll, describe, expect, it } from 'vitest';
-import { RefCalc, type SheetCost } from './calc';
+import { readFileSync } from 'node:fs';
+import { DerivationBuilder, literal } from './derivation';
+import { simplifyRadical } from './radicals';
+import { RefCalc, TraceCalc, type SheetCost } from './calc';
 import { run } from './run';
 import { validateDerivation } from './derivation-test-helper';
 import { writeReport } from './report-test-helper';
@@ -102,6 +105,34 @@ it('keeps the finalized exact result if optional approximation fails', async () 
 	expect(r.results[0].algebra?.approximationError).toBe('display unavailable');
 	expect(r.results[0].derivation.lines.at(-1)?.kind).toBe('result');
 	await validateDerivation(r);
+});
+it('tries only prime squares bounded by the existing integer square root for small D', async () => {
+	for (const D of [2n, 8n, 17n, 20n, 9997n]) {
+		const calc = new RefCalc(),
+			b = new DerivationBuilder(new TraceCalc(calc), 'light');
+		const bound = await b.int(async (c) => (await c.isqrt(D)).root);
+		const square = await b.mul(bound, bound);
+		const result = await simplifyRadical(b, literal(D), bound, square);
+		expect(result.s.value.n * result.s.value.n * result.m.value.n).toBe(D);
+		const allowed = [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n, 41n, 43n, 47n]
+			.filter((p) => p * p <= D)
+			.map((p) => p * p);
+		for (const trial of calc.calls.filter((c) => c.op === 'divmod'))
+			expect(allowed).toContain(trial.operands[1]);
+		expect(calc.calls.filter((c) => c.op === 'isqrt')).toHaveLength(1);
+	}
+});
+it('measures whether the preselected trial schedule changes exact completion time', async () => {
+	const before = JSON.parse(
+		readFileSync(new URL('./round5-before-trials.json', import.meta.url), 'utf8')
+	) as Record<string, { source: string; exact: SheetCost; total: SheetCost }[]>;
+	for (const checkMode of ['light', 'strong'] as const)
+		for (const row of before[checkMode]) {
+			const calc = new MeasuredCalc();
+			await run(row.source, calc, { checkMode });
+			expect(calc.beforeApproximation).toEqual(row.exact);
+			expect(calc.total).toEqual(row.total);
+		}
 });
 afterAll(async () => {
 	if (process.env.ORDER_REPORT) await writeReport('./round5.json', reports);

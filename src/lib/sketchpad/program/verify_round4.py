@@ -46,7 +46,7 @@ print('Dependent operations isqrt(8), divmod(8,4), isqrt(2·10^10):', rows, call
 print('Scaled square root alone:', seconds(*parts[-1]))
 print('Both modes: 200/200 corrupted pairs refused (100%).')
 
-notes = (root / 'NOTES.md').read_text().split('## Earlier rounds (historical)', 1)[0]
+notes = (root / 'NOTES.md').read_text().split('Round 4 implements', 1)[1].split('## Earlier rounds (historical)', 1)[0]
 rows = [line for line in notes.splitlines() if line.startswith('| `')]
 assert len(rows) == 6
 for i, measurement in enumerate(report['light']['measurements']):

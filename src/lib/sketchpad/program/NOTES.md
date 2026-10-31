@@ -1,3 +1,81 @@
+Round 5 finalizes the exact radical answer immediately after its Vieta check; a separate `approximation` line runs afterward. **264 tests pass**, including ordering, cubic remainders, symbolic derivations and the existing suites. Strict TypeScript, ESLint, Prettier and **150 reference-cost comparisons** pass. **200/200 corrupted pairs are refused (100%) in each mode.** **$0; RefCalc only.** Committed on `algebra-textbook`; nothing pushed.
+
+**All three exact answers are final within 12 modeled seconds.** Approximation remains on by default; use `{ approximate: false }` to skip its arithmetic and line. Explicit precision requests retain their prior behavior.
+
+Costs are identical in light and strong modes. Calls are after waves; seconds are `0.037 × rows + 0.065 × calls`.
+
+| Work order          | Exact rows/calls | Exact result s | Total rows/calls | With approximation s |
+| ------------------- | ---------------: | -------------: | ---------------: | -------------------: |
+| `solve x^2-2=0`     |            86/65 |          7.407 |          216/162 |               18.522 |
+| `solve 2x^2+3x-1=0` |           144/88 |         11.048 |          340/192 |               25.060 |
+| `solve x^2-6x+4=0`  |           133/96 |         11.161 |          275/199 |               23.110 |
+
+The small-discriminant trial filter changes exact-result time by **0.000 s on all three**. The previous loop already stopped at the same integer-square-root bound. The existing trial cap of 50 is retained. Total time rises slightly from Round 4 because approximation no longer shares a wave with the exact check; the exact answer is available earlier.
+
+The three derivations now read:
+
+`solve x^2-2=0`
+
+```text
+x² − 2 = 0
+0² − 4·1·(−2) = 8
+√8 = √(4·2) = 2·√2
+x = (± 2√2)/2 = ± √2
+x₁+x₂ = 0,   x₁x₂ = 0² − 2 = −2  ✓
+x = ± √2
+x ≈ ± 1.4142
+```
+
+`solve 2x^2+3x-1=0`
+
+```text
+2x² + 3x − 1 = 0
+3² − 4·2·(−1) = 17
+x = (−3 ± √17)/4
+x₁+x₂ = −3/2,   x₁x₂ = ((−3)² − 17)/16 = −1/2  ✓
+x = (−3 ± √17)/4
+x ≈ −1.7808, 0.2808
+```
+
+`solve x^2-6x+4=0`
+
+```text
+x² − 6x + 4 = 0
+(−6)² − 4·1·4 = 20
+√20 = √(4·5) = 2·√5
+x = (6 ± 2√5)/2 = 3 ± √5
+x₁+x₂ = 6,   x₁x₂ = 3² − 5 = 4  ✓
+x = 3 ± √5
+x ≈ 0.7639, 5.2361
+```
+
+## Round 5 ordering and measurements
+
+The Vieta check now completes before the `result` line is constructed. Optional approximation work is queued until the statement's entire exact procedure has finished, so cubic factoring also completes its factorization result before the approximation square root starts. The last line of a successful default irrational derivation is `kind: 'approximation'` with `x ≈ …`; the preceding exact result has `x = …` and no decimal. The existing one-string statement summary retains its combined answer for compatibility.
+
+Each derivation line now has `readyAfterCall`, a global trace index after every operation needed to establish the line has finished. This includes checking operations whose output digits are not printed on that line. `calls` continues to mean the calls supplying displayed numbers. The ordering tests verify both boundaries: the result's last displayed-number call precedes the approximation's first, and all verification work finishes before the scaled square root starts. The exact prefix also equals the complete trace from `{ approximate: false }`.
+
+The benchmark records RefCalc's accumulated row/call totals immediately before the approximation square root. It independently runs with approximation disabled and checks that the entire prefix and cost match. It does not estimate readiness from the last printed number. `run` still returns a completed work order; its ordered derivation and readiness indices describe the earlier exact-answer boundary. A failed optional display leaves the already checked exact result intact and records `AlgebraResult.approximationError`.
+
+`RunOptions.approximate` defaults to true and controls the default textbook irrational display, including quadratic remainders. `{ approximate: false }` emits no approximation line and performs none of its arithmetic. An explicit `solve x^2-2=0 to 6 places` request still selects the certified bracket path, even with the optional default display disabled. The existing parser's precision limits, rational behavior and legacy evaluation mode are unchanged.
+
+For D<10000, trial primes are preselected by p≤isqrt(D), using the already computed bound; their squares and divisions remain Calc operations. This selects the same candidates the old bounded loop visited. No extra integer square root is introduced. The retained cap means only primes at most 50 are tried, as in Round 4. The before/after trial comparison uses the new exact-first ordering on both sides, so a scheduling change is not mislabeled as a trial-division saving.
+
+## Reproduce round 5
+
+```sh
+ORDER_REPORT=1 RADICAL_REPORT=1 nice -n 19 pnpm vitest run src/lib/sketchpad/program
+pnpm exec tsc --ignoreConfig --noEmit --target es2022 --module esnext --moduleResolution bundler --skipLibCheck --strict --types node src/lib/sketchpad/program/*.ts
+pnpm exec eslint src/lib/sketchpad/program
+pnpm exec prettier --check src/lib/sketchpad/program
+python3 src/lib/sketchpad/program/verify_round5.py
+python3 src/lib/sketchpad/program/verify_costs.py
+```
+
+`round5.json` contains exact-prefix and total costs, readiness boundaries and the displayed lines. `round5-radicals.json` records the repeated corrupted-pair population. `round5-before-trials.json` is the frozen measurement taken after changing the order but before preselecting small-D trial primes; do not regenerate it when auditing a later trial change. Earlier reports remain frozen. Only files under `src/lib/sketchpad/program/` changed this round.
+
+## Round 4 record (historical)
+
 Round 4 implements reduced exact radicals, exact pair checks, rounded decimal displays and explicit six-place brackets. **The under-12-second requirement is not met.** The correctness and regression suites pass **247 tests**, with strict TypeScript, ESLint, Prettier and **150 reference-cost comparisons** passing. **$0; RefCalc only.** Committed on `algebra-textbook`; nothing pushed.
 
 The new population refuses **200/200 corrupted radical pairs (100%) in each check mode**, with no misses. It perturbs one proposed pair parameter; this does not measure arbitrary corruption of the verification arithmetic itself.

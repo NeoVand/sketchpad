@@ -59,7 +59,10 @@ export async function simplifyRadical(
 		s = literal(1n);
 	const limit = bound;
 	let extractedSquare: Quantity | undefined;
-	for (const k of primes) {
+	// Preselect the small-D schedule using the integer square root already computed.
+	// The prior loop stopped at this same bound: this removes no Calc calls on those inputs.
+	const trials = D.value.n < 10000n ? primes.filter((p) => BigInt(p) <= limit.value.n) : primes;
+	for (const k of trials) {
 		if (BigInt(k) > limit.value.n) break;
 		const trial = literal(BigInt(k)),
 			square = BigInt(k) === bound.value.n && boundSquare ? boundSquare : await b.mul(trial, trial);
