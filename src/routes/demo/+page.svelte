@@ -80,6 +80,7 @@
 		'solve 7x+13=2026-4x',
 		'solve 2x+3y=7, x-y=1',
 		'solve x^2-x-6=0',
+		'solve x^2-2=0',
 		'solve (2x-3)(x+5)=x^2+1-16',
 		'123456 * 654321'
 	];
@@ -93,6 +94,12 @@
 	let order = $state(FEATURED[0]);
 	/** where the line the algebra's arithmetic feeds sits (Derivation reports it; DigitWork follows it) */
 	let activeTop = $state<number | null>(null);
+	/**
+	 * the moment a run's exact answer was final (Derivation reports it): the run reads as answered from then on, while
+	 * a decimal display (the ≈ line) may still be worked out after it
+	 */
+	let answered = $state<{ run: number; seconds: number; more: boolean } | null>(null);
+	const answeredNow = $derived(answered && answered.run === pad.runs ? answered : null);
 	const MODES = ['light', 'strong'] as const;
 	/** the cost model's seconds for each preset, in each check mode (the reference arithmetic counts the steps) */
 	let modelled = $state<Record<string, number>>({});
@@ -362,6 +369,18 @@
 	<div class="sp-foot status num" aria-live="polite" {@attach ratchet(pad.runs)}>
 		{#if calcOff}
 			<p>&nbsp;</p>
+		{:else if pad.running && part === 'algebra' && answeredNow}
+			<p class="verdict live">
+				<strong class="ok">Answered</strong>
+				in {duration(answeredNow.seconds)}{answeredNow.more
+					? '; the decimal display follows.'
+					: '.'}
+			</p>
+			<p class="live">
+				<span>{fmt(pad.ticks)} {pad.ticks === 1 ? 'view' : 'views'}</span><span
+					>{(pad.computeMs / Math.max(1, pad.ticks)).toFixed(0)} ms a view</span
+				><span>{progress}</span>
+			</p>
 		{:else if pad.running}
 			<p class="verdict live">
 				<span>{fmt(pad.ticks)} {pad.ticks === 1 ? 'view' : 'views'}</span><span
@@ -386,7 +405,8 @@
 						>.{:else}Every line matches the page’s own arithmetic.{/if}{/if}
 			</p>
 			<p>
-				<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span><span
+				<span>{fmt(r.ticks)} views in {fmt(r.steps)} steps, {duration(r.seconds)}</span
+				>{#if answeredNow?.more}<span>answered in {duration(answeredNow.seconds)}</span>{/if}<span
 					>{#if r.certified}every view it read is certified{:else if r.unchecked === 0}every view it
 						read passed{:else}{r.unchecked} unchecked {r.unchecked === 1
 							? 'view'
@@ -774,6 +794,7 @@
 				liveVersion={pad.liveVersion}
 				running={pad.running}
 				onactive={(top) => (activeTop = top)}
+				onanswered={(more) => (answered = { run: pad.runs, seconds: pad.wallMs / 1000, more })}
 				foot={status}
 				run={pad.runs}
 			/>

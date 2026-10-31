@@ -31,13 +31,19 @@
 		running: boolean;
 		/** told where the line the arithmetic under way feeds sits, from the top of this panel's body (null: none) */
 		onactive?: (top: number | null) => void;
+		/**
+		 * told once a run, the moment its exact answer is final (every result line's numbers are in), and whether lines
+		 * still follow it (a decimal display, worked out after the answer)
+		 */
+		onanswered?: (more: boolean) => void;
 		/** the panel's foot: the verdict and the facts behind it (the page's status lines) */
 		foot?: Snippet;
 		/** the run under way: within a run the derivation only grows (ratchet.ts) */
 		run: number;
 	}
 
-	let { plan, final, live, liveVersion, running, onactive, foot, run }: Props = $props();
+	let { plan, final, live, liveVersion, running, onactive, onanswered, foot, run }: Props =
+		$props();
 
 	onMount(loadMathFonts);
 
@@ -103,6 +109,17 @@
 	/** a runtime message as a sentence: its first letter raised, no full stop of its own */
 	const sentence = (m: string) => (m.charAt(0).toUpperCase() + m.slice(1)).replace(/\.$/, '');
 	const isActive = (i: number) => !!state && running && state.active === i;
+
+	/** the run whose answer has been reported */
+	let told = -1;
+	$effect(() => {
+		const s = state;
+		if (!s || s.diverged || !running || told === run) return;
+		const last = lines.findLastIndex((l) => l.kind === 'result');
+		if (last < 0 || lines.some((l, i) => l.kind === 'result' && !s.complete[i])) return;
+		told = run;
+		onanswered?.(last < lines.length - 1);
+	});
 	const label = (l: ViewLine) => l.kind;
 </script>
 
