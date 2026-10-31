@@ -1,0 +1,17 @@
+{
+  "note": "Measured on the M4 (WebGPU) on 31 Oct 2026 by the demo agent, sketchpad commit 7f82207: every algebra preset, textbook path, light and strong checks; seconds per work order. Relayed to the figure agent by the orchestrator.",
+  "path": "textbook",
+  "rows": [
+    {"source": "solve 3(x-2)+5=2x+14", "light": 2.8, "strong": 4.0},
+    {"source": "solve 7x+13=2026-4x", "light": 6.3, "strong": 6.2},
+    {"source": "solve 2x+3y=7,x-y=1", "light": 5.5, "strong": 5.6},
+    {"source": "solve x^2-x-6=0", "light": 10.4, "strong": 10.5},
+    {"source": "solve (2x-3)(x+5)=x^2+1-16", "light": 5.3, "strong": 7.2},
+    {"source": "123456 * 654321", "light": 5.0, "strong": 5.0},
+    {"source": "solve 2x+3y-z=1, x-y+2z=3, 3x+y+z=8", "light": 21.5, "strong": 21.8},
+    {"source": "factor x^3-6x^2+11x-6", "light": 16.0, "strong": 22.9},
+    {"source": "expand (x+2)^5", "light": 9.5, "strong": 24.8},
+    {"source": "expand (2x-3)^4", "light": 10.4, "strong": 26.6},
+    {"source": "expand (x+1)^10", "light": 17.1, "strong": 56.8}
+  ]
+}

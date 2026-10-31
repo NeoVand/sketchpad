@@ -34,3 +34,9 @@ vite.config.ts.timestamp-*
 
 # Unpublished programs for local checks (models.ts: VITE_LOCAL_PROGRAM); never committed
 /static/sketchpad/models/
+
+# figure inspiration images (design references only, never in the paper)
+/paper/figures/inspiration/
+# LaTeX build outputs
+/paper/tex/*.aux
+/paper/tex/*.log

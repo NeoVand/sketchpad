@@ -1,0 +1,46 @@
+{
+ "job": "sketchpad_e7",
+ "torch": "2.14.0+cu130",
+ "gpu": "NVIDIA H100 80GB HBM3",
+ "rows": 2446,
+ "flash_linear_attention": true,
+ "adapter": "mohsenvand/sketchpad-0.8b-preview@2df871728a9d24d1e102a327d1f1475457c53962/arithmetic/adapter",
+ "adapter_sha256": "453ae61334e0f6269802c2be29781f7d349c5cee67ced80f47ebc766b7800217",
+ "volume_e7_adapter_sha256": "453ae61334e0f6269802c2be29781f7d349c5cee67ced80f47ebc766b7800217",
+ "base_sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696",
+ "certificate": {
+  "certified": 2446,
+  "rows": 2446,
+  "by_op": {
+   "SUM": 242,
+   "MUL": 1100,
+   "ADD": 220,
+   "ADZ": 220,
+   "FLS": 2,
+   "NXT": 11,
+   "SUB": 242,
+   "EST": 400,
+   "DEC": 9
+  },
+  "min_margin": {
+   "SUM": 3.9598,
+   "MUL": 6.3888,
+   "ADD": 9.3699,
+   "ADZ": 8.4071,
+   "FLS": 12.9311,
+   "NXT": 10.4792,
+   "SUB": 8.3613,
+   "EST": 4.5097,
+   "DEC": 10.0035
+  },
+  "fails": [],
+  "seconds": 71.9
+ },
+ "run": {
+  "batched_forwards": 1001,
+  "views": 64700,
+  "max_batch": 220,
+  "seconds": 200.1,
+  "total_seconds": 296.7
+ }
+}

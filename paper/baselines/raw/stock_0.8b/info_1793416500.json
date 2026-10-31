@@ -1,0 +1,38 @@
+{
+ "model_key": "0.8b",
+ "model": "Qwen/Qwen3.5-0.8B",
+ "path": "/psk/model",
+ "load_seconds": 87.9,
+ "max_model_len": 36864,
+ "gpu_memory_utilization": 0.9,
+ "max_num_seqs": 256,
+ "num_gpu_blocks": 10953,
+ "block_size": 544,
+ "kv_cache_dtype": "auto",
+ "dtype": "torch.bfloat16",
+ "quantization": "None",
+ "vllm_log": [],
+ "job": "stock_0.8b",
+ "vllm": "0.31.0",
+ "modes": {
+  "thinking": {
+   "enable_thinking": true,
+   "temperature": 0.6,
+   "top_p": 0.95,
+   "top_k": 20,
+   "max_tokens": 32768
+  },
+  "nothink": {
+   "enable_thinking": false,
+   "temperature": 0.7,
+   "top_p": 0.8,
+   "top_k": 20,
+   "max_tokens": 4096
+  }
+ },
+ "seed": 20261031,
+ "resumed_with": 0,
+ "rendered_prompt_thinking": "<|im_start|>user\nWhat is 2313236434 + 2613410972? Give the exact integer. Put the final answer in \\boxed{}.<|im_end|>\n<|im_start|>assistant\n<think>\n",
+ "rendered_prompt_nothink": "<|im_start|>user\nWhat is 2313236434 + 2613410972? Give the exact integer. Put the final answer in \\boxed{}.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+ "longest_prompt_plus_cap": 34797
+}

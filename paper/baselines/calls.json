@@ -1,0 +1,58 @@
+{
+ "sketchpad_e7": {
+  "call_id": "fc-01M67Z775HZRTPTGGWVH92DN4B",
+  "args": [
+   "sketchpad",
+   "sketchpad_e7"
+  ],
+  "spawned": "2026-10-30 22:14:29 CDT"
+ },
+ "stock_0.8b": {
+  "call_id": "fc-01M67Z77V5PHQ15E87Q9DRXBPF",
+  "args": [
+   "stock",
+   "stock_0.8b",
+   "0.8b",
+   "thinking,nothink",
+   "5400"
+  ],
+  "spawned": "2026-10-30 22:14:30 CDT"
+ },
+ "download_Qwen3.5-27B-FP8": {
+  "call_id": "fc-01M67Z78FPAX46YYN0KWH8BW36",
+  "args": [
+   "download",
+   "Qwen/Qwen3.5-27B-FP8",
+   "97f5941bf617e31c5e237364a8602ce3f03a551a"
+  ],
+  "spawned": "2026-10-30 22:14:31 CDT"
+ },
+ "download_Qwen3.5-27B": {
+  "call_id": "fc-01M67Z795JQJKZ3BS3XC12XYMM",
+  "args": [
+   "download",
+   "Qwen/Qwen3.5-27B",
+   "fc05daec18b0a78c049392ed2e771dde82bdf654"
+  ],
+  "spawned": "2026-10-30 22:14:31 CDT"
+ },
+ "probe_27b_2217": {
+  "call_id": "fc-01M67ZDJQWQ90KXNX945MPNEF8",
+  "args": [
+   "probe",
+   "27b"
+  ],
+  "spawned": "2026-10-30 22:17:58 CDT"
+ },
+ "stock_27b_fp8": {
+  "call_id": "fc-01M67ZQAPZ6K0AN9AGR0JJ0YW6",
+  "args": [
+   "stock",
+   "stock_27b_fp8",
+   "27b-fp8",
+   "thinking",
+   "9000"
+  ],
+  "spawned": "2026-10-30 22:23:17 CDT"
+ }
+}
