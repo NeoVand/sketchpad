@@ -84,6 +84,8 @@ export type ToWorker =
 	| { type: 'chat'; rid: number; question: string; maxNew: number; gate: 0 | 1 }
 	/** the result lines of the sheet block a reply stopped at; the reply goes on from them */
 	| { type: 'chat-continue'; rid: number; result: string }
+	/** the visitor stopped a reply's sheet block: the reply ends there */
+	| { type: 'chat-stop'; rid: number }
 	| { type: 'cancel'; rid: number }
 	/** how a tick's states come back: only the places it reads (gpu), or the whole output (cpu; the dev page compares) */
 	| { type: 'states-via'; via: 'gpu' | 'cpu' }

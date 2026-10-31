@@ -131,7 +131,7 @@
 		>
 	</figcaption>
 	<div class="sp-body deriv-body" {@attach ratchet(run)}>
-		<div class="deriv" {@attach tone}>
+		<div class="deriv" {@attach tone} {@attach ratchet(run)}>
 			{#each lines as l, i (l.key)}
 				{#if visible(i)}
 					<div

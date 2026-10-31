@@ -106,6 +106,8 @@
 		'Solve 7x − 45 = 3x + 1,203 for x.',
 		'Why is the sky blue? Answer in one sentence.'
 	];
+	/** a chat block the cost model expects to take longer than this (seconds) shows its estimate and a Stop */
+	const LONG_BLOCK = 30;
 	/** a new question lets the chat's column go once (ratchet.ts), as a new run does */
 	const chatRun = $derived(pad.asks);
 	/** where the line the algebra's arithmetic feeds sits (Derivation reports it; DigitWork follows it) */
@@ -386,6 +388,17 @@
 	<div class="sp-foot status num" aria-live="polite" {@attach ratchet(pad.runs)}>
 		{#if calcOff}
 			<p>&nbsp;</p>
+		{:else if pad.running && part === 'chat' && (pad.algebraEstimate ?? 0) > LONG_BLOCK}
+			<!-- a block the cost model says is long: its estimate (no number of the answer), and a way out -->
+			<p class="verdict live">
+				<span>A long block: about {duration(pad.algebraEstimate ?? 0)} by the cost model</span
+				><button class="stop" onclick={() => pad.stop()}>Stop</button>
+			</p>
+			<p class="live">
+				<span>{fmt(pad.ticks)} {pad.ticks === 1 ? 'view' : 'views'}</span><span
+					>{(pad.computeMs / Math.max(1, pad.ticks)).toFixed(0)} ms a view</span
+				><span>{progress}</span>
+			</p>
 		{:else if pad.running && (part === 'algebra' || part === 'chat') && answeredNow}
 			<p class="verdict live">
 				<strong class="ok">Answered</strong>
@@ -1261,6 +1274,19 @@
 	}
 	.status span + span::before {
 		content: ' · ';
+	}
+	/* the Stop of a long chat block: a quiet word beside its estimate */
+	.status .stop {
+		margin-left: 12px;
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--color-ink);
+		font: inherit;
+		font-weight: 500;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		cursor: pointer;
 	}
 	/* the answer: a size up from the facts under it */
 	.verdict {

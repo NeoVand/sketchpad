@@ -1310,6 +1310,13 @@ self.onmessage = async (ev: MessageEvent<ToWorker>) => {
 		else if (m.type === 'tick-batch') await tickBatch(m);
 		else if (m.type === 'chat') await chat(m);
 		else if (m.type === 'chat-continue') await chatContinue(m);
+		else if (m.type === 'chat-stop') {
+			const r = reply;
+			if (r && r.rid === m.rid) {
+				reply = null;
+				post({ type: 'done', rid: m.rid, ms: performance.now() - r.t0 });
+			}
+		}
 	} catch (e) {
 		// a job that failed because the device went is not a failure: the page redoes it in a new worker
 		if (!(e instanceof Cancelled) && (await lost(e))) {

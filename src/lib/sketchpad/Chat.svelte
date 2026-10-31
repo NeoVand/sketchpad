@@ -102,8 +102,8 @@
 					{#if p.kind === 'sheet'}
 						<pre class="block" aria-label="A sheet block the model wrote">{p.text}</pre>
 						{@const b = t.blocks[p.block ?? 0]}
-						{#if !p.open && b && b.result === null}
-							<p class="working">on the sheet…</p>
+						{#if !p.open && b && (b.result === null || b.result === 'stopped')}
+							<p class="working">{b.result === null ? 'on the sheet…' : 'stopped on the sheet'}</p>
 						{/if}
 					{:else if p.kind === 'result'}
 						<pre class="result num" aria-label="The sheet's result">{p.text}</pre>

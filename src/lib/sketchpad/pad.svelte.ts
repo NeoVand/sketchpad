@@ -36,6 +36,7 @@ import {
 	type Calc,
 	type CalcCall,
 	run as runWorkOrder,
+	type RunOptions,
 	type CheckMode,
 	type StatementResult
 } from './program/index.ts';
@@ -1627,14 +1628,26 @@ class Pad {
 	 * every digit of that arithmetic is the model's, on the calculator's sheets. The lines are checked against the same
 	 * work order on the page's own arithmetic. The work order, the procedure and the layout are not certified.
 	 */
-	async runAlgebra(text: string): Promise<AlgebraRun | null> {
+	/**
+	 * the cost model's seconds for the work order under way, from the plan (its rows and calls only): the chat shows it,
+	 * with a Stop, when a block will take long
+	 */
+	algebraEstimate = $state<number | null>(null);
+
+	/** Run a work order on the sheet; `options` are the runtime's (the chat's blocks: `defaultPlaces`). */
+	async runAlgebra(
+		text: string,
+		options: Pick<RunOptions, 'defaultPlaces'> = {}
+	): Promise<AlgebraRun | null> {
 		if (this.running || this.op !== 'calc') return null;
 		const source = text.trim();
 		if (!source || !this.certified) return null;
 		const checkMode = this.checkMode;
 		let reference: Awaited<ReturnType<typeof runWorkOrder>>;
+		const ref = new RefCalc();
 		try {
-			reference = await runWorkOrder(source, new RefCalc(), { checkMode });
+			reference = await runWorkOrder(source, ref, { checkMode, ...options });
+			this.algebraEstimate = ref.total.seconds;
 		} catch (e) {
 			// a work order the parser cannot read never reaches the sheet
 			this.clearRun();
@@ -1675,7 +1688,7 @@ class Pad {
 			import.meta.env?.DEV ? this.lie : null
 		);
 		try {
-			const r = await runWorkOrder(source, watched, { checkMode });
+			const r = await runWorkOrder(source, watched, { checkMode, ...options });
 			const want = reference.lines;
 			this.algebra = {
 				text: source,
@@ -1784,12 +1797,20 @@ class Pad {
 		live.blocks = [...live.blocks, block];
 		const entry = live.blocks[live.blocks.length - 1];
 		const t0 = performance.now();
-		const r = await this.runAlgebra(source).catch(() => null);
+		// a fraction and four places unless the block asks for more (run.ts, defaultPlaces): seconds, not minutes
+		const r = await this.runAlgebra(source, { defaultPlaces: 4 }).catch(() => null);
+		entry.seconds = (performance.now() - t0) / 1000;
+		// a stop ends the run (the runtime writes the stop as the statement's error line) and the reply with it
+		if (this.stopRun) {
+			// stopped on the sheet: the reply ends there
+			entry.result = 'stopped';
+			this.send({ type: 'chat-stop', rid });
+			return;
+		}
 		const result = r
 			? r.lines.join('\n')
-			: `= error: ${this.runError && this.runError !== 'stopped' ? this.runError : 'the sheet could not run this'}`;
+			: `= error: ${this.runError ?? 'the sheet could not run this'}`;
 		entry.result = result;
-		entry.seconds = (performance.now() - t0) / 1000;
 		live.a += `\n${result}\n`;
 		this.send({ type: 'chat-continue', rid, result });
 	}

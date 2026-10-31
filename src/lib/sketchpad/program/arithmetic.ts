@@ -23,9 +23,16 @@ export const ten = (places: number): bigint => BigInt('1' + '0'.repeat(places));
 export const integer = (n: bigint): Rational => ({ n, d: 1n });
 export type CheckMode = 'light' | 'strong';
 export interface EvaluationOptions {
+	/** every ÷ and √ cut at this many places (a statement's `to k places`) */
 	places?: number;
 	exact?: boolean;
 	positive?: boolean;
+	/**
+	 * with no `places`: keep ÷ exact (a fraction, never cut) and cut an irrational √ at `cut` places; without this, ÷
+	 * and √ are cut at 12 places, as Calculate and Algebra show them
+	 */
+	rational?: boolean;
+	cut?: number;
 }
 export class Arithmetic {
 	constructor(
@@ -181,7 +188,12 @@ export class Arithmetic {
 				const child = build(e.value);
 				return register(key, [child], async () => {
 					const v = value(child);
-					if (e.op === 'sqrt') return this.sqrt(v, options.places, options.exact);
+					if (e.op === 'sqrt')
+						return this.sqrt(
+							v,
+							options.places ?? (options.rational ? options.cut : undefined),
+							options.exact
+						);
 					return e.op === '-' && !options.positive ? { ...v, n: flip(v.n) } : v;
 				});
 			}
@@ -206,7 +218,7 @@ export class Arithmetic {
 				if (e.op === '-') return this.add(a, b, !options.positive);
 				if (e.op === '*') return this.mul(a, b);
 				const q = await this.div(a, b);
-				if (options.exact) return q;
+				if (options.exact || (options.rational && options.places === undefined)) return q;
 				const cut = await this.quantize(q, options.places ?? 12);
 				return options.places !== undefined || cut.approximate ? cut : q;
 			});

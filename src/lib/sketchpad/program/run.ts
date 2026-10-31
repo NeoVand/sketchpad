@@ -29,6 +29,13 @@ export interface RunOptions {
 	places?: 6;
 	/** Compute the optional decimal display after the exact radical answer (default true). */
 	approximate?: boolean;
+	/**
+	 * Places for a statement that asks for none, in place of the 12 every ÷ and √ is otherwise cut at: ÷ then stays
+	 * exact, a result whose decimal ends within these places is that decimal (`= 12.5`), and any other is its exact
+	 * fraction with the decimal cut here (`= 2375/12 (≈ 197.9166…)`); an irrational √ is cut here. The chat's sheet blocks run with 4, so a block like
+	 * `2375 ÷ 12` costs seconds, not minutes; a statement's own `to k places` keeps k.
+	 */
+	defaultPlaces?: number;
 }
 export async function run(
 	source: string | WorkOrder,
@@ -57,8 +64,13 @@ export async function run(
 			let value: Rational | undefined, algebra: AlgebraResult | undefined, text: string;
 			if (statement.kind === 'expression' || statement.kind === 'assign') {
 				b.line('given', (r) => r(statement.value), { given: statement.value });
+				const fallback = statement.places === undefined ? options.defaultPlaces : undefined;
 				const computed = await b.compute((a) =>
-					a.evaluate(statement.value, env, { places: statement.places })
+					a.evaluate(statement.value, env, {
+						places: statement.places,
+						rational: fallback !== undefined,
+						cut: fallback
+					})
 				);
 				value = computed.value;
 				if (!value.approximate) b.identity('result', statement.value, b.expr(computed));
@@ -69,7 +81,16 @@ export async function run(
 						{ approximation: { expression: statement.value, value, places: statement.places } },
 						'Decimal arithmetic uses the requested per-operation precision'
 					);
-				text = await a.decimal(value, statement.places ?? 12, statement.places !== undefined);
+				if (fallback === undefined)
+					text = await a.decimal(value, statement.places ?? 12, statement.places !== undefined);
+				else {
+					// a decimal that ends within the places is the answer; one that does not keeps its exact fraction
+					const shown = await a.decimal(value, fallback);
+					text =
+						shown.endsWith('…') && value.d !== 1n && !value.approximate
+							? `${value.n}/${value.d} (≈ ${shown})`
+							: shown;
+				}
 				if (statement.kind === 'assign') {
 					env.set(statement.name, value);
 					known.set(statement.name, computed);
