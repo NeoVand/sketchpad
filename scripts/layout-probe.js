@@ -9,8 +9,9 @@
  *
  * How it measures: a ResizeObserver on every element of the band and below logs a height that shrinks; once a frame,
  * every element's top on the page (getBoundingClientRect().top + scrollY, transforms included) is compared with the
- * frame before, and a top that went up is logged. A run is seen starting when the page's Run button turns into Stop:
- * the layout may then let go once, so the probe takes its baseline two frames later. Drawings (the insides of an SVG
+ * frame before, and a top that went up is logged. A run is seen starting when the page's `data-run` changes (a run on
+ * the sheet, or a question to the chat): the layout may then let go once, so the probe takes its baseline two frames
+ * later. Drawings (the insides of an SVG
  * or a canvas) are not layout and are skipped.
  */
 (() => {
@@ -85,10 +86,16 @@
 		root.querySelectorAll?.('*').forEach(watch);
 	};
 
-	/** the Run button has turned into Stop */
-	const running = () =>
-		[...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Stop');
-	let wasRunning = false;
+	/**
+	 * a run (or a chat question) has started: the page's `data-run` changed, or, on a page without it, the Run button
+	 * has turned into Stop
+	 */
+	const runKey = () =>
+		document.querySelector('[data-run]')?.getAttribute('data-run') ??
+		([...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Stop')
+			? `stop ${probe.run + 1}`
+			: `idle ${probe.run}`);
+	let lastKey = null;
 	const baseline = () => {
 		tops.clear();
 		for (const el of heights.keys()) {
@@ -103,16 +110,22 @@
 	const start = () => {
 		new MutationObserver((ms) => {
 			for (const m of ms) for (const n of m.addedNodes) if (n.nodeType === 1) scan(n);
-			const now = running();
-			if (now && !wasRunning) {
+			const key = runKey();
+			if (lastKey !== null && key !== lastKey && !key.startsWith('idle')) {
 				// a new run: the layout may let go once; the baseline is what it shows two frames later
 				probe.on = false;
 				probe.run++;
 				scan(document.body);
 				requestAnimationFrame(() => requestAnimationFrame(baseline));
 			}
-			wasRunning = now;
-		}).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+			lastKey = key;
+		}).observe(document.documentElement, {
+			childList: true,
+			subtree: true,
+			characterData: true,
+			attributes: true,
+			attributeFilter: ['data-run']
+		});
 		scan(document.body);
 
 		const frame = () => {

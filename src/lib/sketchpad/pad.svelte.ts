@@ -20,7 +20,10 @@ import {
 	FILE_CACHE,
 	KINDS,
 	MODELS,
+	HF_CERT_ROOT,
+	HF_ROOT,
 	certFiles,
+	fileUrl,
 	kindOf,
 	modelFiles,
 	servedPath,
@@ -413,10 +416,15 @@ export interface AlgebraRun {
 
 export interface ChatTurn {
 	q: string;
+	/** the reply as the model wrote it, with each sheet block's result lines where they went back into it */
 	a: string;
 	busy: boolean;
 	ms: number | null;
 	error: string | null;
+	/** 1: the model that opens its sheet (E8); 0: stock Qwen3.5-0.8B, the same weights with the gate shut */
+	gate: 0 | 1;
+	/** the sheet blocks it opened: the work order, its result lines (null while the sheet works) and the seconds */
+	blocks: { source: string; result: string | null; seconds: number | null }[];
 }
 
 interface Pending {
@@ -653,7 +661,7 @@ class Pad {
 			let ok = true;
 			await Promise.all(
 				modelFiles().map(async (f) => {
-					const url = this.root + servedPath(m, f);
+					const url = fileUrl(m, f, this.root);
 					const n = await this.size(url);
 					if (n === null) ok = false;
 					else if (!(cache && (await cache.match(url)))) cost += n;
@@ -966,7 +974,9 @@ class Pad {
 	private shippedFor(id: string) {
 		let p = this.shipped.get(id);
 		if (!p) {
-			p = fetch(`${this.root}${id}/certificate.json`, { cache: 'no-cache' })
+			// the published certificate may sit at a later commit than the program (models.ts)
+			const root = this.root === HF_ROOT ? HF_CERT_ROOT : this.root;
+			p = fetch(`${root}${id}/certificate.json`, { cache: 'no-cache' })
 				.then((r) => (r.ok ? (r.json() as Promise<ShippedCert>) : null))
 				.catch(() => null);
 			this.shipped.set(id, p);
@@ -1719,23 +1729,44 @@ class Pad {
 		}
 	}
 
+	/** the model the chat asks: 1, the one that opens its sheet; 0, stock Qwen3.5-0.8B (the comparison) */
+	chatGate = $state<0 | 1>(1);
+	/** counts the questions asked: a new one lets the chat's layout go once (ratchet.ts) */
+	asks = $state(0);
+
+	/**
+	 * Ask the chat. At gate 1 the reply may open the sheet: when it closes a sheet block, the block runs here as a work
+	 * order on the sheet, exactly as the Algebra tab runs one (every digit by the model, shown live in the sheet panel),
+	 * and its result lines go back into the reply, which goes on from them.
+	 */
 	async ask(question: string) {
 		const q = question.trim();
-		if (!q || !this.chatReady || this.chatBusy) return;
-		const turn: ChatTurn = { q, a: '', busy: true, ms: null, error: null };
+		if (!q || !this.chatReady || this.chatBusy || this.running) return;
+		const turn: ChatTurn = {
+			q,
+			a: '',
+			busy: true,
+			ms: null,
+			error: null,
+			gate: this.chatGate,
+			blocks: []
+		};
+		this.asks++;
 		this.chat = [...this.chat.slice(-2), turn];
 		const live = this.chat[this.chat.length - 1];
 		const rid = ++this.rid;
+		const ask: ToWorker = { type: 'chat', rid, question: q, maxNew: 320, gate: turn.gate };
 		try {
-			const ask: ToWorker = { type: 'chat', rid, question: q, maxNew: 120 };
 			const done = await this.request<{ ms: number }>(
-				{ type: 'chat', rid, question: q, maxNew: 120 },
+				ask,
 				(m) => {
 					if (m.type === 'chat-delta') live.a += m.text;
+					else if (m.type === 'chat-block') void this.sheetBlock(live, rid, m.block);
 				},
 				// after a GPU reset the answer starts again
 				() => {
 					live.a = '';
+					live.blocks = [];
 					return ask;
 				}
 			);
@@ -1745,6 +1776,22 @@ class Pad {
 		} finally {
 			live.busy = false;
 		}
+	}
+
+	/** run a reply's sheet block on the sheet, then hand its result lines back to the reply */
+	private async sheetBlock(live: ChatTurn, rid: number, source: string) {
+		const block = { source, result: null as string | null, seconds: null as number | null };
+		live.blocks = [...live.blocks, block];
+		const entry = live.blocks[live.blocks.length - 1];
+		const t0 = performance.now();
+		const r = await this.runAlgebra(source).catch(() => null);
+		const result = r
+			? r.lines.join('\n')
+			: `= error: ${this.runError && this.runError !== 'stopped' ? this.runError : 'the sheet could not run this'}`;
+		entry.result = result;
+		entry.seconds = (performance.now() - t0) / 1000;
+		live.a += `\n${result}\n`;
+		this.send({ type: 'chat-continue', rid, result });
 	}
 }
 

@@ -80,7 +80,10 @@ export type ToWorker =
 			/** read the states of the first rows only (the page shows one view a step); default every row */
 			insideRows?: number;
 	  }
-	| { type: 'chat'; rid: number; question: string; maxNew: number }
+	/** a chat reply, at gate 1 (the model that opens its sheet) or 0 (stock Qwen3.5-0.8B) */
+	| { type: 'chat'; rid: number; question: string; maxNew: number; gate: 0 | 1 }
+	/** the result lines of the sheet block a reply stopped at; the reply goes on from them */
+	| { type: 'chat-continue'; rid: number; result: string }
 	| { type: 'cancel'; rid: number }
 	/** how a tick's states come back: only the places it reads (gpu), or the whole output (cpu; the dev page compares) */
 	| { type: 'states-via'; via: 'gpu' | 'cpu' }
@@ -138,6 +141,8 @@ export type FromWorker =
 			ms: number;
 	  }
 	| { type: 'chat-delta'; rid: number; text: string }
+	/** a reply closed a sheet block (its `index`-th, from 1): run it, then send `chat-continue` with its result lines */
+	| { type: 'chat-block'; rid: number; block: string; index: number }
 	/** the WebGPU device under the model was lost (driver reset, memory, or destroyed): nothing on it runs again */
 	| { type: 'device-lost'; reason: string; message: string }
 	| { type: 'done'; rid: number; ms: number }

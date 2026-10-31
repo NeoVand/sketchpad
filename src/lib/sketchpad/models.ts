@@ -17,31 +17,42 @@ export const KINDS: Kind[] = ['add', 'mul', 'calc'];
 
 export const BASE_ID = 'base';
 
-/** A program as published: its folder on the Hugging Face repo, the commit it is pinned at, and its tables. */
+/** A program as published: its folder on the Hugging Face repo, the commits it is read at, and what it can do. */
 export interface Program {
 	folder: string;
-	/** a commit of the Hugging Face repo (40 hex digits) */
+	/** the commit the program's own files are read at: its graph, lens, maps and certificate (40 hex digits) */
 	revision: string;
+	/**
+	 * the commit the shared base files are read at (the tokenizer, the vision tower, the decoder's 1.5 GB of weights):
+	 * an older commit where they are byte for byte the same, so a visitor's cached base stays good (the browser caches a
+	 * file by its URL, and the URL names the commit)
+	 */
+	baseRevision?: string;
+	/** the commit holding the program's certificate, when it was published after `revision` */
+	certificateRevision?: string;
 	/** it has learned the calculator's three tables (SUB, EST, DEC: E7 and later); Calculate and Algebra need them */
 	calculator: boolean;
 	/**
-	 * a later commit whose only change is the inside data (`inside.json`, `inside.bin`: the maps of the calculator's
-	 * steps came after the model); the page reads those two files there and every other file at `revision`, where they
-	 * are byte for byte the same, so a visitor's cached model stays good
+	 * it chats and opens its sheet by itself (E8 and later); its graph takes the token ids (`input_ids`: the 16-bit
+	 * embedding lookup is inside the graph, so the text rows of `inputs_embeds` are not read)
 	 */
-	insideRevision?: string;
+	chat?: boolean;
 }
 
 /**
- * The program this page runs, and the commits it is pinned at, in one place; everything else follows from it.
+ * The program this page runs, and the commits it is pinned at, in one place; everything else follows from it. E8
+ * (polyformer research/sketch/chat/CHAT3.md, "E8 shipped") is one model for every tab: at gate 1 it answers every
+ * table row of the sheet machine, Calculate and Algebra, and chats, opening its sheet when a question needs exact
+ * arithmetic; at gate 0 it is stock Qwen3.5-0.8B.
  */
 export const PUBLISHED: Program = {
-	folder: 'arithmetic',
-	// the model, the lens and the certificate
-	revision: '2df871728a9d24d1e102a327d1f1475457c53962',
-	// the six state-space maps (SUM, MUL, ADD, SUB, EST, DEC); its parent is the commit above
-	insideRevision: '97d606b832f60afe60c149216d5d100c02bd1055',
-	calculator: true
+	folder: 'chat',
+	// E8's graph, lens and maps
+	revision: 'fe9d599ad5f4c2717340a45cde56b3bb1b36b99f',
+	// the base, unchanged since E7 (the commit visitors have cached)
+	baseRevision: '2df871728a9d24d1e102a327d1f1475457c53962',
+	calculator: true,
+	chat: true
 };
 
 /**
@@ -52,16 +63,21 @@ const LOCAL = import.meta.env?.DEV
 	? (import.meta.env.VITE_LOCAL_PROGRAM as string | undefined)
 	: undefined;
 export const PROGRAM: Program & { local: boolean } = LOCAL
-	? { folder: LOCAL, revision: 'local', calculator: true, local: true }
+	? { folder: LOCAL, revision: 'local', calculator: true, chat: PUBLISHED.chat, local: true }
 	: { ...PUBLISHED, local: false };
 
 /** The published copy, pinned by commit (the browser caches files by URL, so a new revision never mixes with an old). */
 export const HF_REPO = 'mohsenvand/sketchpad-0.8b-preview';
 export const HF_REVISION = PUBLISHED.revision;
-export const HF_ROOT = `https://huggingface.co/${HF_REPO}/resolve/${HF_REVISION}/`;
-/** where the published program's inside data is read (HF_ROOT when it has not moved on) */
-export const HF_INSIDE_ROOT = `https://huggingface.co/${HF_REPO}/resolve/${PUBLISHED.insideRevision ?? HF_REVISION}/`;
+const at = (rev: string) => `https://huggingface.co/${HF_REPO}/resolve/${rev}/`;
+export const HF_ROOT = at(HF_REVISION);
+/** where the published program's base files are read */
+export const HF_BASE_ROOT = at(PUBLISHED.baseRevision ?? HF_REVISION);
+/** where the published program's certificate is read */
+export const HF_CERT_ROOT = at(PUBLISHED.certificateRevision ?? HF_REVISION);
 export const HF_CARD = `https://huggingface.co/${HF_REPO}`;
+/** the base files' root for a program root: the published base commit for the published program, else the same root */
+export const baseRootFor = (root: string) => (root === HF_ROOT ? HF_BASE_ROOT : root);
 
 /** Files under a pinned revision never change, so their cached copies need no check against the server. */
 export const pinned = (root: string) => /\/resolve\/[0-9a-f]{40}\/$/.test(root);
@@ -194,9 +210,25 @@ export function route(url: string, root: string): string | null {
 	const cut = rest.indexOf('/');
 	if (cut < 0) return null;
 	const id = rest.slice(0, cut);
-	if (id === BASE_ID) return root + rest;
+	if (id === BASE_ID) return baseRootFor(root) + rest;
 	const m = Object.values(MODELS).find((x) => x.id === id);
-	return m ? root + servedPath(m, rest.slice(cut + 1)) : null;
+	return m ? fileUrl(m, rest.slice(cut + 1), root) : null;
+}
+
+/** The URL a program's file is served from: its own folder at the program's commit, or the base at the base's. */
+export const fileUrl = (m: SketchModel, file: string, root: string) => {
+	const path = servedPath(m, file);
+	return (path.startsWith(`${BASE_ID}/`) ? baseRootFor(root) : root) + path;
+};
+
+/** A served URL's path below its commit (`base/…` or `<program>/…`), whichever of the two roots it is under. */
+export function servedName(url: string, root: string) {
+	const base = baseRootFor(root);
+	return url.startsWith(root)
+		? url.slice(root.length)
+		: url.startsWith(base)
+			? url.slice(base.length)
+			: null;
 }
 
 /** The files a certificate depends on: all of them (weights, configs, tokenizer). */

@@ -14,8 +14,9 @@ import { StreamHash, hashBytes } from './hash.ts';
 import {
 	DTYPE,
 	FILE_CACHE,
-	HF_INSIDE_ROOT,
-	HF_ROOT,
+	baseRootFor,
+	fileUrl,
+	servedName,
 	MODELS,
 	kindOf,
 	modelFiles,
@@ -148,7 +149,7 @@ function routedFetch(root: string) {
 		const res = await fetch(url, init);
 		const ranged = new Headers(init?.headers).has('Range');
 		if (res.status !== 200 || ranged || !res.body) return res;
-		const name = url.slice(root.length);
+		const name = servedName(url, root)!;
 		const h = new StreamHash();
 		network[name] = 0;
 		const body = res.body.pipeThrough(
@@ -185,7 +186,7 @@ function fileCache(root: string) {
 			const hit = await (await open()).match(url);
 			if (!hit) return undefined;
 			const print = hit.headers.get(PRINT_HEADER);
-			if (print) prints.set(url.slice(root.length), print);
+			if (print) prints.set(servedName(url, root)!, print);
 			cachedBytes += Number(hit.headers.get('content-length') ?? 0);
 			onBytes();
 			return hit;
@@ -194,7 +195,7 @@ function fileCache(root: string) {
 			const url = route(urlOf(key), root);
 			if (!url) return;
 			const headers = new Headers(response.headers);
-			const print = prints.get(url.slice(root.length));
+			const print = prints.get(servedName(url, root)!);
 			if (print) headers.set(PRINT_HEADER, print);
 			await (await open()).put(url, new Response(response.body, { status: 200, headers }));
 		}
@@ -209,7 +210,7 @@ async function dropStale(m: SketchModel, root: string) {
 	const cache = await caches.open(FILE_CACHE);
 	await Promise.all(
 		modelFiles().map(async (f) => {
-			const url = root + servedPath(m, f);
+			const url = fileUrl(m, f, root);
 			const hit = await cache.match(url);
 			if (!hit) return;
 			const head = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
@@ -230,9 +231,11 @@ async function dropStale(m: SketchModel, root: string) {
  */
 async function dropOtherRevisions(root: string) {
 	const repo = root.replace(/[0-9a-f]{40}\/$/, '');
+	const base = baseRootFor(root);
 	const cache = await caches.open(FILE_CACHE);
 	for (const req of await cache.keys())
-		if (req.url.startsWith(repo) && !req.url.startsWith(root)) await cache.delete(req);
+		if (req.url.startsWith(repo) && !req.url.startsWith(root) && !req.url.startsWith(base))
+			await cache.delete(req);
 }
 
 async function loadSprites(url: string) {
@@ -352,6 +355,9 @@ function statesAt(t: OrtTensor, b: number, pos: number): Float32Array {
 	}
 	return out;
 }
+
+/** the token ids of the embedding session's last call: the next decoder call's (E8's graph reads them) */
+let lastIds: OrtTensor | null = null;
 
 /** per batch row of a slotted call, the `?`s after its slots (padFor) */
 let rowPads: number[] = [];
@@ -496,7 +502,21 @@ function wrapDecoder(m: Model) {
 	const s = sessions?.decoder_model_merged;
 	if (!s || !s.inputNames.includes('steer')) return false;
 	const gated = s.inputNames.includes('lora_gate');
-	const names = s.inputNames.filter((n) => n !== 'steer' && n !== 'lora_gate');
+	// E8's graph looks the text rows up itself from the token ids (16-bit); transformers.js feeds only the embeddings,
+	// so the ids are taken from the embedding session's call just before each decoder call and fed here
+	const byIds = s.inputNames.includes('input_ids');
+	const embed = sessions.embed_tokens;
+	if (byIds) {
+		if (!embed) return false;
+		const runEmbed = embed.run.bind(embed);
+		embed.run = async (feeds, opts) => {
+			lastIds = feeds.input_ids;
+			return runEmbed(feeds, opts);
+		};
+	}
+	const names = s.inputNames.filter(
+		(n) => n !== 'steer' && n !== 'lora_gate' && !(byIds && n === 'input_ids')
+	);
 	const others = s.outputNames.filter((n) => n !== 'hidden_states');
 	Object.defineProperty(s, 'inputNames', { value: names, configurable: true });
 	const run = s.run.bind(s);
@@ -513,6 +533,12 @@ function wrapDecoder(m: Model) {
 		const keep: Record<string, OrtTensor> = keepLogits
 			? { num_logits_to_keep: ort(new tjs!.Tensor('int64', [BigInt(keepLogits)], [])) }
 			: {};
+		if (byIds) {
+			const ids = lastIds;
+			if (!ids || ids.dims[0] !== dims[0] || ids.dims[1] !== dims[1])
+				throw new Error('the token ids do not match this decoder call');
+			keep.input_ids = ids;
+		}
 		// float16 bits: 0x3c00 is 1, 0 is 0
 		if (gated)
 			keep.lora_gate = ort(new tjs!.Tensor('float16', new Uint16Array([gate ? 0x3c00 : 0]), [1]));
@@ -554,11 +580,8 @@ function wrapDecoder(m: Model) {
 
 /** The program's inside data, beside its graph; null when the program has none. */
 async function loadInside(spec: SketchModel, root: string) {
-	// the published program's maps are pinned on their own (models.ts, insideRevision); a local program keeps its folder
-	const insideRoot = root === HF_ROOT ? HF_INSIDE_ROOT : root;
 	const get = async (f: string) => {
-		const at = f.startsWith('inside.') ? insideRoot : root;
-		const r = await fetch(`${at}${spec.id}/${f}`);
+		const r = await fetch(`${root}${spec.id}/${f}`);
 		if (!r.ok) throw new Error(`${f}: ${r.status}`);
 		return r;
 	};
@@ -1050,7 +1073,7 @@ async function uncachedBytes(m: SketchModel, root: string, canCache: boolean) {
 	const cache = canCache ? await caches.open(FILE_CACHE) : null;
 	const sizes = await Promise.all(
 		modelFiles().map(async (f) => {
-			const url = root + servedPath(m, f);
+			const url = fileUrl(m, f, root);
 			if (cache && (await cache.match(url))) return 0;
 			const head = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
 			return Number(head?.headers.get('content-length') ?? 0);
@@ -1062,7 +1085,7 @@ async function uncachedBytes(m: SketchModel, root: string, canCache: boolean) {
 function info(spec: SketchModel, root: string, seconds: number, reused: boolean): LoadedInfo {
 	const files = modelFiles();
 	const transferSize = (performance.getEntriesByType('resource') as PerformanceResourceTiming[])
-		.filter((e) => e.name.startsWith(root))
+		.filter((e) => e.name.startsWith(root) || e.name.startsWith(baseRootFor(root)))
 		.reduce((a, e) => a + e.transferSize, 0);
 	return {
 		id: spec.id,
@@ -1172,37 +1195,107 @@ async function tick(m: Extract<ToWorker, { type: 'tick' }>) {
 	);
 }
 
+/**
+ * A chat reply under way. At gate 1 the model may open its sheet: it writes a ```sheet block (a work order) and
+ * closes it; the reply then stops there, the page runs the block on the sheet (every digit by the model, in ticks),
+ * and the result lines come back as tokens (`\n` + lines + `\n`) for the reply to go on from: the protocol E8 was
+ * trained and evaluated with (polyformer research/sketch/chat/CHAT3.md), at most two blocks a reply, rounds of up
+ * to `maxNew` tokens, greedy. The token ids are kept here between rounds, so the reply goes on from exactly the tokens
+ * it wrote.
+ */
+let reply: {
+	rid: number;
+	ids: bigint[];
+	/** where the reply's own tokens start */
+	start: number;
+	blocks: number;
+	gate: 0 | 1;
+	maxNew: number;
+	t0: number;
+} | null = null;
+const MAX_BLOCKS = 2;
+/** the sheet blocks a reply has closed so far, and what each holds */
+const closedBlocks = (text: string) =>
+	[...text.matchAll(/```sheet[^\n]*\n([\s\S]*?)```/g)].map((m) => m[1].trim());
+
 async function chat(m: Extract<ToWorker, { type: 'chat' }>) {
 	await exclusive(async () => {
-		if (!model || !processor || !tjs) throw new Error('no model is loaded');
-		const t = performance.now();
+		if (!model || !processor || !tjs || !tok) throw new Error('no model is loaded');
 		const text = processor.apply_chat_template(
 			[{ role: 'user', content: [{ type: 'text', text: m.question }] }],
 			{ add_generation_prompt: true, tokenizer_kwargs: { enable_thinking: false } }
 		);
-		const inputs = await processor(text);
-		const streamer = new tjs.TextStreamer(tok as never, {
-			skip_prompt: true,
-			skip_special_tokens: true,
-			callback_function: (s: string) => post({ type: 'chat-delta', rid: m.rid, text: s })
-		});
-		// greedy, with repeated 5-grams blocked: plain greedy restates its answer word for word, and a repetition
-		// penalty (1.1) pushes this small model into inventing facts. Gate 0: the chat is stock Qwen (the adapter hurts
-		// instruction-following until the chat fine-tune, SKETCHPAD3 T4).
-		gate = 0;
-		try {
-			await model.generate({
-				...inputs,
-				do_sample: false,
-				max_new_tokens: m.maxNew,
-				no_repeat_ngram_size: 5,
-				streamer
-			});
-		} finally {
-			gate = 1;
-		}
-		post({ type: 'done', rid: m.rid, ms: performance.now() - t });
+		const ids = tok.encode(text, { add_special_tokens: false }).map((x) => BigInt(x));
+		reply = {
+			rid: m.rid,
+			ids,
+			start: ids.length,
+			blocks: 0,
+			gate: m.gate,
+			maxNew: m.maxNew,
+			t0: performance.now()
+		};
+		await chatRound(m.rid);
 	});
+}
+
+/** the result lines of the block the reply stopped at: append them and go on */
+async function chatContinue(m: Extract<ToWorker, { type: 'chat-continue' }>) {
+	await exclusive(async () => {
+		if (!reply || reply.rid !== m.rid) throw new Error('no reply is waiting for its sheet');
+		const add = tok!.encode(`\n${m.result}\n`, { add_special_tokens: false });
+		reply.ids = [...reply.ids, ...add.map((x) => BigInt(x))];
+		await chatRound(m.rid);
+	});
+}
+
+async function chatRound(rid: number) {
+	const r = reply!;
+	const decode = (ids: (number | bigint)[]) =>
+		tok!.decode(ids.slice(r.start).map(Number), { skip_special_tokens: true });
+	// stop at the fence that closes a new sheet block (while the reply may still open one)
+	class Fence extends tjs!.StoppingCriteria {
+		_call(input_ids: (number | bigint)[][]) {
+			return input_ids.map(
+				(row) => r.blocks < MAX_BLOCKS && closedBlocks(decode(row)).length > r.blocks
+			);
+		}
+	}
+	const streamer = new tjs!.TextStreamer(tok as never, {
+		skip_prompt: true,
+		skip_special_tokens: true,
+		callback_function: (s: string) => post({ type: 'chat-delta', rid, text: s })
+	});
+	const n = r.ids.length;
+	const input_ids = new tjs!.Tensor('int64', BigInt64Array.from(r.ids), [1, n]);
+	const attention_mask = new tjs!.Tensor('int64', new BigInt64Array(n).fill(1n), [1, n]);
+	gate = r.gate;
+	let out: TTensor;
+	try {
+		out = await model!.generate({
+			input_ids,
+			attention_mask,
+			do_sample: false,
+			max_new_tokens: r.maxNew,
+			// stock Qwen at gate 0 restates itself word for word under plain greedy; blocking repeated 5-grams stops that.
+			// E8 (gate 1) is run as it was evaluated, plain greedy: it copies the sheet's result digits, which a 5-gram
+			// block would break.
+			...(r.gate === 0 ? { no_repeat_ngram_size: 5 } : {}),
+			stopping_criteria: [new Fence()],
+			streamer
+		});
+	} finally {
+		gate = 1;
+	}
+	r.ids = Array.from(out.data as ArrayLike<bigint>, (x) => BigInt(x));
+	const blocks = closedBlocks(decode(r.ids));
+	if (r.blocks < MAX_BLOCKS && blocks.length > r.blocks) {
+		r.blocks = blocks.length;
+		post({ type: 'chat-block', rid, block: blocks[blocks.length - 1], index: r.blocks });
+		return;
+	}
+	reply = null;
+	post({ type: 'done', rid, ms: performance.now() - r.t0 });
 }
 
 self.onmessage = async (ev: MessageEvent<ToWorker>) => {
@@ -1216,6 +1309,7 @@ self.onmessage = async (ev: MessageEvent<ToWorker>) => {
 		else if (m.type === 'tick') await tick(m);
 		else if (m.type === 'tick-batch') await tickBatch(m);
 		else if (m.type === 'chat') await chat(m);
+		else if (m.type === 'chat-continue') await chatContinue(m);
 	} catch (e) {
 		// a job that failed because the device went is not a failure: the page redoes it in a new worker
 		if (!(e instanceof Cancelled) && (await lost(e))) {

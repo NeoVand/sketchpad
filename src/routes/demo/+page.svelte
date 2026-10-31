@@ -40,6 +40,8 @@
 	let machineOp = $state<'add' | 'mul'>('add');
 	/** Calculate and Algebra read the calculator's tables, which only some programs have learned (models.ts) */
 	const calcPart = $derived(part === 'calc' || part === 'algebra');
+	/** the parts that work on the calculator's sheet: Calculate, Algebra, and the chat's sheet blocks */
+	const sheetPart = $derived(calcPart || part === 'chat');
 	const calcOff = $derived(calcPart && !HAS_CALC);
 
 	const rnd = (n: number) =>
@@ -92,6 +94,20 @@
 		'expand (x+1)^10'
 	];
 	let order = $state(FEATURED[0]);
+	/**
+	 * questions to try in the chat, worded afresh (none is one of the training or held-out templates): word problems
+	 * with numbers too big to do in one's head, an equation in a sentence, and a plain question that should not open
+	 * the sheet
+	 */
+	const CHAT_EXAMPLES = [
+		'A warehouse packs 4,386 boxes a week with 27 jars in each box. How many jars does it pack in 52 weeks?',
+		'A stadium has 47 sections of 1,186 seats, and 39,862 tickets were sold. How many seats are empty?',
+		'A school buys 348 train tickets at $86.75 each. How much does it pay?',
+		'Solve 7x − 45 = 3x + 1,203 for x.',
+		'Why is the sky blue? Answer in one sentence.'
+	];
+	/** a new question lets the chat's column go once (ratchet.ts), as a new run does */
+	const chatRun = $derived(pad.asks);
 	/** where the line the algebra's arithmetic feeds sits (Derivation reports it; DigitWork follows it) */
 	let activeTop = $state<number | null>(null);
 	/**
@@ -162,11 +178,12 @@
 		// the part shown is in the address, so a link (or a reload) opens it
 		if (write) void goto(`${DEMO}#${p}` as typeof DEMO, { replace: true, shallow: true });
 		if (p === 'machine') await setOp(machineOp);
-		else if ((p === 'calc' || p === 'algebra') && HAS_CALC) {
+		else if ((p === 'calc' || p === 'algebra' || p === 'chat') && HAS_CALC) {
 			await setOp('calc');
 			pad.clearRun();
 			if (p === 'calc') pad.stageCalc(line);
-			else void pad.stageAlgebra(order);
+			else if (p === 'algebra') void pad.stageAlgebra(order);
+			else pad.algebraPlan = null;
 		}
 	}
 
@@ -181,7 +198,7 @@
 	}
 
 	const source = $derived(
-		pad.sheet && !(calcPart && pad.op !== 'calc') ? sourceOf(pad.sheet) : null
+		pad.sheet && !(sheetPart && pad.op !== 'calc') ? sourceOf(pad.sheet) : null
 	);
 	const cert = $derived(pad.cert);
 	const tickMs = $derived(pad.last?.ms ?? 160);
@@ -369,7 +386,7 @@
 	<div class="sp-foot status num" aria-live="polite" {@attach ratchet(pad.runs)}>
 		{#if calcOff}
 			<p>&nbsp;</p>
-		{:else if pad.running && part === 'algebra' && answeredNow}
+		{:else if pad.running && (part === 'algebra' || part === 'chat') && answeredNow}
 			<p class="verdict live">
 				<strong class="ok">Answered</strong>
 				in {duration(answeredNow.seconds)}{answeredNow.more
@@ -395,7 +412,7 @@
 						>{pad.pushes} {pad.pushes === 1 ? 'view' : 'views'} pushed</span
 					>{/if}
 			</p>
-		{:else if part === 'algebra' && pad.algebra}
+		{:else if (part === 'algebra' || part === 'chat') && pad.algebra}
 			{@const r = pad.algebra}
 			{@const refused = r.results.some((x) => x.status === 'refused')}
 			<p class="verdict">
@@ -478,6 +495,15 @@
 					: 'The runtime plans the steps; every number in rose is the model’s.'}
 			</p>
 			<p>an expression, solve … (up to three unknowns), expand …, factor …</p>
+		{:else if part === 'chat' && pad.ready}
+			<p class="verdict">
+				{pad.certifying
+					? 'Checking the three tables it reads on this device first.'
+					: 'The sheet opens when the model writes a sheet block.'}
+			</p>
+			<p>
+				its work order runs here, every digit by the model, and the result goes back into the reply
+			</p>
 		{:else if part === 'machine' && pad.ready && !certBusy}
 			<p class="verdict">
 				{pad.op === 'add'
@@ -518,7 +544,8 @@
 	</span>
 {/snippet}
 
-<main class="demo">
+<!-- data-run changes when a run or a question starts (scripts/layout-probe.js reads it) -->
+<main class="demo" data-run="{pad.runs}.{pad.asks}">
 	<header class="head">
 		<div class="title">
 			<h1>Sketchpad</h1>
@@ -743,46 +770,58 @@
 	{/if}
 
 	{#if part === 'chat'}
-		<!-- chat: the same weights with the adapter's gate at 0, which is stock Qwen3.5-0.8B -->
+		<!-- the chat, and beside its reply the sheet: each block the model writes runs there, every digit by the model -->
 		<div class="band chat-band">
 			<section class="sp-panel ask" aria-label="Chat">
 				<div class="sp-cap">
 					<span class="sp-title">Ask it</span>
 					<span class="sp-sub"
-						>stock Qwen3.5-0.8B: the same weights, with the adapter’s gate at 0</span
+						>{pad.chatGate === 1
+							? 'it opens its sheet when a question needs exact arithmetic'
+							: 'stock Qwen3.5-0.8B: the same weights with the gate at 0'}</span
 					>
 				</div>
-				<div class="sp-body chat-body">
+				<div class="sp-body chat-body" {@attach ratchet(chatRun)}>
 					<Chat
 						turns={pad.chat}
-						ready={pad.chatReady}
-						busy={pad.chatBusy}
+						ready={pad.chatReady && !pad.certifying}
+						busy={pad.chatBusy || pad.running}
+						gate={pad.chatGate}
+						ongate={(g) => (pad.chatGate = g)}
+						examples={CHAT_EXAMPLES}
 						onask={(q) => pad.ask(q)}
 					/>
 				</div>
 				<p class="sp-foot">
-					A gate in the graph switches the adapter off for this chat, so it is stock Qwen3.5-0.8B
-					(thinking off, up to 120 new tokens). With the adapter on, its instruction-following
-					breaks; one model that chats and opens its sheet by itself is next.
+					One model: Qwen3.5-0.8B with one adapter that also reads every view of the sheet’s tables.
+					On 780 held-out questions on this page’s path it opened its sheet for 98.9% of those that
+					needed it and for 0.4% of those that did not, and wrote the right sheet line for 91.7% of
+					word problems, 96.7% of equations and 98.3% of sums typed into prose. “Stock Qwen” shuts
+					the adapter’s gate: the same weights as Qwen3.5-0.8B, bit for bit.
 				</p>
 			</section>
-			<section class="sp-panel side" aria-label="The gate">
-				<div class="sp-cap">
-					<span class="sp-title">One graph, two models</span>
-					<span class="sp-sub">the gate is an input of the decoder</span>
-				</div>
-				<div class="sp-body">
-					<dl class="gate">
-						<dt><i class="dot cobalt"></i>gate 0</dt>
-						<dd>stock Qwen3.5-0.8B, bit for bit: this chat</dd>
-						<dt><i class="dot rose"></i>gate 1</dt>
-						<dd>the adapter on: every tick of the sheet machine, Calculate and Algebra</dd>
-					</dl>
-				</div>
-				<p class="sp-foot">
-					<span class="sp-dim">The inside views below follow the last view the sheet ran.</span>
-				</p>
-			</section>
+			<Derivation
+				plan={pad.algebraPlan}
+				final={pad.algebra}
+				live={pad.algebraLive}
+				liveVersion={pad.liveVersion}
+				running={pad.running}
+				onactive={(top) => (activeTop = top)}
+				onanswered={(more) => (answered = { run: pad.runs, seconds: pad.wallMs / 1000, more })}
+				foot={status}
+				run={pad.runs}
+			/>
+			<DigitWork
+				source={pad.sheet ? sourceOf(pad.sheet) : null}
+				version={pad.version}
+				{tickMs}
+				sprites={SPRITES}
+				last={pad.last}
+				{next}
+				top={activeTop}
+				running={pad.running}
+				run={pad.runs}
+			/>
 		</div>
 	{:else if part === 'algebra'}
 		<!-- algebra: the derivation, and beside the line it feeds, the arithmetic under way -->
@@ -866,7 +905,7 @@
 			seen={pad.last?.inside ?? null}
 			wrote={pad.last ? pad.last.out[0] : null}
 			meta={pad.insideMeta}
-			kind={calcPart ? 'calc' : panelKind}
+			kind={sheetPart ? 'calc' : panelKind}
 			runKey={pad.runs}
 			slow={pad.pace > 0}
 			push={pad.push}
@@ -879,8 +918,8 @@
 			canCheck={pad.ready && !pad.running && !certBusy && !spotBusy}
 			oncheck={() => pad.certify()}
 			walk={pad.walk}
-			also={calcPart
-				? `${part === 'calc' ? 'Calculate' : 'Algebra'} also reads the adder’s 242 views and the multiplier’s 1,553: 2,446 in all, each checked.`
+			also={sheetPart
+				? `${part === 'calc' ? 'Calculate' : part === 'algebra' ? 'Algebra' : 'The chat’s sheet'} also reads the adder’s 242 views and the multiplier’s 1,553: 2,446 in all, each checked.`
 				: ''}
 		/>
 	</div>
@@ -1244,47 +1283,27 @@
 	}
 
 	/* chat: the chat beside a short note on the gate */
+	/*
+	 * the chat: the question and the reply, and beside them the sheet each block runs on and its digit work. Like
+	 * Algebra's band, the digit work never sets the row's height (DigitWork.svelte), and each column only grows within a
+	 * run or a reply.
+	 */
 	.chat-band {
-		grid-template-rows: auto minmax(188px, auto) auto;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) 300px;
+		/* the chat's note is longer than the sheet's two status lines: the last row takes the taller */
+		grid-template-rows: auto auto auto;
+		--work-sheet: 220px;
+		--work-view: 120px;
+		--work-gap: 14px;
+		--work-h: calc(var(--work-sheet) + var(--work-gap) + var(--work-view));
 	}
 	.chat-body {
 		align-content: start;
 		overflow: visible;
 	}
-	.gate {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr);
-		gap: 10px 14px;
-		align-content: start;
-		font-size: var(--text-xs);
-	}
-	.gate dt {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-family: var(--font-mono);
-		color: var(--color-ink);
-		white-space: nowrap;
-	}
-	.gate dd {
-		color: var(--color-ink-soft);
-	}
-	.dot {
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-	}
-	.dot.cobalt {
-		background: var(--color-cobalt);
-	}
-	.dot.rose {
-		background: var(--color-rose);
-	}
-	.chat-band .side {
-		grid-column: 3;
-	}
+	/* the reply's column reaches as low as the sheet beside it, so its note sits on the same line as the sheet's status */
 	.chat-band .ask {
-		grid-column: 1 / 3;
+		grid-row: 1 / span 3;
 	}
 
 	/* the inside of the model: three panels on one grid (panel.css: captions, figures and notes share rows) */
@@ -1334,10 +1353,11 @@
 			grid-template-rows: auto auto 44px;
 		}
 		.chat-band {
-			grid-template-rows: auto minmax(188px, auto) auto auto auto auto;
+			grid-template-columns: minmax(0, 1fr) 260px;
+			grid-template-rows: auto auto auto auto auto 44px;
 		}
-		.chat-band .ask,
-		.chat-band .side {
+		.chat-band .ask {
+			grid-row: 1 / span 3;
 			grid-column: 1 / -1;
 		}
 		.instruments {
@@ -1404,7 +1424,8 @@
 			grid-template-rows: repeat(6, auto);
 		}
 		.chat-band {
-			grid-template-rows: auto minmax(160px, auto) auto auto auto auto;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: repeat(9, auto);
 		}
 		/* each figure keeps its height (the panels set it); an empty one takes only its line */
 		.instruments {
