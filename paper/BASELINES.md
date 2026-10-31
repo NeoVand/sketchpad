@@ -310,3 +310,18 @@ rate for DeepSeek, so the recorded usage is an upper bound on what Ollama meters
    cost first, until the total projects under $55; the cut is recorded here before the run. If even that does not fit,
    stop and write it in `QUESTIONS.md`.
 3. The runner refuses new Ollama requests once the recorded Ollama usage passes $55.
+
+### Open-tier pilot and projection (31 Oct 2026): over the stop, not run further
+
+| model | + 1,000 (id 80): output tokens, usage | × 20 (id 200): output tokens, usage | projection, 220 | projection, 110 |
+|---|---|---|---|---|
+| `gpt-oss:120b` | 32,768 (cap), $0.020 | 32,768 (cap), $0.020 | $4.34 | $2.17 |
+| `deepseek-v4-pro:0813` | 32,768 (cap), $0.131 | 6,043, $0.024 | $15.95 | $7.97 |
+| `kimi-k3` | 32,768 (cap), $0.494 | 7,283, $0.110 | $62.57 | $31.29 |
+| `glm-5.3` | 32,768 (cap), $0.146 | 32,768 (cap), $0.144 | $31.90 | $15.95 |
+| `gemma4:31b` | 32,768 (cap), $0.013 | 19,494, $0.008 | $2.28 | $1.14 |
+| **all five** | | | **$117.04** | **$58.52** |
+
+By the registered rule the cut to 10 per length does not bring the five under $55 either ($58.52), so the open tier
+stops after its pilot (usage $1.10), and the decision goes to `QUESTIONS.md` 15. Seven of the ten pilot replies ran
+to the 32,768-token cap.

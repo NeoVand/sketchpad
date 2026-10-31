@@ -86,3 +86,19 @@ From the paper's writer, 31 Oct 2026. Each item says what the draft does today, 
       the open tier" and needs keys Neo does not have here.
     - **Report the comparison with five models** (three frontier, two Qwen) until one of the above lands. The text
       and Extended Data Table 5 are written that way today, with the open tier marked as registered and not run.
+
+15. **The open tier's pilot projects over the $55 stop.** Ollama's own rates (ollama.com/pricing), the registered
+    upper-bound rule (every sum costed like the 1,000-digit pilot, every product like the 20-digit one): **$117** for
+    the five at 20 per length, **$58.5** at 10 per length. Pilot usage so far $1.10; nothing else has run. Seven of the
+    ten pilot replies hit the 32,768-token cap, so the hard cells will cost the cap and mostly fail. Kimi K3 is the
+    expensive one ($15 per million output tokens: $62.6 of the $117). Options:
+    - **Run with the running-usage stop only.** The projection is an upper bound: short problems use a few hundred
+      tokens (GPT-6.1 Sol: 73 tokens at + 10 against 12,752 at + 1,000), and the frontier models' actual spend was
+      22–45% of theirs. Expected about $30–50 for all five at 20 per length; the runner stops at $55, which could leave
+      Kimi K3's longest cells unfinished. Breaks the registered projection rule.
+    - **Four open models at 20 per length, Kimi K3 at 10.** Projects $54.5 + $31.3 = $85.8 as an upper bound; same
+      caveat. Or **without Kimi K3**: the other four project $54.5, inside $55 even as an upper bound; breaks "ten
+      models" (nine).
+    - **DeepSeek at its off-peak rate** (today is a Saturday, off-peak all day): all five at 10 per length then
+      project $54.5. Breaks the conservative peak-rate assumption, and leaves the open tier at 10 per length.
+    - **More Ollama credit** beyond the Pro plan's $60, so the registered rule passes as is.
