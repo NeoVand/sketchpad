@@ -1,6 +1,7 @@
 #!/bin/sh
 # Builds every figure: static/figures/figN.svg (web, light, scales to its column) and paper/figures/out/figN.pdf
-# (vector, 180 mm). One job at a time, at low priority.
+# (vector, 180 mm). One job at a time, at low priority. The Figure 1 candidates fig1_v2a and fig1_v2b are built only on
+# request: python paper/figures/fig1_v2.py a|b.
 #
 #   sh paper/figures/build.sh            (from the repository root)
 #
@@ -37,4 +38,3 @@ for n in 1 2 3 4 5 6; do
 	(cd paper/figures && nice -n 19 "$PY" "fig$n.py" 2>&1 | grep -E "^wrote|Error|error" || true)
 done
 (cd paper/figures && nice -n 19 "$PY" ed1.py 2>&1 | grep -E "^wrote|Error|error" || true)
-(cd paper/figures && for v in a b; do nice -n 19 "$PY" fig1_v2.py "$v" 2>&1 | grep -E "^wrote|Error|error" || true; done)

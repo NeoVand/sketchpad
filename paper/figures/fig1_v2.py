@@ -26,7 +26,12 @@ from matplotlib.path import Path
 from common import (CELL, COBALT, DATA, GREY, INK, MIST, ROSE, ROSE_L, SOFT, TINT, VIOLET, assert_clean, canvas, check,
                     cmap_exact, figure, hex_rgb, load, save, setup, sprites, GLYPHS)
 
-VARIANT = sys.argv[1] if len(sys.argv) > 1 else "a"
+VARIANT = sys.argv[1] if len(sys.argv) > 1 else "final"
+check(VARIANT in ("a", "b", "final"), "a known variant")
+# the final figure (Neo, 31 Oct): v2b's mechanism on top, v2a's guarantee in the middle, the benchmark below
+ROW1 = "film" if VARIANT == "a" else "loop"
+ROW2 = "spectrum" if VARIANT == "b" else "mosaic"
+LETTERS = {"a": ("a", "b", "c", "d"), "b": ("a", None, "b", "c"), "final": ("a", None, "b", "c")}[VARIANT]
 setup()
 S = load("sheets.json")
 M = S["mul"]
@@ -248,7 +253,7 @@ for t in TICKS:
     for (r, c) in just_of(t):
         check(H[t]["sheet"]["wrote"][r][c] == 1, f"step {t + 1}: the rose digits were written by the model")
 Y1 = 7.0
-if VARIANT == "a":
+if ROW1 == "film":
     cs = 2.75
     check(digit_pt(cs) <= 9.0, f"sheet digits {digit_pt(cs):.1f} pt")
     fx0, fgap = 14.5, 2.2
@@ -287,7 +292,7 @@ else:
     check(digit_pt(cs) <= 9.0, f"sheet digits {digit_pt(cs):.1f} pt")
     t3 = TICKS[-1]
     fw = (C1 - C0) * cs
-    fx0, fy0 = 14.5, Y1 + 3.0
+    fx0, fy0 = 16.0, Y1 + 3.0
     T(fx0 - 0.9, Y1 - 2.4, f"{int(M['a']):,} × {int(M['b']):,}: one step of 56", L, INK)
     gb = draw_frame(H[t3]["sheet"], fx0, fy0, cs, window=window_of(t3), just=just_of(t3), labels=True)
     T(fx0 + fw / 2, fy0 + gb["H"] + 3.2, f"before step {t3 + 1}: the window reads 8, 1, 0", SM, INK, ha="center")
@@ -371,10 +376,10 @@ else:
     T(rx0, ry + 8.8, "the whole product: 56 steps, one forward pass each, four passes of the multiplier's digits;"
       "  M multiply   A add   Z add the last carry   F flush   N next digit", SM, SOFT)
     T(rx0, ry + 12.5, "Between steps the model keeps nothing: the sheet is its only memory.", L, INK)
-    ROW1_END = ry + 14.5
-letter(fig, 1.0, 2.0, "a")
-if VARIANT == "a":
-    letter(fig, 104.0, 2.0, "b")
+    ROW1_END = ry + 12.5 + 1.44   # the last line's bottom
+letter(fig, 1.0, (Y1 - 2.4 if ROW1 == "loop" else Y1 - 3.0) - 3.0, LETTERS[0])
+if LETTERS[1]:
+    letter(fig, 104.0, 2.0, LETTERS[1])
 
 # =====================================================================================================================
 # row 2: the guarantee
@@ -393,10 +398,10 @@ wi = int(add_m.argmin())
 check(abs(add_m.min() - 3.016) < 1e-9 and wi == 73, "the weakest view: SUM row 73, margin 3.016")
 check(S["weak"]["cells"] == [" ", "5", "6"] and S["weak"]["answer"] == ["b"], "SUM [ ,5,6] writes b (1, carry 1)")
 Y2 = ROW1_END + 7.0
-letter(fig, 1.0, Y2 - 3.0, "c")
+letter(fig, 1.0, Y2 - 3.0, LETTERS[2])
 T(16.0 - 0.9, Y2, "the guarantee: every view the runs can read, checked once", L, INK)
 
-if VARIANT == "a":
+if ROW2 == "mosaic":
     cell = 0.6
     mx0, my0 = 16.0, Y2 + 5.0
     blocks = {
@@ -465,7 +470,7 @@ cv.imshow(np.repeat(np.asarray(S["weak"]["strip"], float)[..., None] / 255.0, 3,
           extent=(cx, cx + sw, sy0 + sh, sy0), interpolation="nearest", zorder=3, resample=False)
 for k in range(3):
     cv.add_patch(Rectangle((cx, sy0 + k * sh / 3), sw, sh / 3, fc="none", ec=MIST, lw=0.4, zorder=4))
-if VARIANT == "a":
+if ROW2 == "mosaic":
     cv.add_patch(Rectangle((wx - 0.2, wy - 0.2), cell + 0.4, cell + 0.4, fc="none", ec=INK, lw=0.55, zorder=6))
     yl = MOS_BOTTOM + 2.0
     cv.plot([wx + cell / 2, wx + cell / 2, cx - 2.0, cx - 0.4], [wy + cell + 0.2, yl, yl, sy0 + sh / 2], color=INK,
@@ -491,13 +496,13 @@ T(16.0 - 0.9, Y2b, r"exact on all 2,446 views  $\Rightarrow$  exact on every run
   L, INK)
 T(16.0 - 0.9, Y2b + 3.6, "2,446 of 2,446 pass on the M4 (WebGPU, fp16); every new GPU checks the weakest tenth "
   "again before it runs", SM, SOFT)
-ROW2_END = Y2b + 5.0
+ROW2_END = Y2b + 3.6 + 1.23     # the last line's bottom
 
 # =====================================================================================================================
 # row 3: the result
 # =====================================================================================================================
 Y3 = ROW2_END + 7.0
-letter(fig, 1.0, Y3 - 3.0, "d")
+letter(fig, 1.0, Y3 - 3.0, LETTERS[3])
 by_name = {s_["name"]: s_ for s_ in BL["systems"]}
 for s_ in BL["systems"]:
     sh_ = s_["shown"]
@@ -576,4 +581,4 @@ cv.set_ylim(Hf, 0)
 print(f"figure height {Hf} mm")
 
 assert_clean(fig, allow=())
-save(fig, f"fig1_v2{VARIANT}")
+save(fig, "fig1" if VARIANT == "final" else f"fig1_v2{VARIANT}")
