@@ -29,7 +29,7 @@ RATES = {
     "gemma4:31b": (0.14, 0.40),
 }
 OFF_PEAK = {"deepseek-v4-pro:0813": (0.66, 1.98)}  # outside 12:00-18:00 UTC on weekdays, all weekend
-BUDGET = 55.0  # USD of Ollama usage (BASELINES.md): no new request past it
+BUDGET = 95.0  # USD of Ollama usage (BASELINES.md, Neo: $100 in all): no new request past it
 
 _client = None
 _lock = threading.Lock()  # one client for all threads

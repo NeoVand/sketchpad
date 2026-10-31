@@ -127,7 +127,7 @@ if __name__ == "__main__":
         ids = {p["id"] for p in problems() if p["k"] < per}
     for f in RAW.glob("*.jsonl"):  # spend already on record counts toward its group's stop
         spent_total[group(f.stem)] += sum(json.loads(x).get("cost") or 0 for x in f.read_text().splitlines() if x.strip())
-    print(f"spent so far: API ${spent_total['api']:.2f} (stop ${STOP_AT:.0f}), Ollama ${spent_total['ollama']:.2f} (stop $55)", flush=True)
+    print(f"spent so far: API ${spent_total['api']:.2f} (stop ${STOP_AT:.0f}), Ollama ${spent_total['ollama']:.2f} (stop $95)", flush=True)
     with cf.ThreadPoolExecutor(len(keys)) as ex:
         list(ex.map(lambda k: run(k, ids), keys))
     cost()

@@ -374,3 +374,5 @@ includes the $60 credit, so the run adds no spending.
 - **Concurrency:** 8 requests per model (Pro plan), backoff on 429 and 5xx as before. The stop refuses new requests once
   recorded usage passes $55; up to 8 requests already in flight may finish past it, and their usage is recorded.
 - **If the stop fires:** the problems not run are listed here, by model and id, and they are not scored.
+
+**Budget (31 Oct 2026, Neo):** "let's say 100 bucks total"; the open tier's budget is $100 in all, no projection rule applies, and the single running stop is $95 of recorded Ollama usage (Neo's dashboard showed $3.80 when this was written).
