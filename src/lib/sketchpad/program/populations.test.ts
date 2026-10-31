@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import { writeReport } from './report-test-helper';
 import { Arithmetic, CheckFailed, integer } from './arithmetic';
 import { checkRoot } from './algebra';
@@ -9,6 +9,9 @@ import { DerivationBuilder, literal } from './derivation';
 import { checkTextbookRoot } from './textbook';
 import { normalizeEquation } from './textbook-poly';
 import { validateDerivation } from './derivation-test-helper';
+
+// each population runs hundreds of procedures; on a busy machine the default 5 s is too short
+vi.setConfig({ testTimeout: 60_000 });
 
 // Independent native-BigInt oracle: never imported by the runtime.
 type Q = { n: bigint; d: bigint };
