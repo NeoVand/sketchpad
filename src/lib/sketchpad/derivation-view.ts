@@ -65,23 +65,26 @@ export const fill = (tex: string, shown: ReadonlySet<string> | 'all') =>
 				shown.has(id) ? m : `\\htmlId{${id}}{${SLOT}}`
 			);
 
+let mathFonts: Promise<void> | null = null;
 /**
  * The KaTeX faces a derivation uses, loaded before any line needs them: a face that arrives in the middle of a run
  * (the check mark's, the larger brackets') changes the metrics of the lines already drawn, and they shift by a pixel.
+ * Resolves when every face is in (or failed); a recording that draws a derivation waits for it before it plays.
  */
-export function loadMathFonts() {
-	if (typeof document === 'undefined' || !document.fonts) return;
-	for (const face of [
-		'16px KaTeX_Main',
-		'italic 16px KaTeX_Main',
-		'italic 16px KaTeX_Math',
-		'16px KaTeX_AMS',
-		'16px KaTeX_Size1',
-		'16px KaTeX_Size2',
-		'16px KaTeX_Size3',
-		'16px KaTeX_Size4'
-	])
-		void document.fonts.load(face).catch(() => {});
+export function loadMathFonts(): Promise<void> {
+	if (typeof document === 'undefined' || !document.fonts) return Promise.resolve();
+	return (mathFonts ??= Promise.all(
+		[
+			'16px KaTeX_Main',
+			'italic 16px KaTeX_Main',
+			'italic 16px KaTeX_Math',
+			'16px KaTeX_AMS',
+			'16px KaTeX_Size1',
+			'16px KaTeX_Size2',
+			'16px KaTeX_Size3',
+			'16px KaTeX_Size4'
+		].map((face) => document.fonts.load(face).catch(() => []))
+	).then(() => {}));
 }
 
 /** a line's TeX without its number ids, for comparing what two lines show */

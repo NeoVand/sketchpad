@@ -14,6 +14,7 @@
 	import StateSpace from '#lib/sketchpad/StateSpace.svelte';
 	import Derivation from '#lib/sketchpad/Derivation.svelte';
 	import { ratchet } from '#lib/sketchpad/ratchet.ts';
+	import { loadMathFonts } from '#lib/sketchpad/derivation-view.ts';
 	import DigitWork from '#lib/sketchpad/DigitWork.svelte';
 	import '#lib/sketchpad/panel.css';
 	import {
@@ -200,6 +201,9 @@
 	async function play(p: Part, pace: number) {
 		const rec = await recordingFor(p);
 		if (part === p) unrecorded = !rec;
+		// a derivation's faces are in before its lines are drawn: one arriving mid-run would shift them (3 s at most)
+		if (rec && (p === 'algebra' || p === 'chat'))
+			await Promise.race([loadMathFonts(), new Promise((r) => setTimeout(r, 3000))]);
 		if (!rec || part !== p || pad.chatBusy || pad.loading) return;
 		if (pad.running) await pad.halt();
 		const i = rec.input;

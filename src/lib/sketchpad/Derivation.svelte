@@ -57,7 +57,7 @@
 		hint = 'Type a problem: an expression, solve …, expand … or factor ….'
 	}: Props = $props();
 
-	onMount(loadMathFonts);
+	onMount(() => void loadMathFonts());
 
 	const done = $derived(!!final && !running && !!plan && final.text === plan.text);
 	const results = $derived(done ? final!.results : (plan?.results ?? []));
