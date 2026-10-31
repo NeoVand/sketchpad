@@ -476,6 +476,8 @@ class Pad {
 	/** bumps whenever the sheet changes */
 	version = $state(0);
 	running = $state(false);
+	/** counts the runs started: a new run lets the page's layout go once (ratchet.ts), and only then */
+	runs = $state(0);
 	last = $state.raw<TickView | null>(null);
 	ticks = $state(0);
 	computeMs = $state(0);
@@ -1366,6 +1368,7 @@ class Pad {
 		let finish = () => {};
 		this.runDone = new Promise((r) => (finish = r));
 		this.running = true;
+		this.runs++;
 		this.stopRun = false;
 		const t0 = performance.now();
 		// every table row this run reads, and whether each passed on this device
@@ -1462,6 +1465,7 @@ class Pad {
 		this.stageToken++;
 		this.preview = null;
 		this.running = true;
+		this.runs++;
 		this.stopRun = false;
 		this.result = null;
 		this.calcResult = null;

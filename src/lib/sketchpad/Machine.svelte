@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { ratchet } from './ratchet.ts';
 	import { SUM_CODES } from './inside.ts';
 	import { explain, type TickView } from './pad.svelte.ts';
 	import { B } from './sprites.ts';
@@ -6,9 +7,11 @@
 	interface Props {
 		last: TickView | null;
 		kind: 'add' | 'mul';
+		/** the run under way: within a run the note only grows (ratchet.ts) */
+		run: number;
 	}
 
-	let { last, kind }: Props = $props();
+	let { last, kind, run }: Props = $props();
 
 	/** the adder: the carry on the sheet is the machine's state; each view the model reads is one arrow */
 	const add = $derived.by(() => {
@@ -241,7 +244,7 @@
 			</svg>
 		{/if}
 	</div>
-	<p class="sp-foot num">
+	<p class="sp-foot num" {@attach ratchet(run)}>
 		{#if kind === 'add'}{addWords ||
 				'Each view the model reads is one arrow; the carry on the sheet is the state.'}{:else}{mulWords ||
 				'Each view is one arrow: its third token, the letter, names the next step.'}{/if}

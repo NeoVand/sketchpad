@@ -1,5 +1,6 @@
+import { renderToString } from 'katex';
 import { describe, expect, it } from 'vitest';
-import { callKey, layout, reveal, type Live } from './derivation-view';
+import { callKey, fill, layout, reveal, type Live } from './derivation-view';
 import { RefCalc, run } from './program/index';
 
 /** replay a planned run's calls in order, as the model would make them, and look at the reveal after each */
@@ -48,5 +49,28 @@ describe('the live reveal', () => {
 		const state = reveal(lines, plan.trace, live);
 		expect(state.diverged).toBe(true);
 		expect(state.visible.filter((v, i) => v && lines[i].kind !== 'given')).toEqual([]);
+	});
+});
+
+describe('the page before the model', () => {
+	it('shows no computed number until the model has returned it', async () => {
+		const plan = await run('factor x^3-6x^2+11x-6', new RefCalc(), { checkMode: 'light' });
+		const lines = layout(plan.results);
+		const ids = /\\htmlId\{([^}]*)\}\{([^}]*)\}/g;
+		for (const l of lines) {
+			const cells = 'whole' in l.cells ? [l.cells.whole] : [l.cells.lhs, l.cells.rhs];
+			for (const tex of [...cells, l.note ?? ''].map((c) => fill(c, new Set()))) {
+				// every computed number is an empty slot: typeset, it has no text at all
+				for (const [, , body] of tex.matchAll(ids))
+					expect(
+						renderToString(body, { strict: 'ignore', output: 'html' }).replace(/<[^>]*>/g, '')
+					).toBe('');
+			}
+		}
+		// and once shown, the number is there
+		const n = lines.flatMap((l) => l.numbers)[0];
+		const line = lines.find((l) => l.numbers.includes(n))!;
+		const tex = 'whole' in line.cells ? line.cells.whole : `${line.cells.lhs}=${line.cells.rhs}`;
+		expect(fill(tex, new Set([n.id]))).toContain(`\\htmlId{${n.id}}{`);
 	});
 });

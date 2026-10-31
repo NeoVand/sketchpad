@@ -52,6 +52,38 @@ export function splitEquals(s: string): [string, string] | null {
 	return null;
 }
 
+/**
+ * A line's TeX as the page may show it now: each computed number the model has returned, and in place of each one it
+ * has not, an empty slot one digit wide. A number the model has not computed never reaches the page, not even hidden.
+ */
+/** an empty slot one digit wide (a digit is half an em): a space, with no digit of any kind */
+export const SLOT = '\\kern0.5em';
+export const fill = (tex: string, shown: ReadonlySet<string> | 'all') =>
+	shown === 'all'
+		? tex
+		: tex.replace(/\\htmlId\{([^}]*)\}\{([^}]*)\}/g, (m, id: string) =>
+				shown.has(id) ? m : `\\htmlId{${id}}{${SLOT}}`
+			);
+
+/**
+ * The KaTeX faces a derivation uses, loaded before any line needs them: a face that arrives in the middle of a run
+ * (the check mark's, the larger brackets') changes the metrics of the lines already drawn, and they shift by a pixel.
+ */
+export function loadMathFonts() {
+	if (typeof document === 'undefined' || !document.fonts) return;
+	for (const face of [
+		'16px KaTeX_Main',
+		'italic 16px KaTeX_Main',
+		'italic 16px KaTeX_Math',
+		'16px KaTeX_AMS',
+		'16px KaTeX_Size1',
+		'16px KaTeX_Size2',
+		'16px KaTeX_Size3',
+		'16px KaTeX_Size4'
+	])
+		void document.fonts.load(face).catch(() => {});
+}
+
 /** a line's TeX without its number ids, for comparing what two lines show */
 export const plain = (s: string) =>
 	s
@@ -59,13 +91,16 @@ export const plain = (s: string) =>
 		.replace(/\s+/g, '')
 		.replace(/\\quad\\checkmark$/, '');
 
+/** a note in words (a reason), not TeX arithmetic */
+export const wordy = (note: string) =>
+	/[A-Za-z]{3,}/.test(note.replace(/\\htmlId\{[^}]*\}\{[^}]*\}/g, '').replace(/\\[a-zA-Z]+/g, ''));
+
 /**
  * A note is TeX arithmetic, typeset; or a sentence, set as text, whose computed numbers keep their ids (so they show
  * in rose like the line's own).
  */
 export function setNote(el: HTMLElement, note: string) {
-	const words = note.replace(/\\htmlId\{[^}]*\}\{[^}]*\}/g, '').replace(/\\[a-zA-Z]+/g, '');
-	if (!/[A-Za-z]{3,}/.test(words)) return typeset(el, note);
+	if (!wordy(note)) return typeset(el, note);
 	// a minus before a number is a minus sign
 	const text = (t: string) =>
 		document.createTextNode(t.replace(/(^|[\s(=])-(?=\d)/g, '$1−').replace(/'/g, '’'));

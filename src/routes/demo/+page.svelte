@@ -13,6 +13,7 @@
 	import Procedure from '#lib/sketchpad/Procedure.svelte';
 	import StateSpace from '#lib/sketchpad/StateSpace.svelte';
 	import Derivation from '#lib/sketchpad/Derivation.svelte';
+	import { ratchet } from '#lib/sketchpad/ratchet.ts';
 	import DigitWork from '#lib/sketchpad/DigitWork.svelte';
 	import '#lib/sketchpad/panel.css';
 	import { HAS_CALC, HF_CARD, HF_ROOT, MODELS, PROGRAM, type Kind } from '#lib/sketchpad/models.ts';
@@ -241,9 +242,8 @@
 	});
 
 	/** the panels that draw one tick follow the step the calculator is taking (the adder's or a three-answer step) */
-	const panelKind = $derived<'add' | 'mul'>(
-		pad.op === 'calc' ? (pad.last?.op === 'ADD-FAST' ? 'add' : 'mul') : pad.op
-	);
+	/** the inside panels' layout: one for the whole run (the calculator's steps would switch it from view to view) */
+	const panelKind = $derived<'add' | 'mul'>(pad.op === 'calc' ? 'mul' : pad.op);
 
 	/** a calculator line or work order asked for while the tables are being checked starts when the check passes */
 	async function calc(text: string, algebra = false) {
@@ -359,16 +359,16 @@
 
 {#snippet status()}
 	<!-- two fixed lines: the answer, then the facts behind it -->
-	<div class="sp-foot status num" aria-live="polite">
+	<div class="sp-foot status num" aria-live="polite" {@attach ratchet(pad.runs)}>
 		{#if calcOff}
 			<p>&nbsp;</p>
 		{:else if pad.running}
-			<p class="verdict">
+			<p class="verdict live">
 				<span>{fmt(pad.ticks)} {pad.ticks === 1 ? 'view' : 'views'}</span><span
 					>{(pad.computeMs / Math.max(1, pad.ticks)).toFixed(0)} ms a view</span
 				><span>{progress}</span>
 			</p>
-			<p>
+			<p class="live">
 				{#if pad.recovering}<span>the GPU was reset: loading the model again</span
 					>{/if}{#if pad.sheet && !(pad.sheet instanceof Grid) && pad.sheet.edits}<span
 						>{pad.sheet.edits} {pad.sheet.edits === 1 ? 'digit' : 'digits'} changed</span
@@ -775,6 +775,7 @@
 				running={pad.running}
 				onactive={(top) => (activeTop = top)}
 				foot={status}
+				run={pad.runs}
 			/>
 			<DigitWork
 				source={pad.sheet ? sourceOf(pad.sheet) : null}
@@ -785,6 +786,7 @@
 				{next}
 				top={activeTop}
 				running={pad.running}
+				run={pad.runs}
 			/>
 		</div>
 	{:else}
@@ -799,8 +801,18 @@
 							: 'the model’s only memory; each procedure works on its own sheet'}</span
 					>
 				</figcaption>
-				<div class="sp-body sheet-body">
-					<Sheet {source} version={pad.version} {tickMs} sprites={SPRITES} onedit={edit} compact />
+				<!-- a new sheet (each procedure has its own) is a new drawing; the body keeps the run's tallest -->
+				<div class="sp-body sheet-body" {@attach ratchet(pad.runs)}>
+					{#key source}
+						<Sheet
+							{source}
+							version={pad.version}
+							{tickMs}
+							sprites={SPRITES}
+							onedit={edit}
+							compact
+						/>
+					{/key}
 				</div>
 				{@render status()}
 			</figure>
@@ -812,9 +824,10 @@
 					last={pad.last}
 					preview={pad.preview}
 					{line}
+					run={pad.runs}
 				/>
 			{:else}
-				<Machine last={pad.last} kind={panelKind} />
+				<Machine last={pad.last} kind={panelKind} run={pad.runs} />
 			{/if}
 		</div>
 	{/if}
@@ -1153,12 +1166,18 @@
 		margin-top: 22px;
 	}
 	/*
-	 * algebra: the derivation as tall as its lines (laid out whole when a run starts, so nothing moves while it fills
-	 * in), and the digit work beside it
+	 * algebra: the derivation, which only grows during a run, and beside it the digit work, which never sets the row's
+	 * height (DigitWork.svelte): its block has one size and sits out of the flow, and the derivation keeps that size as
+	 * its least height
 	 */
 	.band.algebra {
 		grid-template-columns: minmax(0, 1fr) 300px;
 		grid-template-rows: auto auto 44px;
+		/* the digit work's one size: the tallest sheet any operation draws (a product's ten rows), and the view */
+		--work-sheet: 220px;
+		--work-view: 120px;
+		--work-gap: 14px;
+		--work-h: calc(var(--work-sheet) + var(--work-gap) + var(--work-view));
 	}
 	/* the calculator's sheets have up to ten rows: a taller (still fixed) sheet row */
 	.band.tall {
@@ -1335,6 +1354,10 @@
 		}
 		.status p {
 			white-space: normal;
+		}
+		/* the counts under way stay on one line each, so the status does not change height as they tick */
+		.status p.live {
+			white-space: nowrap;
 		}
 		.toggles {
 			margin-left: 0;

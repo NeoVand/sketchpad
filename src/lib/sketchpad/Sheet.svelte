@@ -49,14 +49,16 @@
 		const w = Math.max(0, ...s.rows.map((r) => measurer!.measureText(r.label).width));
 		return Math.max(LABEL_ROOM, Math.ceil(w) + 20);
 	}
-	const inline = $derived(compact && !!metrics);
+	/** a compact sheet is laid out inline from the start, so its first layout already has its final width */
+	const inline = $derived(compact);
 	let drag: { x: number; id: number } | null = null;
 
 	onMount(() => {
 		const v = new SheetView(canvas);
 		v.compact = compact;
 		v.small = small;
-		v.reserve = compact ? LABEL_ROOM : 0;
+		// the room its labels need from the start, so the first layout is the one that stays
+		v.reserve = compact ? labelRoom(source) : 0;
 		v.onMetrics = (m) => (metrics = m);
 		v.onWindow = (from, to) => {
 			if (Math.abs(from - win.from) > 1e-4 || Math.abs(to - win.to) > 1e-4) win = { from, to };

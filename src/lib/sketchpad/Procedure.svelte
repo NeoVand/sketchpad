@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { ratchet } from './ratchet.ts';
 	import { AddSheet, addDecode } from './adder.ts';
 	import { Grid, type Phase, type View } from './calc-sheet.ts';
 	import { parseTask } from './calc-task.ts';
@@ -19,9 +20,11 @@
 		preview: View | null;
 		/** the line typed, for the procedure before its sheet exists, and for gcd and signs */
 		line: string;
+		/** the run under way: within a run the panel's parts only grow (ratchet.ts) */
+		run: number;
 	}
 
-	let { sheet, version, last, preview, line }: Props = $props();
+	let { sheet, version, last, preview, line, run }: Props = $props();
 
 	type Proc = 'add' | 'sub' | 'mul' | 'div' | 'root' | 'times';
 	interface Step {
@@ -230,11 +233,11 @@
 <figure class="sp-panel procedure">
 	<figcaption class="sp-cap">
 		<span class="sp-title">The procedure</span>
-		<span class="sp-sub">{title}</span>
+		<span class="sp-sub" {@attach ratchet(run)}>{title}</span>
 	</figcaption>
 	<div class="sp-body">
 		{#if proc}
-			<ol class="steps">
+			<ol class="steps" {@attach ratchet(run)}>
 				{#each PROCS[proc].steps as s, i (s.text)}
 					<li class:on={i === active}>
 						<span class="mark num" aria-hidden="true">{i === active ? '' : i + 1}</span>
@@ -246,12 +249,16 @@
 		{/if}
 	</div>
 	<p class="sp-foot">
-		{outer || (proc ? PROCS[proc].note : '')}
+		<span class="what" {@attach ratchet(run)}>{outer || (proc ? PROCS[proc].note : '')}</span>
 		<span class="sp-dim key">Right: the word the model reads before the view at each step.</span>
 	</p>
 </figure>
 
 <style>
+	/* what the procedure is doing: as tall as the run's longest note, so the key under it stays put */
+	.what {
+		display: block;
+	}
 	.steps {
 		display: grid;
 		align-content: start;

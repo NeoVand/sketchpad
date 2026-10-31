@@ -1,13 +1,26 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import { layout, reveal, setNote, typeset, type Live, type ViewLine } from './derivation-view.ts';
+	import { onMount, type Snippet } from 'svelte';
+	import {
+		fill,
+		layout,
+		loadMathFonts,
+		reveal,
+		setNote,
+		typeset,
+		wordy,
+		type Live,
+		type ViewLine
+	} from './derivation-view.ts';
 	import type { AlgebraPlan, AlgebraRun } from './pad.svelte.ts';
+	import { ratchet } from './ratchet.ts';
 
 	/**
 	 * The Algebra tab's sheet: the work order as worked algebra, one step a line, equals signs in one column and the
 	 * reason for each step in a quiet margin. While the model works, lines appear as their arithmetic starts and each
-	 * number it computes appears in rose when its call returns (derivation-view.ts); numbers typed in the problem stay
-	 * ink. When the run ends the page shows the model's own derivation.
+	 * number it computes appears in rose when its call returns (derivation-view.ts); until then its place is an empty
+	 * slot one digit wide, so no number reaches the page before the model has computed it. Numbers typed in the
+	 * problem stay ink. A reason in words shows once its line is done. When the run ends the page shows the model's
+	 * own derivation.
 	 */
 	interface Props {
 		plan: AlgebraPlan | null;
@@ -20,9 +33,13 @@
 		onactive?: (top: number | null) => void;
 		/** the panel's foot: the verdict and the facts behind it (the page's status lines) */
 		foot?: Snippet;
+		/** the run under way: within a run the derivation only grows (ratchet.ts) */
+		run: number;
 	}
 
-	let { plan, final, live, liveVersion, running, onactive, foot }: Props = $props();
+	let { plan, final, live, liveVersion, running, onactive, foot, run }: Props = $props();
+
+	onMount(loadMathFonts);
 
 	const done = $derived(!!final && !running && !!plan && final.text === plan.text);
 	const results = $derived(done ? final!.results : (plan?.results ?? []));
@@ -36,11 +53,29 @@
 	});
 	const visible = (i: number) =>
 		done ? true : staged ? lines[i].kind === 'given' : (state?.visible[i] ?? false);
+	const complete = (i: number) => done || staged || !!state?.complete[i];
 	const refused = $derived(done ? final!.results.filter((r) => r.status !== 'ok') : []);
+	/** the computed numbers the page may show: every one at the end, else those the model has returned */
+	const shown = $derived<ReadonlySet<string> | 'all'>(done ? 'all' : (state?.shown ?? new Set()));
 
-	/** a cell of TeX, typeset when it is drawn (and again only if its TeX changes) */
-	const math = (s: string) => (el: HTMLElement) => typeset(el, s ? `\\displaystyle ${s}` : '');
-	const note = (s: string) => (el: HTMLElement) => setNote(el, s);
+	/** what each cell shows now; a cell is drawn again only when that changes */
+	const drawn = new WeakMap<HTMLElement, string>();
+	const once = (el: HTMLElement, s: string, draw: () => void) => {
+		if (drawn.get(el) === s) return;
+		drawn.set(el, s);
+		draw();
+	};
+	/** a cell of TeX, its numbers filled in as far as the model has computed them */
+	const math = (s: string) => (el: HTMLElement) => {
+		const tex = s ? `\\displaystyle ${fill(s, shown)}` : '';
+		once(el, tex, () => typeset(el, tex));
+	};
+	/** a reason: arithmetic filled in as it is computed; a sentence once its line is done */
+	const note = (s: string, i: number) => (el: HTMLElement) => {
+		const text = !s ? '' : wordy(s) ? (complete(i) ? s : '') : fill(s, shown);
+		// an empty reason keeps a line of text's baseline, so the reason arriving moves nothing
+		once(el, text, () => (text ? setNote(el, text) : (el.textContent = '\u00a0')));
+	};
 
 	/** the numbers' tones: computed (rose), under way, or still to come */
 	function tone(box: HTMLElement) {
@@ -78,26 +113,27 @@
 			>the work as algebra; every number in rose is the model’s, worked on its own sheet</span
 		>
 	</figcaption>
-	<div class="sp-body deriv-body">
+	<div class="sp-body deriv-body" {@attach ratchet(run)}>
 		<div class="deriv" {@attach tone}>
-			{#each lines as l, i (l.key + (done ? ':final' : ''))}
-				<div
-					class="line {label(l)}"
-					class:hidden={!visible(i)}
-					class:incomplete={!done && !staged && !state?.complete[i]}
-					class:active={isActive(i)}
-					data-line={i}
-				>
-					<span class="mark" aria-hidden="true"></span>
-					{#if 'whole' in l.cells}
-						<span class="whole" {@attach math(l.cells.whole)}></span>
-					{:else}
-						<span class="lhs" {@attach math(l.cells.lhs)}></span>
-						<span class="eq" {@attach math(l.cells.eq ? '=' : '')}></span>
-						<span class="rhs" {@attach math(l.cells.rhs)}></span>
-					{/if}
-					<span class="note" {@attach note(l.note ?? '')}></span>
-				</div>
+			{#each lines as l, i (l.key)}
+				{#if visible(i)}
+					<div
+						class="line {label(l)}"
+						class:incomplete={!complete(i)}
+						class:active={isActive(i)}
+						data-line={i}
+					>
+						<span class="mark" aria-hidden="true"></span>
+						{#if 'whole' in l.cells}
+							<span class="whole" {@attach math(l.cells.whole)}></span>
+						{:else}
+							<span class="lhs" {@attach math(l.cells.lhs)}></span>
+							<span class="eq" {@attach math(l.cells.eq ? '=' : '')}></span>
+							<span class="rhs" {@attach math(l.cells.rhs)}></span>
+						{/if}
+						<span class="note" {@attach note(l.note ?? '', i)}></span>
+					</div>
+				{/if}
 			{/each}
 		</div>
 		{#each refused as r (r.statement)}
@@ -127,9 +163,11 @@
 </figure>
 
 <style>
+	/* at least as tall as the digit work beside it (--work-h, set by the band), so that never sets the row's height */
 	.deriv-body {
 		align-content: start;
 		overflow: visible;
+		min-height: var(--work-h, 0px);
 	}
 	/*
 	 * One step a line: a mark for the line the arithmetic under way feeds, the left side, the shared equals sign, the
@@ -140,6 +178,8 @@
 		grid-template-columns: 14px max-content auto fit-content(62%) minmax(10rem, 1fr);
 		column-gap: 0;
 		row-gap: 7px;
+		/* lines keep their own heights: the body may be taller than they are (it holds the digit work's room) */
+		align-content: start;
 		align-items: baseline;
 		font-size: 17px;
 		color: var(--color-ink);
@@ -150,13 +190,6 @@
 	.line > * {
 		padding: 0.1em 0;
 		transition: opacity var(--hover) ease;
-	}
-	.line.hidden > * {
-		opacity: 0;
-		visibility: hidden;
-		transition:
-			opacity var(--hover) ease,
-			visibility 0s linear var(--hover);
 	}
 	.lhs {
 		grid-column: 2;
@@ -249,12 +282,11 @@
 	.deriv :global(.enclosing.done) {
 		color: var(--color-rose);
 	}
+	/* a number still to come is an empty slot one digit wide: a quiet rule, rose while its call is under way */
 	.deriv :global(.enclosing.pending) {
-		color: transparent;
 		box-shadow: inset 0 -1px 0 var(--color-mist);
 	}
 	.deriv :global(.enclosing.working) {
-		color: transparent;
 		box-shadow: inset 0 -2px 0 var(--color-rose-light);
 	}
 	.note :global(.enclosing.done) {
@@ -268,6 +300,10 @@
 
 	/* a phone: one line after another, each scrolling inside its own row; the reason under its line */
 	@media (max-width: 719px) {
+		/* the digit work has its own slot under the derivation */
+		.deriv-body {
+			min-height: 0;
+		}
 		.deriv {
 			display: block;
 			font-size: 16px;
@@ -285,9 +321,6 @@
 			display: inline;
 			min-height: 0;
 			padding: 0;
-		}
-		.line.hidden {
-			display: none;
 		}
 		.line .note {
 			display: block;

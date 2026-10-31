@@ -145,9 +145,9 @@
 		font-size: 18px;
 		line-height: 22px;
 	}
+	/* two lines, whatever the step says, so nothing under it moves from step to step */
 	.tick.bare .means {
-		height: auto;
-		max-height: 2.6em;
+		height: 2.6em;
 	}
 	/* the step: the word the model reads, then what it means */
 	.asked {

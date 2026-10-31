@@ -53,9 +53,11 @@
 .sp-foot .sp-dim {
 	color: var(--color-ink-soft);
 }
+/* three lines' room, so a message that wraps differently never moves its first line */
 .sp-empty {
 	align-self: center;
 	justify-self: center;
+	min-height: 4.5em;
 	font-size: var(--text-xs);
 	color: var(--color-ink-soft);
 }
