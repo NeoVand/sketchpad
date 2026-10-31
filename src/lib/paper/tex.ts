@@ -249,6 +249,9 @@ export function renderTex(md: string, bib: Map<string, Entry>, opt: TexOptions):
 \\newenvironment{statusbox}{\\par\\smallskip\\begingroup\\small\\color{inksoft}\\leftskip=1em}{\\par\\endgroup\\smallskip}
 ${UNICODE}
 \\setlength{\\parskip}{0.35em}
+% figures: a figure-only page starts at the top, not centred; text pages may carry larger floats
+\\makeatletter\\setlength{\\@fptop}{0pt}\\setlength{\\@fpsep}{12pt}\\setlength{\\@fpbot}{0pt plus 1fil}\\makeatother
+\\renewcommand{\\topfraction}{0.9}\\renewcommand{\\textfraction}{0.08}\\renewcommand{\\floatpagefraction}{0.75}
 \\setlength{\\parindent}{0pt}
 \\renewcommand{\\bibnumfmt}[1]{#1.}
 \\title{${run(m.title ?? '')}}

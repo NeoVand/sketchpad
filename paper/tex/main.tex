@@ -53,6 +53,9 @@
 \newunicodechar{ }{\,}
 \newunicodechar{ }{\,}
 \setlength{\parskip}{0.35em}
+% figures: a figure-only page starts at the top, not centred; text pages may carry larger floats
+\makeatletter\setlength{\@fptop}{0pt}\setlength{\@fpsep}{12pt}\setlength{\@fpbot}{0pt plus 1fil}\makeatother
+\renewcommand{\topfraction}{0.9}\renewcommand{\textfraction}{0.08}\renewcommand{\floatpagefraction}{0.75}
 \setlength{\parindent}{0pt}
 \renewcommand{\bibnumfmt}[1]{#1.}
 \title{Sketchpad: certified exact arithmetic with a small vision-language model}
@@ -61,7 +64,7 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-Language models remain unreliable on long arithmetic, and tool use moves the computation outside the network. We present Sketchpad, a method in which a 0.8-billion-parameter vision-language model, Qwen3.5-0.8B with a low-rank adapter, executes arithmetic procedures on a rendered sheet that serves as its only working memory. Each forward pass reads a three-cell view of the sheet and emits one step: a digit, a carry or borrow, and the next operation; a fixed runtime writes the outputs and moves the view. Because each step depends only on its view, correctness on the finite set of views is equivalent to correctness on all inputs of any length. We prove this, together with its necessity, composition and robustness to numerical perturbation, in Lean, and certify all 2,446 views on the deployment device, a laptop GPU running the model in a web browser. The certified model performs signed addition and subtraction, long multiplication and division, square roots and greatest common divisors at arbitrary length. It solved 200 of 200 pre-registered problems in the browser, and 220 of 220 sums of up to 1,000 digits and products of up to 20 digits, on which the strongest of ten other models, GPT-6.1 Sol, solved 217 and the strongest open-weight model, DeepSeek-V4-Pro, 199. Built on these procedures, a symbolic runtime solves, expands and factors polynomials with every number computed by the model. A multiplicative gate on the adapter recovers the base model exactly.
+Language models remain unreliable on long arithmetic, and tool use moves the computation outside the network. We present Sketchpad, a method in which a 0.8-billion-parameter vision-language model, Qwen3.5-0.8B with a low-rank adapter, executes arithmetic procedures on a rendered sheet that serves as its only working memory. Each forward pass reads a three-cell view of the sheet and emits one step: a digit, a carry or borrow, and the next operation; a fixed runtime writes the outputs and moves the view. Because each step depends only on its view, correctness on the finite set of views is equivalent to correctness on all inputs of any length. We prove this, together with its necessity, composition and robustness to numerical perturbation, with the core statements checked in Lean, and certify all 2,446 views on the deployment device, a laptop GPU running the model in a web browser. The certified model performs signed addition and subtraction, long multiplication and division, square roots and greatest common divisors at arbitrary length. It solved 200 of 200 pre-registered problems in the browser, and 220 of 220 sums of up to 1,000 digits and products of up to 20 digits, on which the strongest of ten other models, GPT-6.1 Sol, solved 217 and the strongest open-weight model, DeepSeek-V4-Pro, 199. Built on these procedures, a symbolic runtime solves, expands and factors polynomials with every number computed by the model. A multiplicative gate on the adapter recovers the base model exactly.
 
 \end{abstract}
 \section{Introduction}\label{sec-intro}
@@ -73,7 +76,7 @@ Because every step is a function of its view and the views form a finite set, th
 
 \begin{enumerate}
 \item a vision-language model of 0.8 billion parameters with a LoRA adapter\cite{hu2022lora} that executes one procedural step per forward pass (Section \hyperref[sec-machine]{2});
-\item formal statements, checked in Lean, of exactness on views, its necessity, composition of certified procedures and robustness to numerical perturbation, and a certificate of all 2,446 views on the target device (Section \hyperref[sec-cert]{3});
+\item proofs of exactness on views, its necessity, composition of certified procedures and robustness to numerical perturbation, checked in Lean for the sheet machine (exactness) and for the token-level machine from which the sheet versions follow (Appendix A), and a certificate of all 2,446 views on the target device (Section \hyperref[sec-cert]{3});
 \item a calculator for signed integer arithmetic, long division, square roots and greatest common divisors at arbitrary length (Section \hyperref[sec-calc]{4});
 \item polynomial algebra in which every number is produced by the certified procedures (Section \hyperref[sec-algebra]{5});
 \item a gate under which the adapted model is identical to the base model (Section \hyperref[sec-gate]{6}).
