@@ -156,3 +156,7 @@ published model `mohsenvand/sketchpad-0.8b-preview` at `2df87172`, whose certifi
 | Base model, 8-shot: 35 / 2,380 at the slots; 158 / 2,380 teacher-forced (45.8% of positions); no table complete | as stated | same, `fs` and `fs_tf`, block `queries` |
 | Intervention by depth (E7): none changed to depth 15; SUM 31/80 at 18, 38/80 at 19, 79/80 at 20; MUL 0/80 to 19, 80/80 at 20 | as stated | S `paper/figures/data/steer_e7_sweep.json`; CONTROLS.md |
 | Controls spend | $1.00 (Modal) | CONTROLS.md |
+| Batching, arithmetic adapter (E7) on the M4: max logit change 0.84 / 0.95 / 1.09 at batch 2 / 4 / 32; max margin change 0.56 / 0.64 / 0.60; smallest margin 3.02 alone, ≥ 3.02 batched; 0 failures | as stated | S `paper/figures/data/batch_check_m4.json` `arithmetic` |
+| Gate identity rows | 2,688 = 2,446 views + 242 padded SUM views | C `CHAT3.md` 203–205 |
+| Gate switch inside a reply | recall 0.809 (both writers); GSM8K −36.8 / −34.4 | C `CHAT3.md` "Option 2 result" |
+| Fault injection, both check modes | textbook 185/200, evaluation 173/200 in light and strong | S `src/lib/sketchpad/program/round3-*-{light,strong}.json` |
