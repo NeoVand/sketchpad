@@ -1,0 +1,52 @@
+{
+	"model": "gpt-audio-1.5",
+	"voice": "cedar",
+	"instructions": "You are the narrator of a short research film. Read the user's text aloud exactly as written, word for word, adding nothing and leaving nothing out, and say nothing else. Voice: a calm, plain, confident documentary narrator; level and precise, at a natural, steady pace; no excitement, no salesmanship. Pause briefly at colons and semicolons.",
+	"lines": [
+		{
+			"id": "N1",
+			"text": "Language models get most long sums right, but that is measured on samples, and the errors left are silent: a 300-digit sum, with one digit wrong.",
+			"spoken": "Language models get most long sums right, but that is measured on samples, and the errors left are silent: a three-hundred-digit sum, with one digit wrong."
+		},
+		{
+			"id": "N2",
+			"text": "Sketchpad gives a small vision-language model, with a low-rank adapter, a sheet. Each forward pass reads a view of three cells and writes a digit, a carry and the next operation. Nothing else passes between steps.",
+			"spoken": "Sketchpad gives a small vision-language model, with a low-rank adapter, a sheet. Each forward pass reads a view of three cells, and writes a digit, a carry, and the next operation. Nothing else passes between steps."
+		},
+		{
+			"id": "N3",
+			"text": "So a run of any length meets only views from a finite list: 2,446 of them.",
+			"spoken": "So a run of any length meets only views from a finite list: two thousand, four hundred forty-six of them."
+		},
+		{
+			"id": "N4",
+			"text": "We prove in Lean that the model is exact at every length if and only if it is exact on those views, and that when steps read earlier steps, no finite test suffices.",
+			"spoken": "We prove in Lean that the model is exact at every length if and only if it is exact on those views, and that when steps read earlier steps, no finite test suffices."
+		},
+		{
+			"id": "N5",
+			"text": "All 2,446 pass on a laptop GPU, in a browser, each by at least three logits.",
+			"spoken": "All two thousand, four hundred forty-six pass on a laptop GPU, in a browser, each by at least three logits."
+		},
+		{
+			"id": "N6",
+			"text": "On 220 pre-registered sums and products, it answered all 220; the strongest of ten other models, 217.",
+			"spoken": "On two hundred twenty pre-registered sums and products, it answered all two hundred twenty; the strongest of ten other models, two hundred seventeen."
+		},
+		{
+			"id": "N7",
+			"text": "Certified procedures compose: an algebra runtime factors and solves polynomials with every number computed by the model. A dialogue adapter, trained with on-policy distillation and GRPO, opens the sheet when it needs exact arithmetic; at gate zero, it is the base model, bit for bit.",
+			"spoken": "Certified procedures compose: an algebra runtime factors and solves polynomials with every number computed by the model. A dialogue adapter, trained with on-policy distillation and G R P O, opens the sheet when it needs exact arithmetic; at gate zero, it is the base model, bit for bit."
+		},
+		{
+			"id": "N8",
+			"text": "Inside, a multiplication digit is decided in the fifth full-attention layer: a push after it changes every digit tested; a push up to depth fifteen, none.",
+			"spoken": "Inside, a multiplication digit is decided in the fifth full-attention layer: a push after it changes every digit tested; a push up to depth fifteen, none."
+		},
+		{
+			"id": "N9",
+			"text": "Sketchpad runs in your browser, and rechecks its weakest views on your GPU. The paper, code and model are open.",
+			"spoken": "Sketchpad runs in your browser, and rechecks its weakest views on your GPU. The paper, code and model are open."
+		}
+	]
+}

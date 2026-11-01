@@ -1,0 +1,105 @@
+SOURCE FILES
+/Users/neo/repos/NeoVand.github.io/src/lib/components/Work.svelte
+/Users/neo/repos/NeoVand.github.io/src/lib/data/content.ts
+/Users/neo/repos/NeoVand.github.io/src/lib/data/types.ts
+/Users/neo/repos/sketchpad/.gitignore
+/Users/neo/repos/sketchpad/.prettierignore
+/Users/neo/repos/sketchpad/src/lib/ui/FilmHero.svelte
+/Users/neo/repos/sketchpad/src/routes/demo/+page.svelte
+/Users/neo/repos/sketchpad/src/routes/film/+page.svelte
+/Users/neo/repos/sketchpad/video/FILES.txt
+/Users/neo/repos/sketchpad/video/README.md
+/Users/neo/repos/sketchpad/video/SCRIPT.md
+/Users/neo/repos/sketchpad/video/capture/capture.mjs
+/Users/neo/repos/sketchpad/video/film/build-data.ts
+/Users/neo/repos/sketchpad/video/film/data/film.json
+/Users/neo/repos/sketchpad/video/film/film.js
+/Users/neo/repos/sketchpad/video/film/grid.js
+/Users/neo/repos/sketchpad/video/film/index.html
+/Users/neo/repos/sketchpad/video/film/lib.js
+/Users/neo/repos/sketchpad/video/film/scenes/apps.js
+/Users/neo/repos/sketchpad/video/film/scenes/cert.js
+/Users/neo/repos/sketchpad/video/film/scenes/close.js
+/Users/neo/repos/sketchpad/video/film/scenes/demo.js
+/Users/neo/repos/sketchpad/video/film/scenes/idea.js
+/Users/neo/repos/sketchpad/video/film/scenes/inside.js
+/Users/neo/repos/sketchpad/video/film/scenes/proof.js
+/Users/neo/repos/sketchpad/video/film/scenes/silent.js
+/Users/neo/repos/sketchpad/video/film/scenes/title.js
+/Users/neo/repos/sketchpad/video/film/win.js
+/Users/neo/repos/sketchpad/video/music/score.py
+/Users/neo/repos/sketchpad/video/narration/durations.json
+/Users/neo/repos/sketchpad/video/narration/lines.json
+/Users/neo/repos/sketchpad/video/narration/list_models.py
+/Users/neo/repos/sketchpad/video/narration/openai_key.py
+/Users/neo/repos/sketchpad/video/narration/prepare.py
+/Users/neo/repos/sketchpad/video/narration/synth.py
+/Users/neo/repos/sketchpad/video/narration/usage.json
+/Users/neo/repos/sketchpad/video/package.json
+/Users/neo/repos/sketchpad/video/pnpm-lock.yaml
+/Users/neo/repos/sketchpad/video/render/contact.py
+/Users/neo/repos/sketchpad/video/render/finish.py
+/Users/neo/repos/sketchpad/video/render/mix.py
+/Users/neo/repos/sketchpad/video/render/render.mjs
+/Users/neo/repos/sketchpad/video/render/verify-pages.mjs
+/Users/neo/repos/sketchpad/video/timeline.json
+
+FINAL OUTPUTS AND PRESERVED AUDIO
+/Users/neo/repos/NeoVand.github.io/static/media/sketchpad.jpg
+/Users/neo/repos/NeoVand.github.io/static/media/sketchpad.mp4
+/Users/neo/repos/sketchpad/static/media/sketchpad-film.mp4
+/Users/neo/repos/sketchpad/static/media/sketchpad-film.srt
+/Users/neo/repos/sketchpad/static/media/sketchpad-film.vtt
+/Users/neo/repos/sketchpad/static/media/sketchpad-loop.mp4
+/Users/neo/repos/sketchpad/static/media/sketchpad-poster.jpg
+/Users/neo/repos/sketchpad/video/narration/clean/N1.wav
+/Users/neo/repos/sketchpad/video/narration/clean/N2.wav
+/Users/neo/repos/sketchpad/video/narration/clean/N3.wav
+/Users/neo/repos/sketchpad/video/narration/clean/N4.wav
+/Users/neo/repos/sketchpad/video/narration/clean/N5.wav
+/Users/neo/repos/sketchpad/video/narration/clean/N6.wav
+/Users/neo/repos/sketchpad/video/narration/clean/N7.wav
+/Users/neo/repos/sketchpad/video/narration/clean/N8.wav
+/Users/neo/repos/sketchpad/video/narration/clean/N9.wav
+/Users/neo/repos/sketchpad/video/narration/wav/N1.wav
+/Users/neo/repos/sketchpad/video/narration/wav/N2.wav
+/Users/neo/repos/sketchpad/video/narration/wav/N3.wav
+/Users/neo/repos/sketchpad/video/narration/wav/N4.wav
+/Users/neo/repos/sketchpad/video/narration/wav/N5.wav
+/Users/neo/repos/sketchpad/video/narration/wav/N6.wav
+/Users/neo/repos/sketchpad/video/narration/wav/N7.wav
+/Users/neo/repos/sketchpad/video/narration/wav/N8.wav
+/Users/neo/repos/sketchpad/video/narration/wav/N9.wav
+/Users/neo/repos/sketchpad/video/out/contact.jpg
+/Users/neo/repos/sketchpad/video/out/mix.wav
+/Users/neo/repos/sketchpad/video/out/score.wav
+/Users/neo/repos/sketchpad/video/out/sketchpad_film.mp4
+/Users/neo/repos/sketchpad/video/out/sketchpad_film.srt
+/Users/neo/repos/sketchpad/video/out/sketchpad_loop.mp4
+/Users/neo/repos/sketchpad/video/out/sketchpad_poster.jpg
+/Users/neo/repos/sketchpad/video/out/web/sketchpad-card.jpg
+/Users/neo/repos/sketchpad/video/out/web/sketchpad-card.mp4
+/Users/neo/repos/sketchpad/video/out/web/sketchpad-film.mp4
+/Users/neo/repos/sketchpad/video/out/web/sketchpad-film.srt
+/Users/neo/repos/sketchpad/video/out/web/sketchpad-film.vtt
+/Users/neo/repos/sketchpad/video/out/web/sketchpad-loop-720.jpg
+/Users/neo/repos/sketchpad/video/out/web/sketchpad-loop-720.mp4
+
+RETAINED CAPTURE SEQUENCES (indexed by the manifest; intermediate frames)
+/Users/neo/repos/sketchpad/video/out/capture/manifest.json
+/Users/neo/repos/sketchpad/video/out/capture/machine/00000.jpg through 00539.jpg
+/Users/neo/repos/sketchpad/video/out/capture/calc/00000.jpg through 00419.jpg
+/Users/neo/repos/sketchpad/video/out/capture/algebra/00000.jpg through 00719.jpg
+/Users/neo/repos/sketchpad/video/out/capture/chat/00000.jpg through 00539.jpg
+/Users/neo/repos/sketchpad/video/out/capture/inside/00000.jpg through 00599.jpg
+
+REVIEW SCREENSHOTS AND CHECK RESULTS
+/Users/neo/repos/sketchpad/video/out/review/card-1440.png
+/Users/neo/repos/sketchpad/video/out/review/card-390.png
+/Users/neo/repos/sketchpad/video/out/review/demo-1440.png
+/Users/neo/repos/sketchpad/video/out/review/demo-390.png
+/Users/neo/repos/sketchpad/video/out/review/film-1440.png
+/Users/neo/repos/sketchpad/video/out/review/film-390.png
+/Users/neo/repos/sketchpad/video/out/review/homepage-1440.png
+/Users/neo/repos/sketchpad/video/out/review/homepage-390.png
+/Users/neo/repos/sketchpad/video/out/review/pages.json

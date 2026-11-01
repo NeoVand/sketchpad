@@ -40,3 +40,9 @@ vite.config.ts.timestamp-*
 # LaTeX build outputs
 /paper/tex/*.aux
 /paper/tex/*.log
+
+# Film renders and local production caches; website copies are committed
+/video/out/
+/video/narration/wav/
+/video/narration/clean/
+__pycache__/

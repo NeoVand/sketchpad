@@ -1,0 +1,97 @@
+WEBVTT
+
+1
+00:00:01.600 --> 00:00:06.214
+Language models get most long sums
+right, but that is measured on samples,
+
+2
+00:00:06.254 --> 00:00:10.616
+and the errors left are silent: a
+300-digit sum, with one digit wrong.
+
+3
+00:00:22.800 --> 00:00:27.454
+Sketchpad gives a small vision-language
+model, with a low-rank adapter, a sheet.
+
+4
+00:00:27.494 --> 00:00:31.267
+Each forward pass reads a view of
+three cells and writes a digit,
+
+5
+00:00:31.307 --> 00:00:35.140
+a carry and the next operation.
+Nothing else passes between steps.
+
+6
+00:00:51.400 --> 00:00:58.182
+So a run of any length meets only views
+from a finite list: 2,446 of them.
+
+7
+00:00:59.400 --> 00:01:04.961
+We prove in Lean that the model is exact at every
+length if and only if it is exact on those views,
+
+8
+00:01:05.001 --> 00:01:08.582
+and that when steps read earlier
+steps, no finite test suffices.
+
+9
+00:01:13.000 --> 00:01:21.160
+All 2,446 pass on a laptop GPU, in a
+browser, each by at least three logits.
+
+10
+00:01:22.400 --> 00:01:27.778
+On 220 pre-registered sums and
+products, it answered all 220;
+
+11
+00:01:27.818 --> 00:01:31.243
+the strongest of ten other models, 217.
+
+12
+00:01:33.200 --> 00:01:34.961
+Certified procedures compose:
+
+13
+00:01:35.001 --> 00:01:40.549
+an algebra runtime factors and solves polynomials
+with every number computed by the model.
+
+14
+00:01:40.589 --> 00:01:44.585
+A dialogue adapter, trained with
+on-policy distillation and GRPO,
+
+15
+00:01:44.625 --> 00:01:49.739
+opens the sheet when it needs exact
+arithmetic; at gate zero, it is the base model,
+
+16
+00:01:49.779 --> 00:01:50.484
+bit for bit.
+
+17
+00:01:56.600 --> 00:02:02.058
+Inside, a multiplication digit is decided
+in the fifth full-attention layer:
+
+18
+00:02:02.098 --> 00:02:07.628
+a push after it changes every digit
+tested; a push up to depth fifteen, none.
+
+19
+00:02:14.200 --> 00:02:18.672
+Sketchpad runs in your browser, and
+rechecks its weakest views on your GPU.
+
+20
+00:02:18.712 --> 00:02:20.777
+The paper, code and model are open.

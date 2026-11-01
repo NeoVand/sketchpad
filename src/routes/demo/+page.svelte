@@ -32,6 +32,7 @@
 	import type { TickOp } from '#lib/sketchpad/protocol.ts';
 	import Sheet from '#lib/sketchpad/Sheet.svelte';
 	import { sourceOf } from '#lib/sketchpad/sources.ts';
+	import FilmHero from '#lib/ui/FilmHero.svelte';
 
 	const SPRITES = asset('sketchpad/sprites.png');
 	let modelsBase = '';
@@ -564,7 +565,7 @@
 			{@const refused = r.results.some((x) => x.status === 'refused')}
 			<p class="verdict">
 				{#if refused}<strong>Refused.</strong> A check failed, so the answer is withheld.
-				{:else}<strong class:ok={r.ok}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
+				{:else}<strong class={{ ok: r.ok }}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
 					{#if !r.ok}The page’s own arithmetic says <span class="ref">{r.want.join('; ')}</span
 						>.{:else}Every line matches the page’s own arithmetic.{/if}{/if}
 			</p>
@@ -582,7 +583,7 @@
 		{:else if part === 'calc' && pad.calcResult}
 			{@const r = pad.calcResult}
 			<p class="verdict">
-				<strong class:ok={r.ok}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
+				<strong class={{ ok: r.ok }}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
 				{r.text} =
 				<span class="got">{r.got.length > 48 ? `${r.got.slice(0, 48)}…` : r.got}</span>{#if !r.ok}
 					(the page’s own arithmetic says <span class="ref">{r.want}</span>){/if}
@@ -600,7 +601,7 @@
 		{:else if part === 'machine' && pad.result}
 			{@const r = pad.result}
 			<p class="verdict">
-				<strong class:ok={r.ok}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
+				<strong class={{ ok: r.ok }}>{r.ok ? 'Exact.' : 'Wrong.'}</strong>
 				{#if r.ok}
 					{#if r.operands[0].length + r.operands[1].length + r.got.length <= 48}
 						{r.operands[0]}
@@ -734,9 +735,10 @@
 <!-- data-run changes when a run or a question starts, the tab changes or the model comes in: the moments the layout
 	may let go once (scripts/layout-probe.js reads it) -->
 <main class="demo" data-run="{part}.{pad.runs}.{pad.asks}.{loaded ? 1 : 0}">
+	<FilmHero />
 	<header class="head">
 		<div class="title">
-			<h1>Sketchpad</h1>
+			<h2>Try the sheet</h2>
 			<p class="lede">
 				Qwen3.5-0.8B adds, subtracts, multiplies, divides, takes square roots and finds gcds
 				exactly, on a sheet it reads with its own eyes. Every digit is the model’s; the page only
@@ -1052,7 +1054,7 @@
 		</div>
 	{:else}
 		<!-- the top row: the sheet (the model's only memory), one tick, and the machine; panels on one grid -->
-		<div class="band" class:tall={calcPart} class:calc={part === 'calc'}>
+		<div class={['band', { tall: calcPart, calc: part === 'calc' }]}>
 			<figure class="sp-panel sheet-panel">
 				<figcaption class="sp-cap">
 					<span class="sp-title">The sheet</span>
@@ -1191,7 +1193,7 @@
 		align-items: end;
 		gap: 12px 40px;
 	}
-	h1 {
+	h2 {
 		font-size: var(--text-head);
 		font-weight: 500;
 		letter-spacing: -0.02em;

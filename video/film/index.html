@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Sketchpad: the film</title>
+		<!--
+			The film as a page: every frame is a pure function of the time t, set by window.film.seek(t). The renderer
+			(video/render/render.mjs) serves the repository root, opens this page at 1920 x 1080 and captures each frame.
+			Open it in a browser through any static server rooted at the repository to scrub it: ?t=12.5 jumps there.
+		-->
+		<style>
+			@font-face {
+				font-family: 'Geist';
+				src: url('/node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2')
+					format('woff2');
+				font-weight: 100 900;
+			}
+			@font-face {
+				font-family: 'Geist Mono';
+				src: url('/node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2')
+					format('woff2');
+				font-weight: 100 900;
+			}
+			@font-face {
+				font-family: 'Source Serif';
+				src: url('/node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-opsz-normal.woff2')
+					format('woff2');
+				font-weight: 200 900;
+			}
+			@font-face {
+				font-family: 'Source Serif';
+				font-style: italic;
+				src: url('/node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-opsz-italic.woff2')
+					format('woff2');
+				font-weight: 200 900;
+			}
+			:root {
+				--ink: #1f2a44;
+				--soft: #4c5b78;
+				--grey: #7d8ba8;
+				--mist: #bac5d9;
+				--tint: #f2f5fb;
+				--rose: #d6336c;
+				--rose-l: #f1a3bc;
+				--cobalt: #2557a7;
+				--violet: #7a5ba8;
+				--sans: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+				--mono: 'Geist Mono', Menlo, monospace;
+				--serif: 'Source Serif', Georgia, serif;
+			}
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+			html,
+			body {
+				width: 1920px;
+				height: 1080px;
+				overflow: hidden;
+				background: #fff;
+			}
+			body {
+				font-family: var(--sans);
+				color: var(--ink);
+				-webkit-font-smoothing: antialiased;
+				font-feature-settings: 'kern', 'liga';
+			}
+			#stage {
+				position: relative;
+				width: 1920px;
+				height: 1080px;
+				overflow: hidden;
+				background: #fff;
+			}
+			.scene {
+				position: absolute;
+				inset: 0;
+				display: none;
+			}
+			.abs {
+				position: absolute;
+			}
+			.chapter {
+				position: absolute;
+				left: 120px;
+				top: 64px;
+				font-size: 19px;
+				font-weight: 500;
+				letter-spacing: 0.01em;
+				color: var(--ink);
+				white-space: nowrap;
+			}
+			.chapter b {
+				color: var(--rose);
+				font-weight: 500;
+				margin-right: 14px;
+				font-feature-settings: 'tnum';
+			}
+			.mono {
+				font-family: var(--mono);
+				font-feature-settings: 'zero' 0;
+			}
+			.serif {
+				font-family: var(--serif);
+				font-optical-sizing: auto;
+			}
+			.soft {
+				color: var(--soft);
+			}
+			.rose {
+				color: var(--rose);
+			}
+			.window {
+				position: absolute;
+				overflow: hidden;
+				border-radius: 12px;
+				background: #fff;
+				box-shadow:
+					0 0 0 1px rgba(31, 42, 68, 0.07),
+					0 18px 50px -12px rgba(31, 42, 68, 0.22),
+					0 4px 14px -4px rgba(31, 42, 68, 0.1);
+			}
+			.window img {
+				position: absolute;
+				left: 0;
+				top: 0;
+				transform-origin: 0 0;
+			}
+			.pix {
+				image-rendering: pixelated;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="stage"></div>
+		<script type="module" src="./film.js"></script>
+	</body>
+</html>

@@ -1,0 +1,97 @@
+# The Sketchpad film: script and storyboard
+
+Written 1 Nov 2026, before any frame was rendered, from `paper/paper.md`, `paper/numbers.md`, the abstract, the cover
+letter and the figures. Every spoken or written claim below carries its source in the paper; nothing is said that the
+paper does not state. Timings were fixed against the narration once it was synthesised (see "Timing" at the end).
+
+**Two cuts.**
+
+- `out/sketchpad_film.mp4`: the film, about 2 min 30 s, 1920 × 1080, 60 fps, narrated, with a procedural score and an
+  `.srt` of the narration.
+- `out/sketchpad_loop.mp4`: a silent 24 s loop at 60 fps cut from the film, for the homepage card and the demo page;
+  `out/sketchpad_poster.jpg` is its first frame.
+
+**Look.** White ground, the paper's Cobalt and Rose palette (`paper/figstyle/palette.json`: ink `#1F2A44`, rose
+`#D6336C` for Sketchpad, cobalt `#2557A7` for the strongest alternative, blue-greys for the rest, violet for theory),
+Geist and Geist Mono for the interface voice and Source Serif 4 for titles, as on the site. Typography carries the film;
+no boxes, chips or badges. Motion is eased (cubic and quintic in-out), never linear except for the machine's own ticks.
+Every figure is the paper's own SVG (`static/figures/`), moved by a camera and revealed by masks; every glyph the model
+reads is drawn from the model's own sprite sheet (`static/sketchpad/sprites.png`); every run shown is a recorded run
+of the published model (`static/recordings/*.json`) or a capture of the live demo.
+
+**Voice.** OpenAI `gpt-audio-1.5`, read in the paper's voice: plain, level, unhurried. 60–90 s of speech in a 150 s
+film, so the pictures have room.
+
+## Narration
+
+Nine lines, 235 words. Spoken forms for the synthesiser are in `narration/lines.json`.
+
+| #   | Line                                                                                                                                                                                                                                                                                             | Source in the paper                                                                                           |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| N1  | Language models answer most long sums correctly, but that accuracy is measured on samples, and the errors left are silent: a 300-digit sum, complete, with one digit wrong.                                                                                                                      | Intro ¶1; `paper/baselines/results.json`, GPT-6.1 Sol, problem 71 (+300): 301 digits, one wrong, 3,641 tokens |
+| N2  | Sketchpad gives Qwen3.5-0.8B, a small vision-language model with a low-rank adapter, a sheet. Each forward pass reads a view of three cells and writes a digit, a carry and the next operation. Nothing else passes between steps.                                                               | Abstract; §2 Model, Views                                                                                     |
+| N3  | So a run of any length only ever meets views from a finite list: 2,446 of them.                                                                                                                                                                                                                  | §2 Tables, Eq. 1                                                                                              |
+| N4  | We prove in Lean that the model is exact on inputs of every length if and only if it is exact on those views, and that when steps read earlier steps, no finite test suffices.                                                                                                                   | §3 Theorems 1 and 2; Lean `Sketchpad.sheet_exact_iff`, `Polyformer.Pinned.no_finite_test_suite`               |
+| N5  | All 2,446 pass on a laptop GPU, in a browser, with a margin of at least three logits.                                                                                                                                                                                                            | §3: smallest margin 3.02 (M4, WebGPU, 16-bit)                                                                 |
+| N6  | On 220 pre-registered sums and products, it answered all 220; the strongest of ten other models, 217.                                                                                                                                                                                            | §4 Comparison; Fig. 1c                                                                                        |
+| N7  | Certified procedures compose, so a symbolic runtime factors and solves polynomials with every number computed by the model. A dialogue adapter, trained with on-policy distillation and GRPO, opens the sheet when it needs exact arithmetic; at gate zero, the base model returns, bit for bit. | §5 Theorem 4; §6 (recall 0.989, precision 0.994; gate identity bit for bit)                                   |
+| N8  | Inside, a multiplication digit is decided in the fifth full-attention layer: a push after it changes every digit tested; a push up to depth fifteen, none.                                                                                                                                       | §7: 80 of 80 after depth 20; none up to 15                                                                    |
+| N9  | Sketchpad runs in your browser, and rechecks its weakest views on your GPU. The paper, code and model are open.                                                                                                                                                                                  | §3 (lowest-margin tenth by default); cover letter (public code, model, proofs)                                |
+
+Words kept out on purpose: "solves arithmetic", "guarantees" without its scope, "proves the model is correct" (the
+proof is relative to the runtime), "always", any adjective about speed. "Certified" is used once, in the paper's sense
+(N7: procedures whose views all pass).
+
+## Storyboard and shot list
+
+Times are film seconds at 60 fps. MG = motion graphics rendered in code (`film/`); CAP = frame-by-frame capture of the
+live demo at https://neovand.github.io/sketchpad/demo in its Recorded mode (no model is loaded).
+
+| Shot                                 | Time      | Kind     | Picture                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Sound                                          |
+| ------------------------------------ | --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 1 Silent errors                      | 0:00–0:15 | MG       | Two 300-digit operands set in Geist Mono fill the frame in ruled lines; the answer GPT-6.1 Sol returned types in beneath them, digit for digit, then the true sum fades in under it. Every digit agrees but one, 112th from the right; the camera travels to it and a rose ring closes on it. A footnote: "GPT-6.1 Sol, problem 71 of 220: 301 digits, one wrong; 3,641 of 32,768 tokens used."                                                                                                                                                                                                                                                                                                                     | N1. A single low pad.                          |
+| 2 Title                              | 0:15–0:22 | MG       | The digits drain away to white. "Sketchpad" in Source Serif, rose; beneath it, "certified exact arithmetic with a small vision-language model", and the author line.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Score enters: a slow chord, bells.             |
+| 3 The idea                           | 0:22–0:41 | MG       | The sheet of the recorded multiplication 4,821 × 3,967 lays itself out on a pale tint ground. A three-cell window settles on one column. The view lifts out as the model's own 32 × 96 pixels (from the sprite sheet), and slides into a column of 24 layers, six dark for full attention. Three outputs drop out at the bottom: digit 7, carry 0, next step A, the recorded call 1. The runtime stamps them on the sheet and the window moves. Then the 48 recorded views (30 batched calls in the original run) play, faster and faster, until the product 19,124,907 stands in rose. Labels in small Geist: "view: 3 cells, 32 × 96 px", "Qwen3.5-0.8B + LoRA (rank 16, 10.2 M parameters)", "one forward pass". | N2. Soft tick for each step, in tempo.         |
+| 4 The machine at work                | 0:41–0:55 | CAP      | The live demo, floating as a window on white with a soft shadow. The recorded multiplication plays in the sheet machine tab; the camera eases in on the sheet, the view and the state diagram. Cut to Calculate: 22 ÷ 7 to 10 places plays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | N3 at the end. Score continues.                |
+| 5 The finite list and the proof      | 0:55–1:13 | MG       | 2,446 small squares assemble into the table blocks of Fig. 1b (MUL 1,100, SUM 242, ADD 220, ADZ 220, SUB 242, EST 400, NXT 11, DEC 9, FLS 2). They slide aside for the Lean statement of `sheet_exact_iff`, set line by line in Geist Mono, with `trace … f … = trace … T …` and `∀ v ∈ reachedViews …, f v = T v` underlined in rose and the `↔` between them. Then Fig. 3b: with state in the context the margin falls through zero just after the last test (N = 4, 8, 16); on the sheet it stays flat.                                                                                                                                                                                                          | N3 completes; N4.                              |
+| 6 The certificate and the comparison | 1:13–1:33 | MG       | Fig. 3c, revealed table by table: every margin of the 2,446 on the M4, the smallest, 3.02, marked. Caption: "2,446 of 2,446 pass · Apple M4 · WebGPU · 16-bit · 3.5 min". Then Fig. 1c, its bars wiping in from the axis: Sketchpad 100, GPT-6.1 Sol 98.6, and the rest.                                                                                                                                                                                                                                                                                                                                                                                                                                            | N5, N6. The score's first full chord on "220". |
+| 7 Algebra, chat, gate                | 1:33–1:59 | CAP + MG | Algebra tab: the recorded factorisation of x³ − 6x² + 11x − 6, every model-computed number in rose. Chat tab: the recorded reply to "A stadium has 47 sections of 1,186 seats …", the sheet block opening inside the reply. Then Fig. 5a: the gate diagram, with g set to 0 and 1 in turn, and the equation y = xW + g s (xAᵀ)Bᵀ.                                                                                                                                                                                                                                                                                                                                                                                   | N7.                                            |
+| 8 Inside                             | 1:59–2:15 | CAP + MG | The demo's own "Layer by layer" panel as the recording steps; then Fig. 6c: share of steps changed against the depth of the push, flat at zero through depth 15, a step to 80 of 80 at depth 20, the fifth full-attention layer shaded.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | N8.                                            |
+| 9 Close                              | 2:15–2:30 | MG       | The sheet returns, small and centred, its window resting. "Sketchpad" and three lines of links: neovand.github.io/sketchpad · github.com/NeoVand/sketchpad · huggingface.co/mohsenvand/sketchpad-0.8b-preview, and "arXiv: forthcoming".                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | N9; score resolves and fades.                  |
+
+The loop (24 s, silent): shot 3 from the window settling to the product (12 s), the demo push-in of shot 4 (5 s), the
+certificate reveal of shot 6 (4 s), and a 1 s dissolve back to the first frame so it repeats without a seam.
+
+## Timing
+
+Final timing is driven by `timeline.json`. The film is 149 seconds; the silent loop is 23.8 seconds. The narrated text above matches the preserved audio and captions. The model shown and described is only Qwen3.5-0.8B; the 4B candidate was not shipped.
+
+The certificate with minimum margin 3.02 and the depth intervention results are the paper’s arithmetic adapter. Recorded demo captures use the published dialogue adapter; no footage is represented as new inference. The full check, rather than the default weakest-tenth recheck, is needed to certify a new device.
+
+| Line | Start (s) | Speech (s) |
+| ---- | --------: | ---------: |
+| N1   |       1.6 |      9.056 |
+| N2   |      22.8 |     12.380 |
+| N3   |      51.4 |      6.822 |
+| N4   |      59.4 |      9.222 |
+| N5   |      73.0 |      8.200 |
+| N6   |      82.4 |      8.883 |
+| N7   |      93.2 |     17.324 |
+| N8   |     116.6 |     11.069 |
+| N9   |     134.2 |      6.617 |
+
+Total speech: 89.573 s. Voice: `gpt-audio-1.5`, `cedar`; recorded token cost including superseded takes: $0.1994. No further synthesis in the continuation.
+
+Final scene boundaries (overlaps are dissolves):
+
+- silent: 0.0–15.0 s
+- title: 14.4–21.6 s
+- idea: 21.0–41.4 s
+- demo: 40.8–52.4 s
+- proof: 51.8–72.4 s
+- cert: 71.8–92.2 s
+- apps: 91.6–115.6 s
+- inside: 115.0–132.6 s
+- close: 132.0–149.0 s
+
+Production choices: retain the completed code animation and actual demo captures, with no new image generation or model downloads. The compact preview keeps the working demo close to the opening screen; a full-width film would move it farther down. Assumption: the project’s existing paper page is the paper destination until Neo supplies an arXiv identifier.

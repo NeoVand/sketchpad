@@ -13,3 +13,7 @@ research/**/*.json
 # the paper: records, data and prose are kept byte for byte (build.sh checks data checksums); only its code is formatted
 /paper/**
 !/paper/**/*.ts
+
+# Generated film data and the film package lock
+/video/film/data/
+/video/pnpm-lock.yaml

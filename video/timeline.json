@@ -1,0 +1,109 @@
+{
+	"fps": 60,
+	"width": 1920,
+	"height": 1080,
+	"duration": 149,
+	"scenes": [
+		{
+			"id": "silent",
+			"start": 0,
+			"end": 15,
+			"chapter": ""
+		},
+		{
+			"id": "title",
+			"start": 14.4,
+			"end": 21.6,
+			"chapter": ""
+		},
+		{
+			"id": "idea",
+			"start": 21.0,
+			"end": 41.4,
+			"chapter": "The idea"
+		},
+		{
+			"id": "demo",
+			"start": 40.8,
+			"end": 52.4,
+			"chapter": "The machine at work"
+		},
+		{
+			"id": "proof",
+			"start": 51.8,
+			"end": 72.4,
+			"chapter": "The proof"
+		},
+		{
+			"id": "cert",
+			"start": 71.8,
+			"end": 92.2,
+			"chapter": "The certificate"
+		},
+		{
+			"id": "apps",
+			"start": 91.6,
+			"end": 115.6,
+			"chapter": "Algebra and chat"
+		},
+		{
+			"id": "inside",
+			"start": 115.0,
+			"end": 132.6,
+			"chapter": "Inside the model"
+		},
+		{
+			"id": "close",
+			"start": 132.0,
+			"end": 149,
+			"chapter": ""
+		}
+	],
+	"narration": [
+		{
+			"id": "N1",
+			"at": 1.6
+		},
+		{
+			"id": "N2",
+			"at": 22.8
+		},
+		{
+			"id": "N3",
+			"at": 51.4
+		},
+		{
+			"id": "N4",
+			"at": 59.4
+		},
+		{
+			"id": "N5",
+			"at": 73.0
+		},
+		{
+			"id": "N6",
+			"at": 82.4
+		},
+		{
+			"id": "N7",
+			"at": 93.2
+		},
+		{
+			"id": "N8",
+			"at": 116.6
+		},
+		{
+			"id": "N9",
+			"at": 134.2
+		}
+	],
+	"loop": {
+		"segments": [
+			[26.4, 39.4],
+			[42.0, 48.0],
+			[72.4, 78.4]
+		],
+		"dissolve": 0.6,
+		"close": 1.0
+	}
+}

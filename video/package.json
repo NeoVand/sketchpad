@@ -1,0 +1,9 @@
+{
+	"name": "sketchpad-film",
+	"private": true,
+	"type": "module",
+	"description": "Renders the Sketchpad film: frame-by-frame capture of a canvas timeline and of the live demo",
+	"dependencies": {
+		"playwright": "1.64.1"
+	}
+}

@@ -1,0 +1,305 @@
+{
+	"calls": [
+		{
+			"id": "N2",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 147,
+				"completion_tokens": 441,
+				"total_tokens": 588,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 147,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 359,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 82
+				}
+			},
+			"usd": 0.0241635,
+			"transcript": "Sketchpad gives Qwen three point five, zero point eight B, a small vision-language model with a low-rank adapter, a sheet. Each forward pass reads a view of three cells, and writes a digit, a carry, and the next operation. Nothing else passes between steps."
+		},
+		{
+			"id": "N1",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 122,
+				"completion_tokens": 296,
+				"total_tokens": 418,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 122,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 241,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 55
+				}
+			},
+			"usd": 0.016279,
+			"transcript": "Language models answer most long sums correctly, but that accuracy is measured on samples, and the errors left are silent: a three-hundred-digit sum, complete, with one digit wrong."
+		},
+		{
+			"id": "N2",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 133,
+				"completion_tokens": 334,
+				"total_tokens": 467,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 133,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 266,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 68
+				}
+			},
+			"usd": 0.0180365,
+			"transcript": "Sketchpad gives a small vision-language model, with a low-rank adapter, a sheet. Each forward pass reads a view of three cells, and writes a digit, a carry, and the next operation. Nothing else passes between steps."
+		},
+		{
+			"id": "N3",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 109,
+				"completion_tokens": 192,
+				"total_tokens": 301,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 109,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 154,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 38
+				}
+			},
+			"usd": 0.0105085,
+			"transcript": "So a run of any length meets only views from a finite list: two thousand, four hundred forty-six of them."
+		},
+		{
+			"id": "N4",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 122,
+				"completion_tokens": 254,
+				"total_tokens": 376,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 122,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 201,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 53
+				}
+			},
+			"usd": 0.013699,
+			"transcript": "We prove in Lean that the model is exact at every length if and only if it is exact on those views, and that when steps read earlier steps, no finite test suffices."
+		},
+		{
+			"id": "N5",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 110,
+				"completion_tokens": 220,
+				"total_tokens": 330,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 110,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 179,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 41
+				}
+			},
+			"usd": 0.012141,
+			"transcript": "All two thousand, four hundred forty-six pass on a laptop GPU, in a browser, each by at least three logits."
+		},
+		{
+			"id": "N6",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 114,
+				"completion_tokens": 238,
+				"total_tokens": 352,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 114,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 193,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 45
+				}
+			},
+			"usd": 0.013087,
+			"transcript": "On two hundred twenty pre-registered sums and products, it answered all two hundred twenty; the strongest of ten other models, two hundred seventeen."
+		},
+		{
+			"id": "N7",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 143,
+				"completion_tokens": 478,
+				"total_tokens": 621,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 143,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 396,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 82
+				}
+			},
+			"usd": 0.0265215,
+			"transcript": "Certified procedures compose: a symbolic runtime factors and solves polynomials with every number computed by the model. A dialogue adapter, trained with on-policy distillation and G R P O, opens the sheet when it needs exact arithmetic, and at gate zero the base model returns, bit for bit."
+		},
+		{
+			"id": "N8",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 118,
+				"completion_tokens": 289,
+				"total_tokens": 407,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 118,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 238,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 51
+				}
+			},
+			"usd": 0.016037,
+			"transcript": "Inside, a multiplication digit is decided in the fifth full-attention layer: a push after it changes every digit tested; a push up to depth fifteen, none."
+		},
+		{
+			"id": "N9",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 111,
+				"completion_tokens": 183,
+				"total_tokens": 294,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 111,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 143,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 40
+				}
+			},
+			"usd": 0.0098295,
+			"transcript": "Sketchpad runs in your browser, and rechecks its weakest views on your GPU. The paper, code and model are open."
+		},
+		{
+			"id": "N1",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 119,
+				"completion_tokens": 252,
+				"total_tokens": 371,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 119,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 202,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 50
+				}
+			},
+			"usd": 0.0137255,
+			"transcript": "Language models get most long sums right, but that is measured on samples, and the errors left are silent: a three-hundred-digit sum, with one digit wrong."
+		},
+		{
+			"id": "N7",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 144,
+				"completion_tokens": 461,
+				"total_tokens": 605,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 144,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 378,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 83
+				}
+			},
+			"usd": 0.025382,
+			"transcript": "Certified procedures compose: an algebra runtime factors and solves polynomials with every number computed by the model. A dialogue adapter, trained with on-policy distillation and G R P O, opens the sheet when it needs exact arithmetic; at gate zero, it is the base model, bit for bit."
+		}
+	],
+	"total_usd": 0.1994
+}
