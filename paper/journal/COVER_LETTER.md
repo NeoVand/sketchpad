@@ -21,7 +21,8 @@ greatest common divisors at arbitrary length. It answered 220 of 220 pre-registe
 the strongest of ten other models answered 217. A symbolic runtime built on the certified procedures solves, expands
 and factors polynomials, and the paper shows how its correctness decomposes into the certified and uncertified
 parts. Finally, a multiplicative gate on the adapter recovers the base model bit for bit. A dialogue adapter learns
-when to call the sheet, while staying within 1.6 points of the base model on IFEval, GSM8K and MMLU.
+when to call the sheet. It stays within 2 points of the base model on IFEval and MMLU, but loses 5.8 points on
+GSM8K problems not used during development, which the paper reports as a limitation.
 
 We believe the work suits the journal's readership in trustworthy and verifiable machine learning and in on-device
 deployment. It joins formal verification, a deployed system and a mechanistic analysis of where the network makes

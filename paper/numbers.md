@@ -160,3 +160,4 @@ published model `mohsenvand/sketchpad-0.8b-preview` at `2df87172`, whose certifi
 | Gate identity rows | 2,688 = 2,446 views + 242 padded SUM views | C `CHAT3.md` 203–205 |
 | Gate switch inside a reply | recall 0.809 (both writers); GSM8K −36.8 / −34.4 | C `CHAT3.md` "Option 2 result" |
 | Fault injection, both check modes | textbook 185/200, evaluation 173/200 in light and strong | S `src/lib/sketchpad/program/round3-*-{light,strong}.json` |
+| Fresh items, dialogue adapter minus base: GSM8K −5.8 ± 1.72 (1,069; 0.491 vs 0.549; 139 gained / 201 lost); MMLU −2.0 ± 1.08 (1,000; 0.463 vs 0.483; 48 / 68); sheet path 327 vs 368 of 619, direct 198 vs 219 of 450 | registered band missed for GSM8K | C `CHAT3.md` "Result (1 Nov 2026)", commit 78043e3a; `fresh_confirm.json` |

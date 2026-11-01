@@ -23,9 +23,9 @@ the author is listed as **Mostafa 'Neo' Mohsenvand**, and the licence is **CC BY
 - both passes exited 0;
 - 0 errors, 0 undefined references or citations, 0 overfull boxes, 0 missing characters, 0 warnings (pdfTeX's
   included);
-- 24 A4 pages. `paper/arxiv/verify/main.pdf` is the PDF arXiv should produce, and `verify/main.log` is its log.
+- 25 A4 pages. `paper/arxiv/verify/main.pdf` is the PDF arXiv should produce, and `verify/main.log` is its log.
 
-**Compared with the tectonic PDF** (`paper/tex/main.pdf`, also 24 pages, served as `static/sketchpad.pdf`):
+**Compared with the tectonic PDF** (`paper/tex/main.pdf`, also 25 pages, served as `static/sketchpad.pdf`):
 - same text, equations (1)–(15), figures 1–6 and Extended Data Fig. 1, six Extended Data tables, and references 1–102;
 - line breaks differ slightly, because pdfLaTeX's microtype also stretches fonts.
 
@@ -60,7 +60,7 @@ Language models are accurate on most long-arithmetic problems, but their accurac
 **Comments**
 
 ```
-24 pages, 7 figures (6 + 1 Extended Data), 6 Extended Data tables. Demo: https://neovand.github.io/sketchpad/demo ; code (Apache 2.0): https://github.com/NeoVand/sketchpad ; model: https://huggingface.co/mohsenvand/sketchpad-0.8b-preview
+25 pages, 7 figures (6 + 1 Extended Data), 6 Extended Data tables. Demo: https://neovand.github.io/sketchpad/demo ; code (Apache 2.0): https://github.com/NeoVand/sketchpad ; model: https://huggingface.co/mohsenvand/sketchpad-0.8b-preview
 ```
 
 All three links returned HTTP 200 on 31 Oct 2026, and the GitHub repository is public.
@@ -108,7 +108,7 @@ before submitting.
    - Delete anything else, such as a stray `._*` file. The tarball has none.
 4. **Process.**
    - arXiv compiles with pdfLaTeX; expect no errors or warnings.
-   - Open the generated PDF and compare it with `paper/arxiv/verify/main.pdf`: 24 pages, Fig. 1 on page 2,
+   - Open the generated PDF and compare it with `paper/arxiv/verify/main.pdf`: 25 pages, Fig. 1 on page 2,
      references ending at 102 on page 22.
 5. **Metadata.**
    - Paste the title, the author (`Mostafa 'Neo' Mohsenvand`), the abstract and the comments exactly as above.
