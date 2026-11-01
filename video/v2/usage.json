@@ -1,0 +1,630 @@
+{
+	"calls": [
+		{
+			"id": "N01",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 160,
+				"completion_tokens": 192,
+				"total_tokens": 352,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 160,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 154,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 38
+				}
+			},
+			"usd": 0.010636,
+			"transcript": "A language model learns to predict text. It can answer a long sum with one digit wrong, and give no warning."
+		},
+		{
+			"id": "N02",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 161,
+				"completion_tokens": 180,
+				"total_tokens": 341,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 161,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 141,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 39
+				}
+			},
+			"usd": 0.0098165,
+			"transcript": "Here, G P T six point one Sol added two three-hundred-digit numbers. One digit of its answer was wrong."
+		},
+		{
+			"id": "N03",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 178,
+				"completion_tokens": 330,
+				"total_tokens": 508,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 178,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 268,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 62
+				}
+			},
+			"usd": 0.018217,
+			"transcript": "Sketchpad gives a small vision-language model, Qwen three point five with zero point eight billion parameters, which reads images as well as text, a working sheet: the paper you would use for long multiplication."
+		},
+		{
+			"id": "N04",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 160,
+				"completion_tokens": 179,
+				"total_tokens": 339,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 160,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 141,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 38
+				}
+			},
+			"usd": 0.009804,
+			"transcript": "Its view is just three cells, drawn as a small image. The model reads those printed digits through its image reader."
+		},
+		{
+			"id": "N05",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 162,
+				"completion_tokens": 196,
+				"total_tokens": 358,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 162,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 156,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 40
+				}
+			},
+			"usd": 0.010789,
+			"transcript": "One forward pass, one trip through the model, produces a digit, a carry for the next column, and the next operation."
+		},
+		{
+			"id": "N06",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 160,
+				"completion_tokens": 187,
+				"total_tokens": 347,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 160,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 149,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 38
+				}
+			},
+			"usd": 0.010316,
+			"transcript": "Only this fixed view and operation enter each step. Earlier steps stay on the sheet, so the input cannot keep growing."
+		},
+		{
+			"id": "N07",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 166,
+				"completion_tokens": 215,
+				"total_tokens": 381,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 166,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 171,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 44
+				}
+			},
+			"usd": 0.011799,
+			"transcript": "We trained a LoRA adapter: about ten million extra weights, a little over one percent of the model, learned on top of the frozen original."
+		},
+		{
+			"id": "N08",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 163,
+				"completion_tokens": 233,
+				"total_tokens": 396,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 163,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 190,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 43
+				}
+			},
+			"usd": 0.0129975,
+			"transcript": "It learned from every view and its correct answer, returning to the hardest cases, while its ordinary language stayed close to the original\u2019s."
+		},
+		{
+			"id": "N09",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 157,
+				"completion_tokens": 169,
+				"total_tokens": 326,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 157,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 134,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 35
+				}
+			},
+			"usd": 0.0093185,
+			"transcript": "The trained model runs here in the browser. Code moves the view; the model computes the result digits."
+		},
+		{
+			"id": "N10",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 163,
+				"completion_tokens": 198,
+				"total_tokens": 361,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 163,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 157,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 41
+				}
+			},
+			"usd": 0.0108655,
+			"transcript": "Longer problems need more steps, but no new kinds of view. The complete list has two thousand, four hundred and forty-six."
+		},
+		{
+			"id": "N11",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 180,
+				"completion_tokens": 363,
+				"total_tokens": 543,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 180,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 299,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 64
+				}
+			},
+			"usd": 0.020226,
+			"transcript": "Exact means the model\u2019s output matches the arithmetic procedure at every step. Using Lean, software that checks every step of a mathematical proof, we proved that being right on these views means being right on problems of any length."
+		},
+		{
+			"id": "N12",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 181,
+				"completion_tokens": 318,
+				"total_tokens": 499,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 181,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 255,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 63
+				}
+			},
+			"usd": 0.0174025,
+			"transcript": "Chain of thought, where a model writes out its reasoning and each step reads every earlier step, is different. Its possible histories never stop growing, and we proved that no finite test can vouch for it at every length."
+		},
+		{
+			"id": "N13",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 163,
+				"completion_tokens": 208,
+				"total_tokens": 371,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 163,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 167,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 41
+				}
+			},
+			"usd": 0.0115055,
+			"transcript": "A certificate checks every view these procedures can meet, on the device running them, and records the results so anyone can repeat the check."
+		},
+		{
+			"id": "N14",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 169,
+				"completion_tokens": 262,
+				"total_tokens": 431,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 169,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 213,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 49
+				}
+			},
+			"usd": 0.0145445,
+			"transcript": "The margin is the correct answer's score above its nearest rival. On the laptop's graphics processor, every view passed; the smallest gap was three point zero two."
+		},
+		{
+			"id": "N15",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 181,
+				"completion_tokens": 347,
+				"total_tokens": 528,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 181,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 282,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 65
+				}
+			},
+			"usd": 0.0191505,
+			"transcript": "That gap survives rounding if each score moves by less than one point five one. We check on the device because different hardware can change scores. Running many views together in a batch moved scores by at most one point zero nine."
+		},
+		{
+			"id": "N16",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 183,
+				"completion_tokens": 387,
+				"total_tokens": 570,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 183,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 318,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 69
+				}
+			},
+			"usd": 0.0214995,
+			"transcript": "In a pre-registered comparison, with problems and rules fixed before answers were seen, Sketchpad answered all two hundred twenty sums and products, with sums up to a thousand digits; the strongest of ten other models answered two hundred seventeen."
+		},
+		{
+			"id": "N17",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 159,
+				"completion_tokens": 188,
+				"total_tokens": 347,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 159,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 151,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 37
+				}
+			},
+			"usd": 0.0104315,
+			"transcript": "Algebra combines these procedures. Here the code arranges the symbolic steps, while the model computes every new number."
+		},
+		{
+			"id": "N18",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 162,
+				"completion_tokens": 208,
+				"total_tokens": 370,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 162,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 168,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 40
+				}
+			},
+			"usd": 0.011557,
+			"transcript": "The certificate covers the procedures' model steps; the runtime that moves the view is ordinary code, outside the computer-checked proof."
+		},
+		{
+			"id": "N19",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 166,
+				"completion_tokens": 235,
+				"total_tokens": 401,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 166,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 189,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 46
+				}
+			},
+			"usd": 0.012971,
+			"transcript": "A gate is one dial on the adapter. At zero, the model is the original, bit for bit; at one, it uses the sheet."
+		},
+		{
+			"id": "N20",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 162,
+				"completion_tokens": 227,
+				"total_tokens": 389,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 162,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 185,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 42
+				}
+			},
+			"usd": 0.012665,
+			"transcript": "We then trained a dialogue adapter to open the sheet when a question needs arithmetic. Here the dial stays at one throughout the conversation."
+		},
+		{
+			"id": "N21",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 183,
+				"completion_tokens": 406,
+				"total_tokens": 589,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 183,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 337,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 69
+				}
+			},
+			"usd": 0.0227155,
+			"transcript": "It learned from example dialogues and the original model\u2019s good replies. In on-policy distillation, the original model taught it on replies the adapted model generated. Then reinforcement learning rewarded correct answers, using a method called G R P O."
+		},
+		{
+			"id": "N22",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 162,
+				"completion_tokens": 208,
+				"total_tokens": 370,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 162,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 168,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 40
+				}
+			},
+			"usd": 0.011557,
+			"transcript": "There is a cost: on fresh grade-school word problems, the dialogue adapter scored five point eight percentage points below the original model."
+		},
+		{
+			"id": "N23",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 160,
+				"completion_tokens": 208,
+				"total_tokens": 368,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 160,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 168,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 40
+				}
+			},
+			"usd": 0.011552,
+			"transcript": "Inside the model, we inspect its intermediate numbers after each processing layer, and test what happens when we deliberately change them."
+		},
+		{
+			"id": "N24",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 163,
+				"completion_tokens": 235,
+				"total_tokens": 398,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 163,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 192,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 43
+				}
+			},
+			"usd": 0.0131255,
+			"transcript": "For the arithmetic adapter, a push toward another digit after layer twenty changed all eighty multiplication cases tested. Through layer fifteen, none changed."
+		},
+		{
+			"id": "N25",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 189,
+				"completion_tokens": 402,
+				"total_tokens": 591,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 189,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 327,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 75
+				}
+			},
+			"usd": 0.0221505,
+			"transcript": "Sketchpad runs in your browser. Give it two long numbers and watch it work: every digit is written by the model, and before it starts, it rechecks its weakest views on your own graphics processor. The paper, the code and the model are open."
+		}
+	],
+	"total_usd": 0.347612
+}

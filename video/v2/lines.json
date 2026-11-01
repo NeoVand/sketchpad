@@ -1,0 +1,157 @@
+{
+	"model": "gpt-audio-1.5",
+	"voice": "cedar",
+	"instructions": "You are the narrator of a short research film. Read the user's text aloud exactly as written, word for word, adding nothing and leaving nothing out, and say nothing else. Voice: a calm, plain, confident documentary narrator; level and precise, at a natural, steady pace; no excitement, no salesmanship. Pause briefly at colons and semicolons. Maintain the same warm, even cedar voice on every line. Speak at an unhurried but flowing documentary pace, approximately 160 words per minute. No dramatic pauses between sentences. Pronounce LoRA as low-rah and Qwen as kwen.",
+	"lines": [
+		{
+			"id": "N01",
+			"text": "A language model learns to predict text. It can answer a long sum with one digit wrong, and give no warning.",
+			"spoken": "A language model learns to predict text. It can answer a long sum with one digit wrong, and give no warning.",
+			"source": "P Introduction, opening paragraph; N “Calculator and baselines,” “Wrong digits in GPT and Claude misses.”"
+		},
+		{
+			"id": "N02",
+			"text": "Here, GPT-6.1 Sol added two three-hundred-digit numbers. One digit of its answer was wrong.",
+			"spoken": "Here, G P T six point one Sol added two three-hundred-digit numbers. One digit of its answer was wrong.",
+			"source": "P Introduction; N same wrong-digit row, problem 71; exact answer in `paper/baselines/results.json`."
+		},
+		{
+			"id": "N03",
+			"text": "Sketchpad gives a small vision-language model, Qwen 3.5 with 0.8 billion parameters, which reads images as well as text, a working sheet: the paper you would use for long multiplication.",
+			"spoken": "Sketchpad gives a small vision-language model, Qwen three point five with zero point eight billion parameters, which reads images as well as text, a working sheet: the paper you would use for long multiplication.",
+			"source": "P Abstract; §The sheet machine, Model and Views; N “Model, adapter, views.”"
+		},
+		{
+			"id": "N04",
+			"text": "Its view is just three cells, drawn as a small image. The model reads those printed digits through its image reader.",
+			"spoken": "Its view is just three cells, drawn as a small image. The model reads those printed digits through its image reader.",
+			"source": "P §The sheet machine, Views; Methods, Views, prompts and tables; N “View size; image tokens.”"
+		},
+		{
+			"id": "N05",
+			"text": "One forward pass, one trip through the model, produces a digit, a carry for the next column, and the next operation.",
+			"spoken": "One forward pass, one trip through the model, produces a digit, a carry for the next column, and the next operation.",
+			"source": "P Abstract; §The sheet machine, Views and Runtime; N “View size; image tokens”; Fig. 1a."
+		},
+		{
+			"id": "N06",
+			"text": "Only this fixed view and operation enter each step. Earlier steps stay on the sheet, so the input cannot keep growing.",
+			"spoken": "Only this fixed view and operation enter each step. Earlier steps stay on the sheet, so the input cannot keep growing.",
+			"source": "P §The sheet machine, Views; Methods, Views, prompts and tables; N “Table sizes.”"
+		},
+		{
+			"id": "N07",
+			"text": "We trained a LoRA adapter: about ten million extra weights, a little over one percent of the model, learned on top of the frozen original.",
+			"spoken": "We trained a LoRA adapter: about ten million extra weights, a little over one percent of the model, learned on top of the frozen original.",
+			"source": "P §The sheet machine, Model; Methods, Model and adapter; N “LoRA rank, alpha; layers,” “Adapter parameters; share of model.”"
+		},
+		{
+			"id": "N08",
+			"text": "It learned from every view and its correct answer, returning to the hardest cases, while its ordinary language stayed close to the original’s.",
+			"spoken": "It learned from every view and its correct answer, returning to the hardest cases, while its ordinary language stayed close to the original’s.",
+			"source": "P §The sheet machine, Training; Methods, Training; N “E7 recipe,” “E7 objective, Eq. (loss).”"
+		},
+		{
+			"id": "N09",
+			"text": "The trained model runs here in the browser. Code moves the view; the model computes the result digits.",
+			"spoken": "The trained model runs here in the browser. Code moves the view; the model computes the result digits.",
+			"source": "P §The sheet machine, Runtime; §Certification, device check; N “Precisions on the page,” “Device certificate.”"
+		},
+		{
+			"id": "N10",
+			"text": "Longer problems need more steps, but no new kinds of view. The complete list has two thousand, four hundred and forty-six.",
+			"spoken": "Longer problems need more steps, but no new kinds of view. The complete list has two thousand, four hundred and forty-six.",
+			"source": "P §The sheet machine, Tables, Eq. views; §Certification, Theorem Exactness on views; N “Table sizes.”"
+		},
+		{
+			"id": "N11",
+			"text": "Exact means the model’s output matches the arithmetic procedure at every step. Using Lean, software that checks every step of a mathematical proof, we proved that being right on these views means being right on problems of any length.",
+			"spoken": "Exact means the model’s output matches the arithmetic procedure at every step. Using Lean, software that checks every step of a mathematical proof, we proved that being right on these views means being right on problems of any length.",
+			"source": "P §Certification, Theorem Exactness on views and following scope paragraph; N “Lean,” “Sheet form” and “Lean: Theorems 1, 3b, 4.”"
+		},
+		{
+			"id": "N12",
+			"text": "Chain of thought, where a model writes out its reasoning and each step reads every earlier step, is different. Its possible histories never stop growing, and we proved that no finite test can vouch for it at every length.",
+			"spoken": "Chain of thought, where a model writes out its reasoning and each step reads every earlier step, is different. Its possible histories never stop growing, and we proved that no finite test can vouch for it at every length.",
+			"source": "P Introduction; §Certification, Theorem Necessity of the pinned-sheet policy; Discussion; N “Lean,” build and theorem records."
+		},
+		{
+			"id": "N13",
+			"text": "A certificate checks every view these procedures can meet, on the device running them, and records the results so anyone can repeat the check.",
+			"spoken": "A certificate checks every view these procedures can meet, on the device running them, and records the results so anyone can repeat the check.",
+			"source": "P §Certification, definition and device check; Methods, Certification; Appendix Certificate format; N “Device certificate,” “Full check time on the M4.”"
+		},
+		{
+			"id": "N14",
+			"text": "The margin is the correct answer's score above its nearest rival. On the laptop's graphics processor, every view passed; the smallest gap was 3.02.",
+			"spoken": "The margin is the correct answer's score above its nearest rival. On the laptop's graphics processor, every view passed; the smallest gap was three point zero two.",
+			"source": "P §Certification, Eq. margin and device check; N “Device min margin per table.”"
+		},
+		{
+			"id": "N15",
+			"text": "That gap survives rounding if each score moves by less than 1.51. We check on the device because different hardware can change scores. Running many views together in a batch moved scores by at most 1.09.",
+			"spoken": "That gap survives rounding if each score moves by less than one point five one. We check on the device because different hardware can change scores. Running many views together in a batch moved scores by at most one point zero nine.",
+			"source": "P §Certification, robustness theorem and device/batch checks; N “Batching, arithmetic adapter (E7) on the M4,” “Device certificate.”"
+		},
+		{
+			"id": "N16",
+			"text": "In a pre-registered comparison, with problems and rules fixed before answers were seen, Sketchpad answered all 220 sums and products, with sums up to a thousand digits; the strongest of ten other models answered 217.",
+			"spoken": "In a pre-registered comparison, with problems and rules fixed before answers were seen, Sketchpad answered all two hundred twenty sums and products, with sums up to a thousand digits; the strongest of ten other models answered two hundred seventeen.",
+			"source": "P §Arithmetic, Comparison and Abstract (sums 10–1,000 digits; product inputs 2–20); N “Frontier, 20 per length,” “Sketchpad baseline run.”"
+		},
+		{
+			"id": "N17",
+			"text": "Algebra combines these procedures. Here the code arranges the symbolic steps, while the model computes every new number.",
+			"spoken": "Algebra combines these procedures. Here the code arranges the symbolic steps, while the model computes every new number.",
+			"source": "P §Algebra, Theorem Composition and textbook runtime; Methods, Algebra; Fig. 4a; N “Algebra.”"
+		},
+		{
+			"id": "N18",
+			"text": "The certificate covers the procedures' model steps; the runtime that moves the view is ordinary code, outside the computer-checked proof.",
+			"spoken": "The certificate covers the procedures' model steps; the runtime that moves the view is ordinary code, outside the computer-checked proof.",
+			"source": "P §Certification, paragraph after Theorem Exactness on views; §Discussion; N “Lean,” sheet theorem scope."
+		},
+		{
+			"id": "N19",
+			"text": "A gate is one dial on the adapter. At zero, the model is the original, bit for bit; at one, it uses the sheet.",
+			"spoken": "A gate is one dial on the adapter. At zero, the model is the original, bit for bit; at one, it uses the sheet.",
+			"source": "P §Gating, gate equation and identity; Methods, Gating; N “Identity test,” “Gate identity rows.”"
+		},
+		{
+			"id": "N20",
+			"text": "We then trained a dialogue adapter to open the sheet when a question needs arithmetic. Here the dial stays at one throughout the conversation.",
+			"spoken": "We then trained a dialogue adapter to open the sheet when a question needs arithmetic. Here the dial stays at one throughout the conversation.",
+			"source": "P §Gating, dialogue adapter and runtime-set gate; Methods, Dialogue fine-tuning; N “Revision after the deep review,” “Every dialogue stage keeps table rows and replay.”"
+		},
+		{
+			"id": "N21",
+			"text": "It learned from example dialogues and the original model’s good replies. In on-policy distillation, the original model taught it on replies the adapted model generated. Then reinforcement learning rewarded correct answers, using a method called GRPO.",
+			"spoken": "It learned from example dialogues and the original model’s good replies. In on-policy distillation, the original model taught it on replies the adapted model generated. Then reinforcement learning rewarded correct answers, using a method called G R P O.",
+			"source": "P §Gating, training paragraph; Methods, Dialogue fine-tuning; N “Training data,” “Every dialogue stage keeps table rows and replay.”"
+		},
+		{
+			"id": "N22",
+			"text": "There is a cost: on fresh grade-school word problems, the dialogue adapter scored 5.8 percentage points below the original model.",
+			"spoken": "There is a cost: on fresh grade-school word problems, the dialogue adapter scored five point eight percentage points below the original model.",
+			"source": "P §Gating, fresh-item result; Methods, Dialogue fine-tuning; N “Fresh items, dialogue adapter minus base: GSM8K.”"
+		},
+		{
+			"id": "N23",
+			"text": "Inside the model, we inspect its intermediate numbers after each processing layer, and test what happens when we deliberately change them.",
+			"spoken": "Inside the model, we inspect its intermediate numbers after each processing layer, and test what happens when we deliberately change them.",
+			"source": "P §Mechanism, lens and intervention definitions; Methods, Mechanism; N “Inside the model,” “Fig. 6b projection,” “Intervention trials.”"
+		},
+		{
+			"id": "N24",
+			"text": "For the arithmetic adapter, a push toward another digit after layer twenty changed all eighty multiplication cases tested. Through layer fifteen, none changed.",
+			"spoken": "For the arithmetic adapter, a push toward another digit after layer twenty changed all eighty multiplication cases tested. Through layer fifteen, none changed.",
+			"source": "P §Mechanism, intervention paragraph; Fig. 6c; N “Intervention by depth (E7).”"
+		},
+		{
+			"id": "N25",
+			"text": "Sketchpad runs in your browser. Give it two long numbers and watch it work: every digit is written by the model, and before it starts, it rechecks its weakest views on your own graphics processor. The paper, the code and the model are open.",
+			"spoken": "Sketchpad runs in your browser. Give it two long numbers and watch it work: every digit is written by the model, and before it starts, it rechecks its weakest views on your own graphics processor. The paper, the code and the model are open.",
+			"source": "P §Certification, final paragraph; §Discussion; N “Weakest tenth re-checked on a new device.”"
+		}
+	]
+}
