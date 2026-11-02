@@ -88,7 +88,7 @@ well above it on long products (0.7 / 0.3 / 0.35 at 10 / 15 / 20 digits against 
    $22, over the $15 cap, so the rule fixed in `DECISIONS.md` chose the registration's fallback, the FP8 release
    (block-wise FP8 weights, bf16 KV cache; KV cache 635,361 tokens, concurrency 17.24). It finished all 220
    replies in 73 min, inside its 9,000 s deadline; nothing was cut.
-2. **Sketchpad in lockstep.** The polyformer evaluation runs one problem at a time; here every problem's runtime
+2. **Sketchpad in lockstep.** the research archive's evaluation runs one problem at a time; here every problem's runtime
    (`e5_union.run_sum`, `e4_mul.run`, unchanged) runs in its own thread and one batched forward (`e5_union.batch`, the
    builder the certificate uses) answers all pending views. Every step's answer matched its table row, so batching
    changed no step.
@@ -96,7 +96,7 @@ well above it on long products (0.7 / 0.3 / 0.35 at 10 / 15 / 20 digits against 
    image; `causal_conv1d` falls back to the reference PyTorch implementation (as in every earlier run). The PyTorch
    adapter is the ungated E7, which CALC3 showed bit-identical to gate 1 (ONNX Runtime identity test).
 4. **Stock-model precision.** vLLM 0.31.0 runs the 0.8B in bf16 (its checkpoint dtype) and the 27B as the FP8
-   release; the registration does not fix a dtype. The 0.8B weights came from the polyformer volume snapshot, whose
+   release; the registration does not fix a dtype. The 0.8B weights came from the research archive's volume snapshot, whose
    sha256 (`04b1c301…`) equals Qwen/Qwen3.5-0.8B on the Hub; Sketchpad's base is the same file.
 5. **Scoring choices** (`DECISIONS.md`, `score.py`): no `</think>` in thinking mode means no answer; the answer in a box
    is its last digit run; the 300-character fallback takes the run inside the window (taking a run cut by the window's

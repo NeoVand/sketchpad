@@ -17,7 +17,7 @@ logits `ℓ_m = ⟨y, c_m⟩/√D`. The snap sets the next state to the code of 
 logit. Row-vector products `z Q_N` of the source are written as linear maps `Q_N z`; `√D` is `sD`.
 -/
 
-namespace Polyformer.Interp
+namespace Sketchpad.Interp
 
 open Finset Real Filter Topology
 open scoped RealInnerProductSpace
@@ -836,4 +836,4 @@ theorem gaps_le_two_kappa (hD : 0 < W.sD) {n s : Nm} {a b : Lt} (hcn : ‖W.c n�
       _ ≤ (‖W.QN‖ + ‖W.QL‖) * ‖W.KL‖ * (2 * W.sD) := mul_le_mul_of_nonneg_left hfd (hk _)
       _ = _ := by ring
 
-end Polyformer.Interp
+end Sketchpad.Interp

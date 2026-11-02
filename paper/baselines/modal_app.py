@@ -1,26 +1,28 @@
 """Modal app `sketchpad-baselines` for BASELINES.md (Figure 1c): Sketchpad and the stock Qwen3.5 models on one fixed set.
 
-Volumes: `sketchpad-baselines` (new; outputs under /out/<job>/, model downloads under /out/hf/) and the polyformer
-volume `polyformer-sketch`, mounted read-only at /psk (the Qwen3.5-0.8B snapshot at /psk/model, the E7 run).
-The polyformer sketch scripts are mounted unchanged at /src/sketch; this folder at /src/baselines.
+Volumes: `sketchpad-baselines` (new; outputs under /out/<job>/, model downloads under /out/hf/) and the training
+volume named by SKETCH_VOLUME, mounted read-only at /psk (the Qwen3.5-0.8B snapshot at /psk/model, the E7 run).
+The sketch scripts of the research archive (SKETCH_SRC) are mounted unchanged at /src/sketch; this folder at
+/src/baselines. SKETCH_MODEL_LINK is the model path those scripts hard-code.
 
   uvx --with modal modal deploy modal_app.py
   uvx --with modal python spawn.py <what>        # spawns, records the call id in calls.json, exits
 """
+import os
 import pathlib
 
 import modal
 
 HERE = pathlib.Path(__file__).parent
-SKETCH = pathlib.Path("/Users/neo/repos/polyformer/research/sketch")
+SKETCH = pathlib.Path(os.environ["SKETCH_SRC"])
 APP = "sketchpad-baselines"
 out_vol = modal.Volume.from_name("sketchpad-baselines", create_if_missing=True)
-psk_vol = modal.Volume.from_name("polyformer-sketch").read_only()
+psk_vol = modal.Volume.from_name(os.environ["SKETCH_VOLUME"]).read_only()
 app = modal.App(APP)
 
 OWN = ["raw/**", "out/**", "results.json", "RESULT.md", "calls.json", "__pycache__/**"]
 
-# Sketchpad: the image of the polyformer E7 runs (run_h100_fast in polyformer research/sketch/modal/sketch_modal.py),
+# Sketchpad: the image of the E7 runs (run_h100_fast in the archive's research/sketch/modal/sketch_modal.py),
 # pip layers first, local files last
 sk_image = (modal.Image.debian_slim(python_version="3.12")
             .pip_install("torch==2.14.0", "torchvision", "transformers==5.17.0", "peft", "pillow", "accelerate",
@@ -29,7 +31,8 @@ sk_image = (modal.Image.debian_slim(python_version="3.12")
             .add_local_dir(SKETCH, "/src/sketch",
                            ignore=["**/*.png", "**/*.pt", "**/*.safetensors", "e3_browser/**", "e0/**", "modal/**"])
             .add_local_file("/System/Library/Fonts/Menlo.ttc", "/System/Library/Fonts/Menlo.ttc")
-            .add_local_file(SKETCH.parent / "PRIMER.md", "/Users/neo/repos/polyformer/research/PRIMER.md")
+            .add_local_file(SKETCH.parent / "PRIMER.md", str(SKETCH.parent / "PRIMER.md"))
+            .env({"SKETCH_MODEL_LINK": os.environ.get("SKETCH_MODEL_LINK", "")})
             .add_local_dir(HERE, "/src/baselines", ignore=OWN))
 
 # stock models: the official vLLM image (vLLM 0.31.0, 5 Oct 2026)

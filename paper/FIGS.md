@@ -12,11 +12,11 @@ worktree, writing the text from the same plan.
   `git add -A`.
 - **Pushing:** push nothing.
 
-## Process (Neo's, from polyformer `research/FIG_V6_BRIEF.md`; read it for his taste)
+## Process (Neo's, from the research archive's `research/FIG_V6_BRIEF.md`; read it for his taste)
 
-1. **Style.** Copy polyformer `research/figstyle/` (palette.json, palette.py, nmi.mplstyle) to `paper/figstyle/`.
+1. **Style.** Copy the research archive's `research/figstyle/` (palette.json, palette.py, nmi.mplstyle) to `paper/figstyle/`.
    Maths in matplotlib uses `math_fontfamily="cm"`, and tick labels are Helvetica.
-2. **Inspiration.** Use the OpenAI Images API with `gpt-image-2.5-sunburst` only. Source `~/.polyformer_keys` in the
+2. **Inspiration.** Use the OpenAI Images API with `gpt-image-2.5-sunburst` only. Source the local keys file in the
    shell, and never print, log or commit a key.
    - Write a long, explicit prompt for each figure: its content, panels, layout, the palette (Cobalt and Rose, white),
      typography, mood, and references (Nature, Quanta, Distill).
@@ -32,7 +32,7 @@ worktree, writing the text from the same plan.
    - 3D in Blender only where it earns its place. Blender 5.2 runs headless with `Blender -b -P script.py`; use
      absolute render paths.
 4. **Data.**
-   - Margins are in the certificate (`static/sketchpad/models/arithmetic/certificate.json` in polyformer, or the
+   - Margins are in the certificate (`static/sketchpad/models/arithmetic/certificate.json` in the research archive, or the
      pinned Hugging Face revision `2df87172`, whose file is already on disk).
    - T3 timings: `research/sketch/calc3_t3.json`.
    - Algebra: `src/lib/sketchpad/program/NOTES.md` and its metrics.

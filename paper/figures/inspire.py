@@ -8,7 +8,7 @@ we know. A call starts only while the estimate plus $0.50 per call in flight sta
 
 The key is read from the environment and never printed or written:
 
-    source ~/.polyformer_keys && python paper/figures/inspire.py [ids ...]
+    OPENAI_API_KEY=... python paper/figures/inspire.py [ids ...]
 """
 import base64
 import concurrent.futures as cf

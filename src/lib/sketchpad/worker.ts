@@ -1010,7 +1010,7 @@ async function watchDevice() {
 	});
 }
 
-/** what a call on a lost device fails with in Chrome (CALC3 T3, polyformer research/sketch/CALC3.md) */
+/** what a call on a lost device fails with in Chrome (measured on the reference device) */
 const GPU_GONE = /external Instance reference|device (is |was )?lost|GPUDevice/i;
 
 /**
@@ -1362,7 +1362,7 @@ async function tick(m: Extract<ToWorker, { type: 'tick' }>) {
  * A chat reply under way. At gate 1 the model may open its sheet: it writes a ```sheet block (a work order) and
  * closes it; the reply then stops there, the page runs the block on the sheet (every digit by the model, in ticks),
  * and the result lines come back as tokens (`\n` + lines + `\n`) for the reply to go on from: the protocol E8 was
- * trained and evaluated with (polyformer research/sketch/chat/CHAT3.md), at most two blocks a reply, rounds of up
+ * trained and evaluated with (the paper, Methods), at most two blocks a reply, rounds of up
  * to `maxNew` tokens, greedy. The token ids are kept here between rounds, so the reply goes on from exactly the tokens
  * it wrote.
  */

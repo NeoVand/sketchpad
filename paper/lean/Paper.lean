@@ -1,7 +1,7 @@
 import Sheet
-import Polyformer.Compose
-import Polyformer.Unpinned
-import Polyformer.Policy
+import Sketchpad.Compose
+import Sketchpad.Unpinned
+import Sketchpad.Policy
 
 /-!
 # The paper's statements under the paper's numbering
@@ -11,7 +11,7 @@ One alias per statement of the Sketchpad paper (Certification, and Appendix A, "
 statement; the axiom check for every alias is at the end of the file.
 
 Where a statement has a sheet form and a token form, `_sheet` is the sheet machine (`Sheet.lean`) and `_token`
-the pinned token step (`Polyformer/Pinned.lean`, `Polyformer/Compose.lean`).
+the pinned token step (`Sketchpad/Pinned.lean`, `Sketchpad/Compose.lean`).
 -/
 
 namespace Sketchpad.Paper
@@ -23,65 +23,65 @@ alias theorem1_iff := Sketchpad.sheet_exact_iff
 /-- Theorem 1, the certificate: `R_T(I) ⊆ W` and `f = T` on `W` give exact runs at every length. -/
 alias theorem1_sheet := Sketchpad.sheet_certified
 /-- Theorem 1, token form. -/
-alias theorem1_token := Polyformer.Pinned.pinned_regeneration_iff
+alias theorem1_token := Sketchpad.Pinned.pinned_regeneration_iff
 
 /-! ### Theorem 2 (Necessity of the pinned policy) -/
 
 /-- Theorem 2, precise form: for every finite test suite, a decoder passes every test yet errs unpinned. -/
-alias theorem2_no_finite_test := Polyformer.Pinned.no_finite_test_suite
+alias theorem2_no_finite_test := Sketchpad.Pinned.no_finite_test_suite
 /-- Theorem 2, the counterexample decoder (Definition "The counterexample", parts (a)–(d)). -/
-alias theorem2_counterexample := Polyformer.Pinned.theorem8a_counterexample
+alias theorem2_counterexample := Sketchpad.Pinned.theorem8a_counterexample
 /-- Theorem 2, remark: testing every input up to a given length does not suffice either. -/
-alias theorem2_no_finite_check := Polyformer.Pinned.no_finite_check
+alias theorem2_no_finite_check := Sketchpad.Pinned.no_finite_check
 
 /-! ### Theorem 3 (Robustness to perturbation) -/
 
 /-- Theorem 3, first statement: a margin `> 2τ` and logits within `τ` fix the argmax. -/
-alias theorem3_argmax := Polyformer.Pinned.sel_eq_of_close
+alias theorem3_argmax := Sketchpad.Pinned.sel_eq_of_close
 /-- Theorem 3, sheet form: an execution path within `τ` of the certified logits runs exactly. -/
 alias theorem3_sheet := Sketchpad.sheet_exact_of_close
 /-- Theorem 3, token form. -/
-alias theorem3_token := Polyformer.Pinned.regeneration_of_close
+alias theorem3_token := Sketchpad.Pinned.regeneration_of_close
 /-- Theorem 3 for unpinned decoding (the converse remark after Theorem 2). -/
-alias theorem3_unpinned := Polyformer.Pinned.unpinned_exact_of_close
+alias theorem3_unpinned := Sketchpad.Pinned.unpinned_exact_of_close
 
 /-! ### Theorem 4 (Composition) -/
 
 /-- Theorem 4a: a wrong answer needs a wrong executor, table, transcription or combining program. -/
-alias theorem4a := Polyformer.Pinned.error_decomposition
+alias theorem4a := Sketchpad.Pinned.error_decomposition
 /-- Theorem 4b, sheet form: the measure bound for calls executed by certified sheet procedures. -/
 alias theorem4b_sheet := Sketchpad.sheet_error_bound
 /-- Theorem 4b, sheet form: the hypothesis `E_i(x_i) = T_i(x_i)` from Theorem 1. -/
 alias theorem4b_sheet_exact := Sketchpad.sheet_compose_exact
 /-- Theorem 4b, token form: the measure bound. -/
-alias theorem4b_token := Polyformer.Pinned.error_bound
+alias theorem4b_token := Sketchpad.Pinned.error_bound
 /-- Theorem 4b, token form: the hypothesis `E_i(x_i) = T_i(x_i)`. -/
-alias theorem4b_token_exact := Polyformer.Pinned.compose_exact
+alias theorem4b_token_exact := Sketchpad.Pinned.compose_exact
 
 /-! ### Lemmas 1–4 -/
 
 /-- Lemma 1 (Margins decide the argmax). -/
-alias lemma1 := Polyformer.Pinned.sel_eq_of_close
+alias lemma1 := Sketchpad.Pinned.sel_eq_of_close
 /-- Lemma 1, second statement (`τ = 0`, strict margin). -/
-alias lemma1_strict := Polyformer.Pinned.sel_eq_of_strict
+alias lemma1_strict := Sketchpad.Pinned.sel_eq_of_strict
 /-- Lemma 2 (Regeneration), final states. -/
-alias lemma2 := Polyformer.Interp.regeneration
+alias lemma2 := Sketchpad.Interp.regeneration
 /-- Lemma 2, traces. -/
-alias lemma2_trace := Polyformer.Pinned.regeneration_trace_iff
+alias lemma2_trace := Sketchpad.Pinned.regeneration_trace_iff
 /-- Lemma 2, equal traces iff equal final states. -/
-alias lemma2_trace_iff_fold := Polyformer.Pinned.scanl_eq_iff_foldl_eq
+alias lemma2_trace_iff_fold := Sketchpad.Pinned.scanl_eq_iff_foldl_eq
 /-- Lemma 3 (Steps that read the history), with any closed set in place of the reachable set. -/
-alias lemma3 := Polyformer.Pinned.histRun_eq_of_closed
+alias lemma3 := Sketchpad.Pinned.histRun_eq_of_closed
 /-- Lemma 3: the reachable set is closed. -/
-alias lemma3_reach_closed := Polyformer.Pinned.reach_closed
+alias lemma3_reach_closed := Sketchpad.Pinned.reach_closed
 /-- Lemma 4 (i): a causal decoder's state at position `p` depends only on tokens `0, …, p`. -/
-alias lemma4i := Polyformer.Pinned.resid_congr
+alias lemma4i := Sketchpad.Pinned.resid_congr
 /-- Lemma 4 (ii): the cached forward computes the states of `Π b` at every layer and position. -/
-alias lemma4ii := Polyformer.Pinned.cache_sound
+alias lemma4ii := Sketchpad.Pinned.cache_sound
 /-- Lemma 4 (ii): hence the logits of `Π b`. -/
-alias lemma4ii_logits := Polyformer.Pinned.cachedForward_eq
+alias lemma4ii_logits := Sketchpad.Pinned.cachedForward_eq
 /-- Lemma 4 (iii): token-by-token decoding of a two-token block on the cache gives the logits of `Π b₁ b₂`. -/
-alias lemma4iii := Polyformer.Pinned.policy_tick_eq
+alias lemma4iii := Sketchpad.Pinned.policy_tick_eq
 
 end Sketchpad.Paper
 

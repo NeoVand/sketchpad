@@ -37,7 +37,7 @@ not run, never scored.
 
 The adapter is the published file (`mohsenvand/sketchpad-0.8b-preview` at `2df87172`, `arithmetic/adapter`,
 sha256 `453ae613…`), downloaded in the job and checked, on the base whose weights hash to `04b1c301…` (= Qwen3.5-0.8B,
-the same file the stock 0.8B runs use). fp32 PyTorch as in the polyformer E7 evaluation; flash-linear-attention kernels
+the same file the stock 0.8B runs use). fp32 PyTorch as in the research archive's E7 evaluation; flash-linear-attention kernels
 as in the E7 training and evaluation image. The certificate (2,446 rows) is recomputed in the job before any problem.
 
 ## The probe and the choice (31 Oct, UTC 03:23, before any reply was scored)

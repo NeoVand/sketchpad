@@ -1,5 +1,5 @@
 /**
- * The site's one palette, Cobalt and Rose (polyformer research/figstyle/palette.json at 3185c95b), shared by the paper,
+ * The site's one palette, Cobalt and Rose (`paper/figstyle/palette.json`), shared by the paper,
  * the demo and the figures. The site is light only. layout.css holds the same colours as CSS tokens; this module holds
  * them for the canvases, which cannot read CSS.
  *

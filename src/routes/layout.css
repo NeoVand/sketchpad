@@ -4,8 +4,8 @@
 @import 'katex/dist/katex.min.css';
 
 /*
- * Sketchpad's one design system, light only: the paper palette Cobalt and Rose (polyformer
- * research/figstyle/palette.json at 3185c95b) for the paper, the demo and the figures alike. The canvases read the
+ * Sketchpad's one design system, light only: the paper palette Cobalt and Rose (
+ * `paper/figstyle/palette.json`) for the paper, the demo and the figures alike. The canvases read the
  * same colours from src/lib/sketchpad/theme.svelte.ts.
  *
  * Roles: rose is ours (the model's writing on the sheet, certified); cobalt the alternative or stock Qwen; violet

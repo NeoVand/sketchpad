@@ -5,7 +5,7 @@
   python frontier_run.py full   ollama                    # the five open models (frontier_ollama.MODELS)
   python frontier_run.py cost                             # spend so far, from the usage fields
 
-Keys come from the environment (source ~/.polyformer_keys in the same command); nothing here prints or writes one.
+Keys come from the environment; nothing here prints or writes one.
 Replies go to raw/frontier/<model>.jsonl, one JSON object per problem; a problem already there is not asked again.
 """
 

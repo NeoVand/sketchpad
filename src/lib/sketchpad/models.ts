@@ -41,7 +41,7 @@ export interface Program {
 
 /**
  * The program this page runs, and the commits it is pinned at, in one place; everything else follows from it. E8
- * (polyformer research/sketch/chat/CHAT3.md, "E8 shipped") is one model for every tab: at gate 1 it answers every
+ * (the dialogue adapter of the paper, section 6) is one model for every tab: at gate 1 it answers every
  * table row of the sheet machine, Calculate and Algebra, and chats, opening its sheet when a question needs exact
  * arithmetic; at gate 0 it is stock Qwen3.5-0.8B.
  */

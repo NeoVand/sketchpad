@@ -7,6 +7,7 @@ scratch rows at 0.45 ink, a 1 px rule in the middle of a 14 px gap before a rule
 """
 import json
 import os
+import tempfile
 import pathlib
 import sys
 
@@ -25,9 +26,7 @@ PROGRAM = ROOT / "src" / "lib" / "sketchpad" / "program"
 sys.path.insert(0, str(ROOT / "paper" / "figstyle"))
 from palette import P, use, cmap_exact, cmap_density, cmap_div  # noqa: E402,F401
 
-PREVIEW = pathlib.Path(os.environ.get(
-    "FIG_PREVIEW",
-    "/private/tmp/claude-501/-Users-neo-repos-polyformer/c0f48f9a-a2fb-4297-be2d-a48e0a64c3d9/scratchpad/figs"))
+PREVIEW = pathlib.Path(os.environ.get("FIG_PREVIEW", os.path.join(tempfile.gettempdir(), "sketchpad-figs")))
 
 C = {k: v for k, v in P.items() if isinstance(v, str) and v.startswith("#")}
 INK, SOFT, GREY, MIST, TINT = C["ink"], C["ink_soft"], C["blue_grey"], C["blue_mist"], C["tint"]

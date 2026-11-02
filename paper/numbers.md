@@ -1,9 +1,9 @@
 # numbers.md: every number in the paper and where it comes from
 
-Paths: **P** = polyformer repository `main` (`/Users/neo/repos/polyformer`, at `0e81268e`); **C** = polyformer `chat`
-worktree (`/Users/neo/repos/polyformer-wt/chat`, branch `chat` at `1164e8ec`, still running); **S** = this repository,
-branch `paper`; **S-main** = this repository's `main` at `47b0cfe` (the algebra after this branch was cut); **L** = the
-Lean package (`/Users/neo/repos/polyformer-wt/lean-p/research/lean`, branch `lean-p` at `a114d08b`); **HF** = the
+Paths: **P** = the research archive, a separate repository (`main` at `0e81268e`); **C** = its `chat` branch (at
+`1164e8ec`); **S** = this repository, branch `paper`; **S-main** = this repository's `main` at `47b0cfe` (the algebra
+after this branch was cut); **L** = the Lean package, now `paper/lean/` here (recorded at the archive's `lean-p` branch,
+`a114d08b`); **HF** = the
 published model `mohsenvand/sketchpad-0.8b-preview` at `2df87172`, whose certificate is copied in
 `S paper/figures/data/certificate_e7.json`. "Derived" means computed here from a record; the command is given.
 
@@ -11,7 +11,7 @@ published model `mohsenvand/sketchpad-0.8b-preview` at `2df87172`, whose certifi
 
 | Claim | Value | Source |
 |---|---|---|
-| Layers; full attention vs Gated DeltaNet | 24; 6 full attention (depths 4, 8, …, 24), 18 Gated DeltaNet | P `research/sketch/REPORT.md` 57; base `config.json` `layer_types` (`polyformer-wt/models/qwen3.5-0.8b`) |
+| Layers; full attention vs Gated DeltaNet | 24; 6 full attention (depths 4, 8, …, 24), 18 Gated DeltaNet | P `research/sketch/REPORT.md` 57; base `config.json` `layer_types` (`the research archive-wt/models/qwen3.5-0.8b`) |
 | Hidden size, heads, vocabulary | 1,024; 8 query / 2 key-value heads; 248,320 | base `config.json` (`text_config`) |
 | LoRA rank, alpha; layers | r 16, alpha 32, language layers only | P `research/sketch/CALC3.md` 73; adapter `adapter_config.json` |
 | Patched matrices | 150 (q, k, v, o in 6 attention layers; in_proj_qkv, in_proj_z, out_proj in 18 GDN layers; gate, up, down in 24 MLPs) | C `research/sketch/chat/CHAT3.md` 105–108 |
@@ -119,7 +119,7 @@ published model `mohsenvand/sketchpad-0.8b-preview` at `2df87172`, whose certifi
 
 | Claim | Value | Source |
 |---|---|---|
-| Build | `lake build` 3,150 jobs, success; no `sorry`/`admit`/`axiom` | L, run 31 Oct 2026 (`lake build`; `grep -rnE "sorry|admit|^axiom" Polyformer/` empty) |
+| Build | `lake build` 3,150 jobs, success; no `sorry`/`admit`/`axiom` | L, run 31 Oct 2026 (`lake build`; `grep -rnE "sorry|admit|^axiom" The research archive/` empty) |
 | Axioms of the stated theorems | `propext`, `Classical.choice`, `Quot.sound` or a subset | L `lake env lean AxiomCheck.lean`, run 31 Oct 2026 |
 | Sheet form | `Sketchpad.sheet_exact_iff`, `Sketchpad.sheet_certified`: `propext`, `Quot.sound` | S `paper/lean/Sheet.lean`, compiled against L, 31 Oct 2026 |
 | Lean and Mathlib version | 4.35.0 | L `README.md` (toolchain) |

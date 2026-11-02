@@ -1,11 +1,10 @@
-import Polyformer.Pinned
-import Polyformer.Compose
+import Sketchpad.Pinned
+import Sketchpad.Compose
 
 /-!
 # Theorems 1, 3b and 4 in sheet form (the Sketchpad paper, Certification and Appendix A)
 
-The polyformer files in `Polyformer/` (copied unchanged from the polyformer Lean package) prove Theorem P for a
-pinned step on (state, event) pairs: `Polyformer.Pinned.regeneration_trace_iff` and `pinned_regeneration_iff`.
+The files in `Sketchpad/` prove Theorem P for a pinned step on (state, event) pairs: `Sketchpad.Pinned.regeneration_trace_iff` and `pinned_regeneration_iff`.
 Here it is instantiated for a sheet machine, whose state is unbounded (the whole sheet) while the model only ever
 reads a view of it. The same instance gives the sheet forms of composition (Theorem 4b, `sheet_compose_exact`,
 `sheet_error_bound`) and of robustness to perturbation (Theorem 3, `sheet_exact_of_close`).
@@ -26,7 +25,7 @@ Build: `lake build` in this folder (`paper/lean`). No `sorry`; the axiom check i
 
 namespace Sketchpad
 
-open Polyformer.Pinned
+open Sketchpad.Pinned
 
 variable {C V A : Type*}
 
@@ -171,7 +170,7 @@ end Transfer
 
 /-! ## Theorem 4b, sheet form: composition of certified procedures
 
-`Polyformer.Pinned.error_decomposition` (Theorem 4a) holds for any executors `E_i`; Theorem 4b assumes
+`Sketchpad.Pinned.error_decomposition` (Theorem 4a) holds for any executors `E_i`; Theorem 4b assumes
 `E_i(x_i) = T_i(x_i)` for every call. Here each call is executed by a sheet procedure, and the hypothesis is
 Theorem 1 applied to that call's run, whatever the length of its input and the order of the calls. -/
 

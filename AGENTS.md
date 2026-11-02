@@ -34,13 +34,11 @@ After completing the code, ask the user if they want a playground link. Only cal
 
 ## This repository
 
-Sketchpad's paper and live demo, nothing else. It started on 30 Oct 2026 as a clean repository; the exploration that
-led here stays in `NeoVand/polyformer`, which is the lab record.
+Sketchpad's paper and live demo, nothing else. It stands alone: it links to no other repository, and the exploration
+that led here is kept separately.
 
 - **What belongs here:** the demo's runtime and page, the paper, and the scripts that reproduce a number the paper or
-  the page states. Exploration, dead ends and agent logs stay in polyformer.
-- **Porting is one way and recorded.** Every file brought over from polyformer gets a line in `PORTED.md` (path here,
-  path there, polyformer commit). After a file is ported it changes only here; its polyformer copy is frozen.
+  the page states. Exploration, dead ends and agent logs stay out of this repository.
 - **Model files never go in git** (`*.onnx*`, `*.safetensors`, `*.pt`). They live on Hugging Face
   (`mohsenvand/sketchpad-0.8b-preview`, `mohsenvand/sketchpad-0.8b-runs`) and the page loads them pinned by revision.
 - **Pushing `main` publishes the site** (GitHub Pages, `.github/workflows/deploy.yml`). Push only with Neo's OK.
@@ -53,15 +51,15 @@ Neo is the decision-maker and wants to understand every idea well enough to deci
 - **Defines terms on first use.** The first time a method, paper, theorem or piece of jargon appears in a message to
   Neo, give one sentence of what it is and one of why it matters here. Plain words; equations only when they are the
   shortest explanation.
-- **Keeps the glossary current.** `/Users/neo/repos/polyformer/research/meta/GLOSSARY.md` (it moves here with the port) is the shared plain-words reference. When you define a new
+- **Keeps the glossary current.** Neo's glossary (kept outside this repository) is the shared plain-words reference. When you define a new
   term for Neo, append it to the glossary in the same turn (what it is, who/when, why it matters to us). Never put a term
   in a message that is not also in the glossary.
 - **Offers alternatives at the level of the constraint.** At a design decision, list the options that satisfy the goal
-  through different mechanisms, including ones that break one of Neo's conditions (`/Users/neo/repos/polyformer/research/meta/NEO_CONDITIONS.md`),
+  through different mechanisms, including ones that break one of Neo's conditions (kept with the glossary),
   and say which condition each breaks and what it buys. Name the field the problem belongs to and its standard
   solutions before inventing a trick (e.g. forgetting under fine-tuning is continual learning).
 - **Runs the assumptions check.** At every decision, state what we are assuming that Neo did not ask for.
 - **Teaches when asked and when it helps.** Answer Neo's conceptual questions fully; use the project's own numbers as
   examples; be honest about what is settled, what is conjecture, and what we have not read.
-- **Feeds the idea zoo.** Ideas, mechanisms and theorems we meet are candidate entries for `/Users/neo/repos/polyformer/research/meta/IDEA_ZOO.md`
+- **Feeds the idea zoo.** Ideas, mechanisms and theorems we meet are candidate entries for the idea zoo (kept with the glossary)
   (schema there); tag them in the glossary with `[zoo]` so they can be lifted later.

@@ -1,4 +1,4 @@
-import Polyformer.Pinned
+import Sketchpad.Pinned
 import Mathlib.MeasureTheory.Measure.MeasureSpaceDef
 
 /-!
@@ -23,7 +23,7 @@ answer is the glue `g v`, the text after the last result, which reads the result
   P(some quote wrong) + P(glue wrong).
 -/
 
-namespace Polyformer.Pinned
+namespace Sketchpad.Pinned
 
 open MeasureTheory
 
@@ -150,4 +150,4 @@ theorem error_bound {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) {K : ℕ
 
 end Compose
 
-end Polyformer.Pinned
+end Sketchpad.Pinned

@@ -32,11 +32,11 @@ Two control experiments on Modal, for the Sketchpad paper. The budget is $5 in t
 
 ## Method
 
-The model is Qwen3.5-0.8B in fp32, with the same snapshot on the Modal volume `polyformer-sketch` at `/model`.
+The model is Qwen3.5-0.8B in fp32, with the same snapshot on the Modal volume the training volume at `/model`.
 
-Both jobs run on the deployed app `polyformer-sketch`. They use a new function, `ctrl_h100_fast`: an H100 with the flash-linear-attention kernels, as in the E7 training and evaluation job, plus `vol.reload()` at the start.
+Both jobs run on the deployed app the training volume. They use a new function, `ctrl_h100_fast`: an H100 with the flash-linear-attention kernels, as in the E7 training and evaluation job, plus `vol.reload()` at the start.
 
-The scripts are new files in `polyformer/research/sketch/`:
+The scripts are new files in `the research archive's research/sketch/`:
 - `base_control.py`;
 - `steer_sweep.py`, which runs `inside_steer.py` unchanged.
 
@@ -246,9 +246,9 @@ Each cell is the share moved, out of 80 views.
 | `basectl_1825` | `fc-01M6A4GCN32P9ETY3X7M8RBKVB` | `base_control.py`: E7 sanity, `zs`, `zs_tf`, `fs`, `fs_tf` | 142 s |
 | `steersweep_1825` | `fc-01M6A4GDAXDT4AKA95NSHJR59Q` | `steer_sweep.py`: 23 single-depth runs and one multi-depth run | 624 s |
 
-**Cost.** Modal's billing report gives $1.00 for app `polyformer-sketch` in the hour 23:00 UTC on 31 Oct, the only sketch jobs in that hour: $0.948 for the H100, $0.023 for CPU and $0.031 for memory. That is inside the $5 cap. Nothing ran on the M4's GPU.
+**Cost.** Modal's billing report gives $1.00 for app the training volume in the hour 23:00 UTC on 31 Oct, the only sketch jobs in that hour: $0.948 for the H100, $0.023 for CPU and $0.031 for memory. That is inside the $5 cap. Nothing ran on the M4's GPU.
 
-**Outputs on the volume** (`polyformer-sketch`):
+**Outputs on the volume** (the training volume):
 - `runs/basectl_1825/files/`: `base_control.json`, and `base_control_rows.json` with every view's margins and argmax per setting;
 - `runs/steersweep_1825/files/`: `steer_e7_sweep.json`, and `steer_e7_sweep_detail.json` with the counts, the second draw and the states hash.
 
@@ -262,4 +262,4 @@ Each cell is the share moved, out of 80 views.
 - **One run per depth.** The primary sweep runs `inside_steer.py` once per depth, not as one multi-depth call.
 - **Reproduction tolerance.** The depth-20 gate allowed one view of difference; none was needed.
 - **States.** The class means come from E7's M4 build states (1,795 rows), not from the 2,446-row Modal states in `e7atlas_2153`.
-- **Deployment.** The app now mounts `polyformer` main's `research/sketch`. CALC's worktree differs: its `inside_atlas.py` takes `e7`, and main's does not. Redeploy from that worktree before launching its jobs.
+- **Deployment.** The app now mounts `the research archive` main's `research/sketch`. CALC's worktree differs: its `inside_atlas.py` takes `e7`, and main's does not. Redeploy from that worktree before launching its jobs.

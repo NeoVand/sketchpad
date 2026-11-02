@@ -1,4 +1,4 @@
-import Polyformer.Pinned
+import Sketchpad.Pinned
 
 /-!
 # The pinned tick is decoding under a cache policy (BIGIDEA H2, policy TOK)
@@ -22,7 +22,7 @@ max |Δ logit| 0.375 between them and no argmax difference, and each path is bit
 certificate. Which path is certified must match the path that runs (Corollary P2).
 -/
 
-namespace Polyformer.Pinned
+namespace Sketchpad.Pinned
 
 section Policy
 
@@ -80,4 +80,4 @@ theorem policy_regeneration (sel : V → Tok) {prog : List Tok} {δ : Tok → To
 
 end Policy
 
-end Polyformer.Pinned
+end Sketchpad.Pinned

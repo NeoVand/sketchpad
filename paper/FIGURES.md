@@ -2,7 +2,7 @@
 
 Neo, 31 Oct 2026: "I expect you to write a gorgeous paper with really beautiful figures and everything."
 
-House style is Cobalt and Rose (`paper/figstyle/palette.json`, copied from polyformer `research/figstyle/` at
+House style is Cobalt and Rose (`paper/figstyle/palette.json`, copied from the research archive's `research/figstyle/` at
 `3185c95b`):
 
 - rose for ours, cobalt for the strongest alternative, blue-greys (by dash pattern) for baselines, violet only for

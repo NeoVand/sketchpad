@@ -1,4 +1,4 @@
-import Polyformer.Pinned
+import Sketchpad.Pinned
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Data.Fintype.Basic
 
@@ -34,7 +34,7 @@ at most `τ` from the pinned row's, and every certified margin exceeds `2τ`, un
 exact at every length.
 -/
 
-namespace Polyformer.Pinned
+namespace Sketchpad.Pinned
 
 open Finset Real
 
@@ -539,4 +539,4 @@ theorem unpinned_exact_not_certified :
     subst hmid0 hw0
     simp [unpinned] at heq
 
-end Polyformer.Pinned
+end Sketchpad.Pinned

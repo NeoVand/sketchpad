@@ -2,7 +2,7 @@
 
 Registered 31 Oct 2026 by the paper's writer, before any run. Figure 1c plots the share of problems answered exactly
 against operand length for Sketchpad and the strongest alternatives that compute inside the model, with no tool. No
-record has this for the base model or a larger open model (the end-to-end runs in polyformer
+record has this for the base model or a larger open model (the end-to-end runs in the research archive
 `research/sketch/CALC3.md` cover Sketchpad alone, at 2–20 problems per length), so it is run here.
 
 ## What runs
@@ -21,7 +21,7 @@ generator and the set are committed with the results (`paper/baselines/problems.
 Systems:
 
 1. **Sketchpad** (rose): the published E7 adapter (`mohsenvand/sketchpad-0.8b-preview` at `2df87172`, gate 1) in
-   PyTorch on the server, with the reference Python runtime of the polyformer E7 evaluation (adder for sums, the
+   PyTorch on the server, with the reference Python runtime of the research archive's E7 evaluation (adder for sums, the
    multiplier for products). The certificate predicts 1.0 in every cell.
 2. **Qwen3.5-0.8B, thinking** (blue-grey): the stock base, chat template with thinking on, the same weights Sketchpad
    starts from.
@@ -141,7 +141,7 @@ The frontier models will likely solve the short problems; they fail, if at all, 
 
 ### Credential note (at registration)
 
-`ANTHROPIC_API_KEY` in `~/.polyformer_keys` returns `401 authentication_error: invalid x-api-key` on `/v1/models`. The
+`ANTHROPIC_API_KEY` in the local keys file returns `401 authentication_error: invalid x-api-key` on `/v1/models`. The
 OpenAI and Gemini keys work. Claude Opus 5.5 runs only after the key is replaced; until then its row stays "not run".
 
 ### Pilot result and the cut (31 Oct 2026, before the full run)

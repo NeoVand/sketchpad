@@ -18,7 +18,7 @@ check  3(15 − 2) + 5 = 44 = 2·15 + 14  ✓
 ```
 
 There is no retraining and no change to the model or to the sheet the model reads. This is the runtime, in this repo
-(`src/lib/sketchpad/program/`). The code was ported from polyformer at `d5eb4d79` and now lives only here. Work in
+(`src/lib/sketchpad/program/`). The code lives only here. Work in
 this worktree, `/Users/neo/repos/sketchpad-wt/algebra` (branch `algebra-textbook`), commit there, and push nothing.
 
 ## The rule (unchanged from the contract)

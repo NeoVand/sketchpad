@@ -2,7 +2,7 @@
 
 1 November 2026. **Approved for Stage 2; production sources are in `video/v3/`.** Based on
 `video_v3_brief.md`, the current `paper/paper.md` and `paper/numbers.md`, and v1 at
-`582ec59` / `b796bf3`. This is a new script, not a port from polyformer.
+`582ec59` / `b796bf3`. This is a new script.
 
 ## Read and timing
 

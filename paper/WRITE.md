@@ -40,20 +40,20 @@ follow that plan. You may refine a panel there, and say so in your commit messag
 
 ## Sources (read them; every number comes from one)
 
-- **Sketchpad record (polyformer):** `research/sketch/REPORT.md`, `research/sketch/CALC3.md`,
-  `research/sketch/calc3_t3.json`, `research/sketch/chat/CHAT3.md` (on polyformer `main`, merged; the chat stream
-  is still running on the `chat` worktree at `/Users/neo/repos/polyformer-wt/chat`).
+- **Sketchpad record (research archive):** `research/sketch/REPORT.md`, `research/sketch/CALC3.md`,
+  `research/sketch/calc3_t3.json`, `research/sketch/chat/CHAT3.md` (on the research archive's `main`, merged; the chat stream
+  is still running on the `chat` worktree at the research archive's chat worktree).
 - **Plans and prior-art gates:** `research/meta/SKETCHPAD.md`, `SKETCHPAD2.md`, `SKETCHPAD3.md`,
   `research/meta/sketchpad3/*`, `research/audit/sketchpad3_gate/out.md` (the prior-art gate: which sentences are
   allowed), and `research/meta/META_REPORT.md` ("What survives": the theorem prior art is "partially known": Moore
   1956, Cai 2017, Lewandowski 2026, Abbe 2024).
 - **This repo:** `src/lib/sketchpad/program/NOTES.md` (algebra costs and refusals), `src/lib/sketchpad/**` (the
   runtime as built).
-- **The Lean package:** `/Users/neo/repos/polyformer-wt/lean-p/research/lean` (branch `lean-p`), with its
+- **The Lean package:** the research archive (branch `lean-p`), with its
   `README.md` and `STATUS.md`. Before stating a theorem, check that its Lean statement compiles with 0 `sorry`. The
   memory note says elan and Lean 4.35 are at `~/.elan` and not on PATH; check with `#print axioms`.
-- **The glossary:** polyformer `research/meta/GLOSSARY.md`. Use its plain definitions.
-- **Earlier paper work, for voice and figure taste:** polyformer `research/FIG_V6_BRIEF.md` and
+- **The glossary:** the research archive's `research/meta/GLOSSARY.md`. Use its plain definitions.
+- **Earlier paper work, for voice and figure taste:** the research archive's `research/FIG_V6_BRIEF.md` and
   `research/PAPER_V2_PLAN.md`.
 
 ## Rules (Neo's)
@@ -85,7 +85,7 @@ Qwen3.5-0.8B with chain of thought and a larger open model. If no record has it:
 
 1. Register the run first, in `paper/BASELINES.md`: what, how scored, predictions.
 2. Run it on Modal, not the M4, with a cap of $15.
-3. Frontier models through an API: only if you can justify it, cap $10. Keys are in `~/.polyformer_keys`; never print,
+3. Frontier models through an API: only if you can justify it, cap $10. Keys are in the local keys file; never print,
    log or commit them.
 4. Report the spend.
 

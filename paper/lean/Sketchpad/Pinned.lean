@@ -1,4 +1,4 @@
-import Polyformer.Interp
+import Sketchpad.Interp
 
 /-!
 # Theorem P (pinned regeneration), the Theorem 8(a) counterexample, and the lookup lemma
@@ -19,7 +19,7 @@ The table `δ` is any function; the certificate compares the step with it.
 Section 3 derives the abstraction from a causal decoder with a key–value cache (Theorem P(1)).
 -/
 
-namespace Polyformer.Pinned
+namespace Sketchpad.Pinned
 
 open Finset Real
 
@@ -85,7 +85,7 @@ of `δ`, state by state, on every word over `B` iff `F` agrees with `δ` at ever
 theorem regeneration_trace_iff {F δ : St → Ev → St} {B : Set Ev} {s₀ : St} :
     (∀ w : List Ev, (∀ e ∈ w, e ∈ B) → w.scanl F s₀ = w.scanl δ s₀) ↔
       ∀ s ∈ Reach δ B s₀, ∀ e ∈ B, F s e = δ s e := by
-  rw [scanl_eq_iff_foldl_eq, Polyformer.Interp.regeneration δ F s₀ B]
+  rw [scanl_eq_iff_foldl_eq, Sketchpad.Interp.regeneration δ F s₀ B]
   constructor
   · rintro h s ⟨u, hu, rfl⟩ e he
     exact h u hu e he
@@ -333,7 +333,7 @@ theorem pinned_certificate_necessary {step : List Tok → List Tok → Tok} {pro
       tape.foldl (tick step prog) s₀ = tape.foldl δ s₀) :
     Certified step prog δ (Reach δ B s₀) B := by
   rintro s ⟨u, hu, rfl⟩ e he
-  exact (Polyformer.Interp.regeneration δ (tick step prog) s₀ B).mp h u hu e he
+  exact (Sketchpad.Interp.regeneration δ (tick step prog) s₀ B).mp h u hu e he
 
 /-- **Theorem P(2), the equivalence.** The clock's trace equals the table's on every tape over `B`
 iff the step is right at every reachable row, iff it is right on `Q × B` for some closed `Q`. -/
@@ -543,4 +543,4 @@ theorem mealy_tick_logits_eq_row {Tok V : Type*} {logits : List Tok → List Tok
 
 end Mealy
 
-end Polyformer.Pinned
+end Sketchpad.Pinned

@@ -1,6 +1,6 @@
 """Sketchpad on the BASELINES.md problem set, inside the Modal container (function `sketchpad` of modal_app.py).
 
-The system is the reference Python runtime of the polyformer E7 evaluation (`e5_union.evaluate`), unchanged:
+The system is the reference Python runtime of the E7 evaluation in the research archive (`e5_union.evaluate`), unchanged:
 `e5_union.run_sum(act, a, b)` for sums and `e4_mul.run(a, b, mul)` for products, with E7's slotted prompt form
 (`import e7_calc` installs e6_slots' batch and run policy and E7's tables into e5_union). The model is Qwen3.5-0.8B
 (fp32, as in the evaluation) plus the published E7 adapter (`mohsenvand/sketchpad-0.8b-preview` at 2df87172,
@@ -15,6 +15,7 @@ checked against the 2,446 certified rows; the answer is also compared with the t
 
 import hashlib
 import json
+import os
 import pathlib
 import shutil
 import sys
@@ -23,7 +24,7 @@ import threading
 import time
 
 SKETCH_SRC = "/src/sketch"
-MODEL_LINK = "/Users/neo/repos/polyformer-wt/models/qwen3.5-0.8b"  # as hard-coded in e2_column.py
+MODEL_LINK = os.environ["SKETCH_MODEL_LINK"]  # the path hard-coded in e2_column.py (set by modal_app.py)
 MODEL_VOL = "/psk/model"
 VOL_ADAPTER = "/psk/runs/e7_s3_4000_h4.0_stop3.0_fast/files/e7_adapter_s3_h4_v2_cont"
 HF_REPO = "mohsenvand/sketchpad-0.8b-preview"
@@ -90,7 +91,7 @@ def main(job, commit):
         logf.flush()
 
     t0 = time.time()
-    # the polyformer scripts, unchanged, in a scratch copy: only the device is patched ("mps" -> "cuda")
+    # the archive's scripts, unchanged, in a scratch copy: only the device is patched ("mps" -> "cuda")
     work = pathlib.Path(tempfile.mkdtemp(prefix="sk-")) / "sketch"
     shutil.copytree(SKETCH_SRC, work)
     f = work / "e2_column.py"
