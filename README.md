@@ -49,17 +49,16 @@ before it starts.
 
 ## Links
 
-|                                       |                                                                                                                      |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Project page                          | <https://neovand.github.io/sketchpad/>                                                                               |
-| The film (4:49)                       | <https://youtu.be/RTVMdf301sg>                                                                                       |
-| Paper (web)                           | <https://neovand.github.io/sketchpad/paper>                                                                          |
-| Paper (PDF)                           | <https://neovand.github.io/sketchpad/sketchpad.pdf>                                                                  |
-| arXiv                                 | forthcoming                                                                                                          |
-| Demo (runs in the browser, WebGPU)    | <https://neovand.github.io/sketchpad/demo>                                                                           |
-| Model, adapter and device certificate | [mohsenvand/sketchpad-0.8b-preview](https://huggingface.co/mohsenvand/sketchpad-0.8b-preview)                        |
-| Training runs and their evaluations   | [mohsenvand/sketchpad-0.8b-runs](https://huggingface.co/mohsenvand/sketchpad-0.8b-runs)                              |
-| Research history                      | [NeoVand/polyformer](https://github.com/NeoVand/polyformer) ([`PORTED.md`](PORTED.md) lists every file brought over) |
+|                                       |                                                                                               |
+| ------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Project page                          | <https://neovand.github.io/sketchpad/>                                                        |
+| The film (4:49)                       | <https://youtu.be/RTVMdf301sg>                                                                |
+| Paper (web)                           | <https://neovand.github.io/sketchpad/paper>                                                   |
+| Paper (PDF)                           | <https://neovand.github.io/sketchpad/sketchpad.pdf>                                           |
+| arXiv                                 | forthcoming                                                                                   |
+| Demo (runs in the browser, WebGPU)    | <https://neovand.github.io/sketchpad/demo>                                                    |
+| Model, adapter and device certificate | [mohsenvand/sketchpad-0.8b-preview](https://huggingface.co/mohsenvand/sketchpad-0.8b-preview) |
+| Training runs and their evaluations   | [mohsenvand/sketchpad-0.8b-runs](https://huggingface.co/mohsenvand/sketchpad-0.8b-runs)       |
 
 ## Run it locally
 
