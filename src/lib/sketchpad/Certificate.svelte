@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { fmtMargin, rowLabel, type Cert } from './pad.svelte.ts';
+	import Icon from '#lib/ui/Icon.svelte';
+	import { Shield } from '#lib/ui/icons.ts';
 	import { GRID } from './theme.svelte.ts';
 
 	interface Props {
@@ -263,7 +265,8 @@
 		{#if cert.status === 'cached' || cert.status === 'done'}
 			<p>
 				Every view checked on this device{when ? `, ${when}` : ''}{device ? ` (${device})` : ''}.
-				{#if oncheck}<button class="link" disabled={!canCheck} onclick={oncheck}>Check again</button
+				{#if oncheck}<button class="link ic" disabled={!canCheck} onclick={oncheck}
+						><Icon icon={Shield} size={15} />Check again</button
 					>{/if}
 			</p>
 		{:else if cert.status === 'shipped' && cert.shippedFrom}
@@ -279,8 +282,8 @@
 							? `pass here too (lowest ${fmtMargin(sp.min)})`
 							: `: ${fmt(sp.checked - sp.pass)} fail here`}.
 				{/if}
-				{#if oncheck}<button class="link" disabled={!canCheck} onclick={oncheck}
-						>Check every view here</button
+				{#if oncheck}<button class="link ic" disabled={!canCheck} onclick={oncheck}
+						><Icon icon={Shield} size={15} />Check every view here</button
 					>{/if}
 			</p>
 		{/if}

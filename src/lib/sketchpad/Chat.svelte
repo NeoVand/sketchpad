@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { ChatTurn } from './pad.svelte.ts';
+	import Icon from '#lib/ui/Icon.svelte';
+	import { Model, Send, Sheet } from '#lib/ui/icons.ts';
 
 	interface Props {
 		turns: ChatTurn[];
@@ -70,11 +72,11 @@
 <div class="chat">
 	<div class="model" role="group" aria-label="The model to ask">
 		<span class="k">Model</span>
-		<button class:on={gate === 1} aria-pressed={gate === 1} onclick={() => ongate(1)}>
-			with its sheet
+		<button class="ic" class:on={gate === 1} aria-pressed={gate === 1} onclick={() => ongate(1)}>
+			<Icon icon={Sheet} size={15} />with its sheet
 		</button>
-		<button class:on={gate === 0} aria-pressed={gate === 0} onclick={() => ongate(0)}>
-			stock Qwen
+		<button class="ic" class:on={gate === 0} aria-pressed={gate === 0} onclick={() => ongate(0)}>
+			<Icon icon={Model} size={15} />stock Qwen
 		</button>
 	</div>
 	<form onsubmit={submit}>
@@ -85,7 +87,9 @@
 			aria-label="Ask the model a question"
 			maxlength="400"
 		/>
-		<button type="submit" disabled={!ready || busy || !q.trim()}>Ask</button>
+		<button type="submit" class="ic" disabled={!ready || busy || !q.trim()}
+			><Icon icon={Send} size={15} />Ask</button
+		>
 	</form>
 	<ul class="examples" aria-label="Questions to try">
 		{#each examples as ex (ex)}

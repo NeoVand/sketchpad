@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import Icon from '#lib/ui/Icon.svelte';
+	import * as I from '#lib/ui/icons.ts';
+	import type { IconData } from '#lib/ui/icons.ts';
 	import { goto } from '$app/navigation';
 	import { asset, resolve } from '$app/paths';
 	import { AddSheet } from '#lib/sketchpad/adder.ts';
@@ -39,11 +42,11 @@
 
 	/** the demo's four parts */
 	type Part = 'machine' | 'calc' | 'algebra' | 'chat';
-	const PARTS: { id: Part; n: number; label: string; short: string }[] = [
-		{ id: 'machine', n: 1, label: 'The sheet machine', short: 'Sheet' },
-		{ id: 'calc', n: 2, label: 'Calculate', short: 'Calculate' },
-		{ id: 'algebra', n: 3, label: 'Algebra', short: 'Algebra' },
-		{ id: 'chat', n: 4, label: 'Chat', short: 'Chat' }
+	const PARTS: { id: Part; n: number; label: string; short: string; icon: IconData }[] = [
+		{ id: 'machine', n: 1, label: 'The sheet machine', short: 'Sheet', icon: I.Sheet },
+		{ id: 'calc', n: 2, label: 'Calculate', short: 'Calculate', icon: I.Calculator },
+		{ id: 'algebra', n: 3, label: 'Algebra', short: 'Algebra', icon: I.Root },
+		{ id: 'chat', n: 4, label: 'Chat', short: 'Chat', icon: I.Chat }
 	];
 	let part = $state<Part>('machine');
 	/** the sheet machine's operation, kept while another part is shown */
@@ -490,12 +493,15 @@
 
 {#snippet runButton(algebra: boolean)}
 	{#if pad.running}
-		<button class="primary" onclick={() => pad.stop()}>Stop</button>
+		<button class="primary ic" onclick={() => pad.stop()}
+			><Icon icon={I.Stop} size={16} />Stop</button
+		>
 	{:else if calcPart}
 		<button
-			class="primary"
+			class="primary ic"
 			disabled={calcOff || !pad.ready || (!pad.canCalc && !pad.certifying)}
-			onclick={() => calc(algebra ? order : line, algebra)}>Run</button
+			onclick={() => calc(algebra ? order : line, algebra)}
+			><Icon icon={I.Play} size={16} />Run</button
 		>
 		{#if queued}<span class="hint">starts when the check ends</span>
 		{:else if pad.ready && pad.certifying && !pad.canCalc}<span class="hint"
@@ -503,9 +509,9 @@
 			>{/if}
 	{:else}
 		<button
-			class="primary"
+			class="primary ic"
 			disabled={!pad.ready || (!pad.canRun && !certBusy)}
-			onclick={() => go(a, b)}>Run</button
+			onclick={() => go(a, b)}><Icon icon={I.Play} size={16} />Run</button
 		>
 		{#if queued}<span class="hint">starts when the check ends</span>
 		{:else if pad.ready && certBusy}<span class="hint">after the certificate</span>
@@ -524,7 +530,9 @@
 			<!-- a block the cost model says is long: its estimate (no number of the answer), and a way out -->
 			<p class="verdict live">
 				<span>A long block: about {duration(pad.algebraEstimate ?? 0)} by the cost model</span
-				><button class="stop" onclick={() => pad.stop()}>Stop</button>
+				><button class="stop ic" onclick={() => pad.stop()}
+					><Icon icon={I.Stop} size={15} />Stop</button
+				>
 			</p>
 			<p class="live">
 				<span>{fmt(pad.ticks)} {pad.ticks === 1 ? 'view' : 'views'}</span><span
@@ -698,17 +706,18 @@
 	<!-- Recorded and Live under one switch: Live loads the model the first time -->
 	<span class="opts" role="group" aria-label="What the panels show">
 		<button
-			class="plain"
+			class="plain ic"
 			aria-pressed={showing === 'recorded'}
 			onclick={() => show('recorded')}
-			title="A run recorded on the reference device, played back">Recorded</button
+			title="A run recorded on the reference device, played back"
+			><Icon icon={I.Replay} size={15} />Recorded</button
 		>
 		<button
-			class="plain"
+			class="plain ic"
 			aria-pressed={showing === 'live'}
 			disabled={pad.gpuOk !== true || !!pad.loading}
 			onclick={() => show('live')}
-			title="The model on your GPU">Live</button
+			title="The model on your GPU"><Icon icon={I.Chip} size={15} />Live</button
 		>
 	</span>
 {/snippet}
@@ -717,16 +726,17 @@
 	<span class="opts" role="group" aria-label="Pace">
 		<span class="hint">Pace</span>
 		<button
-			class="plain"
+			class="plain ic"
 			aria-pressed={pad.pace === 0}
 			onclick={() => (pad.pace = 0)}
-			title="As fast as the GPU goes">fast</button
+			title="As fast as the GPU goes"><Icon icon={I.Fast} size={15} />fast</button
 		>
 		<button
-			class="plain"
+			class="plain ic"
 			aria-pressed={pad.pace > 0}
 			onclick={() => (pad.pace = 900)}
-			title="A pause between steps, so the inside views can follow each one">slow</button
+			title="A pause between steps, so the inside views can follow each one"
+			><Icon icon={I.Slow} size={15} />slow</button
 		>
 	</span>
 {/snippet}
@@ -785,9 +795,9 @@
 				{@render shownSwitch()}
 				<p class="note num">
 					{#if lastRecording}Recorded on {recordedOn(lastRecording, true)} ·&nbsp;{/if}<button
-						class="link"
+						class="link ic"
 						onclick={load}
-						disabled={pad.gpuOk === null}>Load the model</button
+						disabled={pad.gpuOk === null}><Icon icon={I.Download} size={15} />Load the model</button
 					>
 					to run it on your GPU ({cost === null
 						? '1.9 GB'
@@ -810,9 +820,8 @@
 				class="part"
 				aria-current={part === p.id ? 'true' : undefined}
 				onclick={() => setPart(p.id)}
-				><span class="n num">{p.n}</span><span class="long">{p.label}</span><span class="short"
-					>{p.short}</span
-				></button
+				><span class="n"><Icon icon={p.icon} size={17} /></span><span class="long">{p.label}</span
+				><span class="short">{p.short}</span></button
 			>
 		{/each}
 	</nav>
@@ -821,11 +830,11 @@
 	{#if part === 'machine'}
 		<div class="controls">
 			<div class="ops" role="group" aria-label="Operation">
-				<button class="plain" aria-pressed={pad.op === 'add'} onclick={() => setOp('add')}
-					>Add</button
+				<button class="plain ic" aria-pressed={pad.op === 'add'} onclick={() => setOp('add')}
+					><Icon icon={I.Plus} size={15} />Add</button
 				>
-				<button class="plain" aria-pressed={pad.op === 'mul'} onclick={() => setOp('mul')}
-					>Multiply</button
+				<button class="plain ic" aria-pressed={pad.op === 'mul'} onclick={() => setOp('mul')}
+					><Icon icon={I.Times} size={15} />Multiply</button
 				>
 			</div>
 			<div class="nums">
@@ -858,7 +867,7 @@
 			<div class="toggles">
 				{#if pad.op === 'mul'}
 					<button
-						class="plain"
+						class="plain ic"
 						aria-pressed={pad.parallel}
 						disabled={pad.running}
 						onclick={() => {
@@ -866,7 +875,9 @@
 							pad.stage(a, b);
 						}}
 						title="Run the passes of b overlapped, each two columns behind the one before, as one batch per step"
-						>{pad.parallel ? 'Passes overlapped' : 'One pass at a time'}</button
+						><Icon icon={I.Layers} size={15} />{pad.parallel
+							? 'Passes overlapped'
+							: 'One pass at a time'}</button
 					>
 				{/if}
 				{@render pace()}
@@ -919,7 +930,7 @@
 			<div class="actions">{@render runButton(true)}</div>
 			<div class="toggles">
 				<span class="opts" role="group" aria-label="Check">
-					<span class="hint">Check</span>
+					<span class="hint ic"><Icon icon={I.Shield} size={15} />Check</span>
 					{#each MODES as m (m)}
 						<button
 							class="plain"
@@ -1288,6 +1299,7 @@
 		transition: color var(--hover) ease;
 	}
 	.part .n {
+		display: inline-flex;
 		font-size: var(--text-xs);
 		color: var(--color-ink-soft);
 		transition: color var(--hover) ease;

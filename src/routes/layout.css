@@ -181,3 +181,11 @@ a:hover {
 		color: var(--color-ink-soft);
 	}
 }
+
+/* an icon beside its label, in buttons and links (lib/ui/icons.ts is the one vocabulary) */
+.ic {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	vertical-align: middle;
+}

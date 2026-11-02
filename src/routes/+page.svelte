@@ -1,6 +1,8 @@
 <script lang="ts">
 	import '@fontsource-variable/source-serif-4/opsz.css';
 	import { asset, resolve } from '$app/paths';
+	import Icon from '#lib/ui/Icon.svelte';
+	import { Book, Github, Model, Pdf, Play } from '#lib/ui/icons.ts';
 
 	// the film on YouTube (privacy-enhanced embed); nothing plays until the visitor presses play
 	const FILM = 'https://www.youtube-nocookie.com/embed/RTVMdf301sg?rel=0&modestbranding=1';
@@ -32,21 +34,25 @@
 
 	<nav class="entries" aria-label="Sketchpad">
 		<a href={resolve('/paper')}>
-			<span class="label">Paper</span>
+			<span class="label ic"><Icon icon={Book} size={26} />Paper</span>
 			<span class="what">The method, the proofs and the results</span>
 		</a>
 		<a href={resolve('/demo')}>
-			<span class="label">Demo</span>
+			<span class="label ic"><Icon icon={Play} size={26} />Demo</span>
 			<span class="what">Run the model on its sheet, in your browser</span>
 		</a>
 	</nav>
 
 	<p class="more">
-		<a href={asset('sketchpad.pdf')}>PDF</a>
+		<a class="ic" href={asset('sketchpad.pdf')}><Icon icon={Pdf} size={16} />PDF</a>
 		<span aria-hidden="true">·</span>
-		<a href="https://github.com/NeoVand/sketchpad">Code</a>
+		<a class="ic" href="https://github.com/NeoVand/sketchpad"
+			><Icon icon={Github} size={16} />Code</a
+		>
 		<span aria-hidden="true">·</span>
-		<a href="https://huggingface.co/mohsenvand/sketchpad-0.8b-preview">Model</a>
+		<a class="ic" href="https://huggingface.co/mohsenvand/sketchpad-0.8b-preview"
+			><Icon icon={Model} size={16} />Model</a
+		>
 	</p>
 </main>
 
@@ -106,6 +112,7 @@
 		border-top-color: var(--color-cobalt);
 	}
 	.label {
+		justify-content: center;
 		font-family: 'Source Serif 4 Variable', Georgia, serif;
 		font-size: 30px;
 		color: var(--color-ink);

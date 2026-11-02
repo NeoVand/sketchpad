@@ -2,6 +2,8 @@
 	import '@fontsource-variable/source-serif-4/opsz.css';
 	import '@fontsource-variable/source-serif-4/opsz-italic.css';
 	import { asset, resolve } from '$app/paths';
+	import Icon from '#lib/ui/Icon.svelte';
+	import { Model, Pdf, Play } from '#lib/ui/icons.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -31,11 +33,13 @@
 				>{/if}
 		</p>
 		<p class="links">
-			<a href={resolve('/demo')}>Run it in your browser</a>
+			<a class="ic" href={resolve('/demo')}><Icon icon={Play} size={16} />Run it in your browser</a>
 			<span aria-hidden="true">·</span>
-			<a href={asset('sketchpad.pdf')}>PDF</a>
+			<a class="ic" href={asset('sketchpad.pdf')}><Icon icon={Pdf} size={16} />PDF</a>
 			<span aria-hidden="true">·</span>
-			<a href="https://huggingface.co/mohsenvand/sketchpad-0.8b-preview">The model</a>
+			<a class="ic" href="https://huggingface.co/mohsenvand/sketchpad-0.8b-preview"
+				><Icon icon={Model} size={16} />The model</a
+			>
 		</p>
 	</header>
 
