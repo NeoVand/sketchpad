@@ -4,8 +4,11 @@
 	import Icon from '#lib/ui/Icon.svelte';
 	import { Book, Github, Model, Pdf, Play } from '#lib/ui/icons.ts';
 
-	// the film on YouTube (privacy-enhanced embed); nothing plays until the visitor presses play
-	const FILM = 'https://www.youtube-nocookie.com/embed/RTVMdf301sg?rel=0&modestbranding=1';
+	// the film on YouTube (privacy-enhanced embed). The page shows its own copy of the thumbnail, trimmed of the
+	// 1-pixel black edges YouTube adds, and loads the player only when the visitor presses play.
+	const FILM =
+		'https://www.youtube-nocookie.com/embed/RTVMdf301sg?autoplay=1&rel=0&modestbranding=1';
+	let playing = $state(false);
 </script>
 
 <svelte:head>
@@ -24,12 +27,20 @@
 	</header>
 
 	<div class="film">
-		<iframe
-			src={FILM}
-			title="Sketchpad, the film"
-			allow="encrypted-media; picture-in-picture; fullscreen"
-			allowfullscreen
-		></iframe>
+		{#if playing}
+			<iframe
+				src={FILM}
+				title="Sketchpad, the film"
+				allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+				allowfullscreen
+			></iframe>
+		{:else}
+			<button type="button" class="poster" onclick={() => (playing = true)}>
+				<img src={asset('media/film-poster.jpg')} alt="" width="1280" height="720" />
+				<span class="play"><Icon icon={Play} size={30} /></span>
+				<span class="caption ic">Watch the film <span class="len">4:49</span></span>
+			</button>
+		{/if}
 	</div>
 
 	<nav class="entries" aria-label="Sketchpad">
@@ -86,12 +97,56 @@
 		margin: 40px auto 0;
 		box-shadow: 0 18px 50px rgb(31 42 68 / 0.12);
 	}
-	iframe {
+	iframe,
+	.poster {
 		display: block;
 		width: 100%;
 		aspect-ratio: 16 / 9;
 		border: 0;
 		background: white;
+	}
+	.poster {
+		position: relative;
+		padding: 0;
+		cursor: pointer;
+	}
+	.poster img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.play {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		display: grid;
+		place-items: center;
+		width: 84px;
+		height: 84px;
+		border-radius: 50%;
+		background: var(--color-rose);
+		color: white;
+		box-shadow: 0 10px 30px rgb(214 51 108 / 0.35);
+		transform: translate(-50%, -50%);
+		transition: transform 180ms ease;
+	}
+	.poster:hover .play,
+	.poster:focus-visible .play {
+		transform: translate(-50%, -50%) scale(1.06);
+	}
+	.caption {
+		position: absolute;
+		left: 50%;
+		bottom: 18px;
+		padding: 6px 12px;
+		background: rgb(255 255 255 / 0.92);
+		font-size: var(--text-sm);
+		color: var(--color-ink);
+		transform: translateX(-50%);
+	}
+	.len {
+		color: var(--color-ink-soft);
 	}
 	.entries {
 		display: grid;
