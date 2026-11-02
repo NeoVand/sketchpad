@@ -1287,7 +1287,7 @@
 	.part {
 		position: relative;
 		display: flex;
-		align-items: baseline;
+		align-items: center;
 		gap: 8px;
 		padding: 0 0 10px;
 		border: 0;
