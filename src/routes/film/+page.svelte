@@ -28,7 +28,7 @@
 	</p>
 	<p>
 		Narration is an AI-generated voice from OpenAI. Music and animation are made in code; the
-		figures and results come from the <a href={resolve('/')}>paper</a>.
+		figures and results come from the <a href={resolve('/paper')}>paper</a>.
 	</p>
 </main>
 

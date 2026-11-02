@@ -6,7 +6,7 @@
 	import { Book, Github, Play } from './icons.ts';
 
 	const nav = [
-		{ label: 'Paper', href: resolve('/'), match: (r: string) => r === '/', icon: Book },
+		{ label: 'Paper', href: resolve('/paper'), match: (r: string) => r === '/paper', icon: Book },
 		{
 			label: 'Demo',
 			href: resolve('/demo'),

@@ -32,7 +32,6 @@
 	import type { TickOp } from '#lib/sketchpad/protocol.ts';
 	import Sheet from '#lib/sketchpad/Sheet.svelte';
 	import { sourceOf } from '#lib/sketchpad/sources.ts';
-	import FilmHero from '#lib/ui/FilmHero.svelte';
 
 	const SPRITES = asset('sketchpad/sprites.png');
 	let modelsBase = '';
@@ -735,7 +734,6 @@
 <!-- data-run changes when a run or a question starts, the tab changes or the model comes in: the moments the layout
 	may let go once (scripts/layout-probe.js reads it) -->
 <main class="demo" data-run="{part}.{pad.runs}.{pad.asks}.{loaded ? 1 : 0}">
-	<FilmHero />
 	<header class="head">
 		<div class="title">
 			<h2>Try the sheet</h2>
