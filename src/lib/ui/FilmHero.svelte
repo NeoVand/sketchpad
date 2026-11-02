@@ -3,6 +3,10 @@
 	import { prefersReducedMotion } from 'svelte/motion';
 	import '@fontsource-variable/source-serif-4/index.css';
 	let paused = $state(true);
+	// the film on YouTube; the silent loop stays as the preview until the visitor asks for the film
+	const FILM =
+		'https://www.youtube-nocookie.com/embed/RTVMdf301sg?autoplay=1&rel=0&modestbranding=1';
+	let watching = $state(false);
 
 	function preview(video: HTMLVideoElement) {
 		const connection = (navigator as Navigator & { connection?: { saveData?: boolean } })
@@ -32,27 +36,41 @@
 			views certifies its steps at every input length, relative to the runtime.
 		</p>
 		<nav aria-label="About Sketchpad">
-			<a class="watch" href={resolve('/film')}>Watch the film <span>2:29</span></a>
+			<button type="button" class="watch" onclick={() => (watching = true)}>
+				Watch the film <span>4:49</span>
+			</button>
 			<a href={resolve('/')}>Paper</a>
 			<a href="https://github.com/NeoVand/sketchpad">Code</a>
 			<a href="https://huggingface.co/mohsenvand/sketchpad-0.8b-preview">Model</a>
 		</nav>
 	</div>
 	<div class="preview">
-		<video
-			src={asset('media/sketchpad-loop.mp4')}
-			poster={asset('media/sketchpad-poster.jpg')}
-			{@attach preview}
-			bind:paused
-			muted
-			loop
-			playsinline
-			preload="none"
-			aria-label="Silent preview of the Sketchpad film"
-		></video>
-		<button type="button" onclick={() => (paused = !paused)}>
-			{paused ? 'Play preview' : 'Pause preview'}
-		</button>
+		{#if watching}
+			<iframe
+				src={FILM}
+				title="Sketchpad, the film"
+				allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+				allowfullscreen
+			></iframe>
+		{:else}
+			<video
+				src={asset('media/sketchpad-loop.mp4')}
+				poster={asset('media/sketchpad-poster.jpg')}
+				{@attach preview}
+				bind:paused
+				muted
+				loop
+				playsinline
+				preload="none"
+				aria-label="Silent preview of the Sketchpad film"
+			></video>
+			<button type="button" class="play" onclick={() => (watching = true)}
+				>Watch the film with sound</button
+			>
+			<button type="button" onclick={() => (paused = !paused)}>
+				{paused ? 'Play preview' : 'Pause preview'}
+			</button>
+		{/if}
 	</div>
 </section>
 
@@ -99,6 +117,9 @@
 		text-underline-offset: 4px;
 	}
 	.watch {
+		padding: 0;
+		font-size: inherit;
+		text-decoration: none;
 		color: var(--color-cobalt);
 	}
 	.watch span {
@@ -106,11 +127,17 @@
 		font-size: var(--text-xs);
 		color: var(--color-ink-soft);
 	}
-	video {
+	video,
+	iframe {
 		display: block;
 		width: 100%;
 		aspect-ratio: 16 / 9;
+		border: 0;
 		background: white;
+	}
+	.play {
+		margin-right: 16px;
+		color: var(--color-cobalt);
 	}
 	.preview {
 		text-align: right;

@@ -1,0 +1,308 @@
+{
+	"model": "gpt-audio-1.5",
+	"voice": "cedar",
+	"instructions": "Read the user's text aloud exactly as written, word for word, adding nothing. You are a warm, curious, conversational documentary narrator, explaining an idea to a friend. Use a flowing pace of about 175 words per minute, clear but never theatrical. Questions are genuine questions. Keep the same warm, level Cedar voice throughout. Short natural breaths at commas; no long pauses. Pronounce LoRA as low-rah, and Lean as leen.",
+	"lines": [
+		{
+			"id": "N01",
+			"text": "Ask a leading language model to add two three-hundred-digit numbers, and it's usually right.",
+			"spoken": "Ask a leading language model to add two three-hundred-digit numbers, and it's usually right.",
+			"pause": 0.8,
+			"source": "A"
+		},
+		{
+			"id": "N02",
+			"text": "Here, one digit is wrong, and the answer gives no warning.",
+			"spoken": "Here, one digit is wrong, and the answer gives no warning.",
+			"pause": 0.8,
+			"source": "A"
+		},
+		{
+			"id": "N03",
+			"text": "Passing yesterday's tests doesn't guarantee tomorrow's answer.",
+			"spoken": "Passing yesterday's tests doesn't guarantee tomorrow's answer.",
+			"pause": 0.8,
+			"source": "A"
+		},
+		{
+			"id": "N04",
+			"text": "What if we could check every step a small model could ever take?",
+			"spoken": "What if we could check every step a small model could ever take?",
+			"pause": 2,
+			"source": "B, D"
+		},
+		{
+			"id": "N05",
+			"text": "This is Sketchpad: a model that reads pictures and text, with about eight hundred million learned numbers, or weights, running in your browser.",
+			"spoken": "This is Sketchpad: a model that reads pictures and text, with about eight hundred million learned numbers, or weights, running in your browser.",
+			"pause": 0.8,
+			"source": "B"
+		},
+		{
+			"id": "N06",
+			"text": "Watch it multiply, divide, factor a polynomial, and open a sheet inside a chat reply.",
+			"spoken": "Watch it multiply, divide, factor a polynomial, and open a sheet inside a chat reply.",
+			"pause": 0.8,
+			"source": "B, H, I"
+		},
+		{
+			"id": "N06b",
+			"text": "None of this calls a calculator or a tool. Every digit is computed by the model itself.",
+			"spoken": "None of this calls a calculator or a tool. Every digit is computed by the model itself.",
+			"pause": 2,
+			"source": "B (Abstract; Sheet machine: the runtime moves the view, the model computes every output digit)"
+		},
+		{
+			"id": "N07",
+			"text": "How does it do that?",
+			"spoken": "How does it do that?",
+			"pause": 0.8,
+			"source": "B"
+		},
+		{
+			"id": "N08",
+			"text": "Like school arithmetic, it works on a sheet, one column at a time.",
+			"spoken": "Like school arithmetic, it works on a sheet, one column at a time.",
+			"pause": 0.8,
+			"source": "B"
+		},
+		{
+			"id": "N09",
+			"text": "Each step sees only three printed cells and an instruction, never the whole problem or earlier steps.",
+			"spoken": "Each step sees only three printed cells and an instruction, never the whole problem or earlier steps.",
+			"pause": 0.8,
+			"source": "B"
+		},
+		{
+			"id": "N10",
+			"text": "From that tiny image come a digit, a carry for the next column, and the next step.",
+			"spoken": "From that tiny image come a digit, a carry for the next column, and the next step.",
+			"pause": 0.8,
+			"source": "B"
+		},
+		{
+			"id": "N11",
+			"text": "Simple code writes those outputs and moves the window.",
+			"spoken": "Simple code writes those outputs and moves the window.",
+			"pause": 0.8,
+			"source": "B"
+		},
+		{
+			"id": "N12",
+			"text": "We trained about ten million extra weights—a small add-on called LoRA—while keeping the original model fixed.",
+			"spoken": "We trained about ten million extra weights—a small add-on called LoRA—while keeping the original model fixed.",
+			"pause": 2,
+			"source": "C"
+		},
+		{
+			"id": "N13",
+			"text": "Why show it so little?",
+			"spoken": "Why show it so little?",
+			"pause": 0.8,
+			"source": "D"
+		},
+		{
+			"id": "N14",
+			"text": "Longer numbers need more steps, but no new kinds of window.",
+			"spoken": "Longer numbers need more steps, but no new kinds of window.",
+			"pause": 0.8,
+			"source": "D"
+		},
+		{
+			"id": "N15",
+			"text": "There are only two thousand, four hundred and forty-six possible views, counting the instructions.",
+			"spoken": "There are only two thousand, four hundred and forty-six possible views, counting the instructions.",
+			"pause": 0.8,
+			"source": "D"
+		},
+		{
+			"id": "N16",
+			"text": "We can check every one.",
+			"spoken": "We can check every one.",
+			"pause": 2,
+			"source": "D"
+		},
+		{
+			"id": "N17",
+			"text": "But does getting every window right mean getting the whole calculation right?",
+			"spoken": "But does getting every window right mean getting the whole calculation right?",
+			"pause": 0.8,
+			"source": "E"
+		},
+		{
+			"id": "N18",
+			"text": "Yes, provided the code presents the right views: a correct step sets up the next correct step.",
+			"spoken": "Yes, provided the code presents the right views: a correct step sets up the next correct step.",
+			"pause": 0.8,
+			"source": "E"
+		},
+		{
+			"id": "N19",
+			"text": "Lean, a computer proof checker, checks our proof for every length.",
+			"spoken": "Lean, a computer proof checker, checks our proof for every length.",
+			"pause": 0.8,
+			"source": "E"
+		},
+		{
+			"id": "N20",
+			"text": "Written reasoning that rereads earlier steps keeps creating new situations; we also proved that finite testing alone cannot certify all those histories.",
+			"spoken": "Written reasoning that rereads earlier steps keeps creating new situations; we also proved that finite testing alone cannot certify all those histories.",
+			"pause": 2,
+			"source": "E"
+		},
+		{
+			"id": "N21",
+			"text": "There's a practical catch: computers round numbers, and different chips round differently.",
+			"spoken": "There's a practical catch: computers round numbers, and different chips round differently.",
+			"pause": 0.8,
+			"source": "F"
+		},
+		{
+			"id": "N22",
+			"text": "If the right digit wins by a hair, rounding could change the winner.",
+			"spoken": "If the right digit wins by a hair, rounding could change the winner.",
+			"pause": 0.8,
+			"source": "F"
+		},
+		{
+			"id": "N23",
+			"text": "So we measure its lead over the strongest wrong answer—the margin—and check every view in the browser on a laptop's graphics processor.",
+			"spoken": "So we measure its lead over the strongest wrong answer—the margin—and check every view in the browser on a laptop's graphics processor.",
+			"pause": 0.8,
+			"source": "F"
+		},
+		{
+			"id": "N24",
+			"text": "The smallest lead was three point zero two. Rounding would have to move a score by more than half of that, one point five one, to flip a digit; running views together in batches moved scores by at most one point zero nine.",
+			"spoken": "The smallest lead was three point zero two. Rounding would have to move a score by more than half of that, one point five one, to flip a digit; running views together in batches moved scores by at most one point zero nine.",
+			"pause": 0.8,
+			"source": "F"
+		},
+		{
+			"id": "N25",
+			"text": "That repeatable record of the checks and margins is the certificate.",
+			"spoken": "That repeatable record of the checks and margins is the certificate.",
+			"pause": 2,
+			"source": "F"
+		},
+		{
+			"id": "N26",
+			"text": "And on whole problems?",
+			"spoken": "And on whole problems?",
+			"pause": 0.8,
+			"source": "G"
+		},
+		{
+			"id": "N27",
+			"text": "On two hundred and twenty sums and products fixed in advance, Sketchpad answered all two hundred and twenty; the strongest of ten other models answered two hundred and seventeen.",
+			"spoken": "On two hundred and twenty sums and products fixed in advance, Sketchpad answered all two hundred and twenty; the strongest of ten other models answered two hundred and seventeen.",
+			"pause": 0.8,
+			"source": "G"
+		},
+		{
+			"id": "N27b",
+			"text": "Without its sheet and adapter, the same small model answered twenty-three.",
+			"spoken": "Without its sheet and adapter, the same small model answered twenty-three.",
+			"pause": 2,
+			"source": "G (Fig. 1c / numbers.md: Qwen3.5-0.8B, no thinking, 23 of 220)"
+		},
+		{
+			"id": "N28",
+			"text": "Those checked procedures can also work together.",
+			"spoken": "Those checked procedures can also work together.",
+			"pause": 0.8,
+			"source": "H"
+		},
+		{
+			"id": "N29",
+			"text": "A short program factors this cubic—a polynomial whose highest power is three—with every computed number coming from the model.",
+			"spoken": "A short program factors this cubic—a polynomial whose highest power is three—with every computed number coming from the model.",
+			"pause": 0.8,
+			"source": "H"
+		},
+		{
+			"id": "N30",
+			"text": "The ordinary code arranging the steps and moving the view remains outside the proof.",
+			"spoken": "The ordinary code arranging the steps and moving the view remains outside the proof.",
+			"pause": 2,
+			"source": "E, H"
+		},
+		{
+			"id": "N31",
+			"text": "But people ask questions, not just calculations.",
+			"spoken": "But people ask questions, not just calculations.",
+			"pause": 0.8,
+			"source": "I"
+		},
+		{
+			"id": "N32",
+			"text": "So we trained a chat version to reach for its sheet by itself.",
+			"spoken": "So we trained a chat version to reach for its sheet by itself.",
+			"pause": 0.8,
+			"source": "I"
+		},
+		{
+			"id": "N33",
+			"text": "First, the original model coached it on replies it wrote itself; then we rewarded it whenever its sheet gave the right answer.",
+			"spoken": "First, the original model coached it on replies it wrote itself; then we rewarded it whenever its sheet gave the right answer.",
+			"pause": 0.8,
+			"source": "I"
+		},
+		{
+			"id": "N34",
+			"text": "Because the skill is an add-on, a dial called the gate can switch it off: at zero, the original model returns, bit for bit.",
+			"spoken": "Because the skill is an add-on, a dial called the gate can switch it off: at zero, the original model returns, bit for bit.",
+			"pause": 0.8,
+			"source": "I"
+		},
+		{
+			"id": "N35",
+			"text": "Chat keeps that dial on, and there's a cost: on fresh grade-school word problems, it scores five point eight percentage points below the original.",
+			"spoken": "Chat keeps that dial on, and there's a cost: on fresh grade-school word problems, it scores five point eight percentage points below the original.",
+			"pause": 2,
+			"source": "I"
+		},
+		{
+			"id": "N36",
+			"text": "We can also ask where a multiplication digit takes shape inside the model.",
+			"spoken": "We can also ask where a multiplication digit takes shape inside the model.",
+			"pause": 0.8,
+			"source": "J"
+		},
+		{
+			"id": "N37",
+			"text": "At different processing layers, we pushed its internal state toward another digit.",
+			"spoken": "At different processing layers, we pushed its internal state toward another digit.",
+			"pause": 0.8,
+			"source": "J"
+		},
+		{
+			"id": "N38",
+			"text": "Through layer fifteen, no tested answer changed; just after layer twenty, all eighty tested multiplication answers changed.",
+			"spoken": "Through layer fifteen, no tested answer changed; just after layer twenty, all eighty tested multiplication answers changed.",
+			"pause": 2,
+			"source": "J"
+		},
+		{
+			"id": "N39",
+			"text": "Now give it two long numbers and watch it work.",
+			"spoken": "Now give it two long numbers and watch it work.",
+			"pause": 0.8,
+			"source": "K"
+		},
+		{
+			"id": "N40",
+			"text": "It rechecks its weakest windows on your graphics processor; the full check is available for a new device.",
+			"spoken": "It rechecks its weakest windows on your graphics processor; the full check is available for a new device.",
+			"pause": 0.8,
+			"source": "F, K"
+		},
+		{
+			"id": "N41",
+			"text": "The paper, code and model are open.",
+			"spoken": "The paper, code and model are open.",
+			"pause": 0.8,
+			"source": "K"
+		}
+	]
+}

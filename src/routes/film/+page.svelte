@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { asset, resolve } from '$app/paths';
+	import { resolve } from '$app/paths';
 </script>
 
 <svelte:head>
 	<title>Sketchpad — the film</title>
 	<meta
 		name="description"
-		content="A 2-minute film about certified exact arithmetic with Qwen3.5-0.8B."
+		content="A 5-minute film about certified exact arithmetic with Qwen3.5-0.8B."
 	/>
 </svelte:head>
 
@@ -15,16 +15,12 @@
 		<h1>Sketchpad, the film</h1>
 		<a href={resolve('/demo')}>Run the demo</a>
 	</header>
-	<video controls playsinline preload="metadata" poster={asset('media/sketchpad-poster.jpg')}>
-		<source src={asset('media/sketchpad-film.mp4')} type="video/mp4" />
-		<track
-			kind="captions"
-			src={asset('media/sketchpad-film.vtt')}
-			srclang="en"
-			label="English"
-			default
-		/>
-	</video>
+	<iframe
+		src="https://www.youtube-nocookie.com/embed/RTVMdf301sg?rel=0&modestbranding=1"
+		title="Sketchpad, the film"
+		allow="encrypted-media; picture-in-picture; fullscreen"
+		allowfullscreen
+	></iframe>
 	<p>
 		The model, the sheet, and the finite check behind exact arithmetic. The certificate covers the
 		model’s steps; the runtime and the translation of word problems remain outside it. Demo footage
@@ -55,8 +51,9 @@
 		font-weight: 500;
 		color: var(--color-rose);
 	}
-	video {
+	iframe {
 		display: block;
+		border: 0;
 		width: 100%;
 		aspect-ratio: 16 / 9;
 		background: white;

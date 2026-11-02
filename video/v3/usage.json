@@ -1,0 +1,1430 @@
+{
+	"calls": [
+		{
+			"id": "N01",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 120,
+				"completion_tokens": 147,
+				"total_tokens": 267,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 120,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 116,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 31
+				}
+			},
+			"usd": 0.008034,
+			"transcript": "Ask a leading language model to add two three-hundred-digit numbers, and it's usually right."
+		},
+		{
+			"id": "N02",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 115,
+				"completion_tokens": 100,
+				"total_tokens": 215,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 115,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 76,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 24
+				}
+			},
+			"usd": 0.0053915,
+			"transcript": "Here, one digit is wrong, and the answer gives no warning."
+		},
+		{
+			"id": "N03",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 111,
+				"completion_tokens": 96,
+				"total_tokens": 207,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 111,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 76,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 20
+				}
+			},
+			"usd": 0.0053415,
+			"transcript": "Passing yesterday's tests doesn't guarantee tomorrow's answer."
+		},
+		{
+			"id": "N04",
+			"attempt": 0,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 115,
+				"completion_tokens": 418,
+				"total_tokens": 533,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 115,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 336,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 82
+				}
+			},
+			"usd": 0.0226115,
+			"transcript": "Imagine being able to trace each and every move a small model makes, step by step, as it learns and adapts. We could see how it weighs different options, how it refines its decisions, and how each tiny adjustment leads to the final outcome. What questions would that answer for us?"
+		},
+		{
+			"id": "N04",
+			"attempt": 1,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 115,
+				"completion_tokens": 294,
+				"total_tokens": 409,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 115,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 237,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 57
+				}
+			},
+			"usd": 0.0160255,
+			"transcript": "Imagine being able to trace every single move a small model might make, like following a tiny traveler through a maze. What would we learn about its decision-making, its strengths, and its limits?"
+		},
+		{
+			"id": "N04",
+			"attempt": 2,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 115,
+				"completion_tokens": 452,
+				"total_tokens": 567,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 115,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 368,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 84
+				}
+			},
+			"usd": 0.0246795,
+			"transcript": "Imagine, what if we could check every single step a small model could ever take? It's like having a map of all possible moves, and being able to trace them one by one, to understand how it learns, how it makes decisions. Wouldn't that give us a clearer picture of its reasoning?"
+		},
+		{
+			"id": "N05",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 130,
+				"completion_tokens": 225,
+				"total_tokens": 355,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 130,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 180,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 45
+				}
+			},
+			"usd": 0.012295,
+			"transcript": "This is Sketchpad: a model that reads pictures and text, with about eight hundred million learned numbers, or weights, running in your browser."
+		},
+		{
+			"id": "N06",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 120,
+				"completion_tokens": 160,
+				"total_tokens": 280,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 120,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 129,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 31
+				}
+			},
+			"usd": 0.008866,
+			"transcript": "Watch it multiply, divide, factor a polynomial, and open a sheet inside a chat reply."
+		},
+		{
+			"id": "N07",
+			"attempt": 0,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 107,
+				"completion_tokens": 279,
+				"total_tokens": 386,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 107,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 220,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 59
+				}
+			},
+			"usd": 0.0149375,
+			"transcript": "That's a good question. What specifically are you curious about\u2014maybe the way a certain technology works, or how something in nature accomplishes a task? Let me know, and we can unpack it together."
+		},
+		{
+			"id": "N07",
+			"attempt": 1,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 107,
+				"completion_tokens": 36,
+				"total_tokens": 143,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 107,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 24,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 12
+				}
+			},
+			"usd": 0.0019235,
+			"transcript": "How does it do that?"
+		},
+		{
+			"id": "N08",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 117,
+				"completion_tokens": 109,
+				"total_tokens": 226,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 117,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 83,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 26
+				}
+			},
+			"usd": 0.0058645,
+			"transcript": "Like school arithmetic, it works on a sheet, one column at a time."
+		},
+		{
+			"id": "N09",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 120,
+				"completion_tokens": 158,
+				"total_tokens": 278,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 120,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 127,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 31
+				}
+			},
+			"usd": 0.008738,
+			"transcript": "Each step sees only three printed cells and an instruction, never the whole problem or earlier steps."
+		},
+		{
+			"id": "N10",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 121,
+				"completion_tokens": 138,
+				"total_tokens": 259,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 121,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 106,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 32
+				}
+			},
+			"usd": 0.0074065,
+			"transcript": "From that tiny image come a digit, a carry for the next column, and the next step."
+		},
+		{
+			"id": "N11",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 111,
+				"completion_tokens": 93,
+				"total_tokens": 204,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 111,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 73,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 20
+				}
+			},
+			"usd": 0.0051495,
+			"transcript": "Simple code writes those outputs and moves the window."
+		},
+		{
+			"id": "N12",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 123,
+				"completion_tokens": 180,
+				"total_tokens": 303,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 123,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 144,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 36
+				}
+			},
+			"usd": 0.0098835,
+			"transcript": "We trained about ten million extra weights\u2014a small add-on called LoRA\u2014while keeping the original model fixed."
+		},
+		{
+			"id": "N13",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 107,
+				"completion_tokens": 45,
+				"total_tokens": 152,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 107,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 33,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 12
+				}
+			},
+			"usd": 0.0024995,
+			"transcript": "Why show it so little?"
+		},
+		{
+			"id": "N14",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 115,
+				"completion_tokens": 101,
+				"total_tokens": 216,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 115,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 77,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 24
+				}
+			},
+			"usd": 0.0054555,
+			"transcript": "Longer numbers need more steps, but no new kinds of window."
+		},
+		{
+			"id": "N15",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 119,
+				"completion_tokens": 150,
+				"total_tokens": 269,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 119,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 120,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 30
+				}
+			},
+			"usd": 0.0082775,
+			"transcript": "There are only two thousand, four hundred and forty-six possible views, counting the instructions."
+		},
+		{
+			"id": "N16",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 107,
+				"completion_tokens": 47,
+				"total_tokens": 154,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 107,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 35,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 12
+				}
+			},
+			"usd": 0.0026275,
+			"transcript": "We can check every one."
+		},
+		{
+			"id": "N17",
+			"attempt": 0,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 114,
+				"completion_tokens": 504,
+				"total_tokens": 618,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 114,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 408,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 96
+				}
+			},
+			"usd": 0.027357,
+			"transcript": "That's a really good question. Getting every window right certainly helps, because each window is like a piece of the puzzle. But the whole calculation depends on how those pieces fit together. So even if each window is correct, you have to make sure they're aligned properly to get the overall result right. Does that make sense in the context you're thinking about?"
+		},
+		{
+			"id": "N17",
+			"attempt": 1,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 114,
+				"completion_tokens": 528,
+				"total_tokens": 642,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 114,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 430,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 98
+				}
+			},
+			"usd": 0.028785,
+			"transcript": "That's a great question. Getting every window right is like making sure each step of a process is correct. But the whole calculation also depends on how those windows fit together. Even if each piece is right, the overall result can be off if there's an error in how they connect. So, it's important to check both the individual parts and the way they interact."
+		},
+		{
+			"id": "N17",
+			"attempt": 2,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 114,
+				"completion_tokens": 403,
+				"total_tokens": 517,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 114,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 327,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 76
+				}
+			},
+			"usd": 0.021973,
+			"transcript": "Getting every window right can certainly help, but it doesn't always guarantee the whole calculation is correct. It's like making sure each piece of a puzzle fits, but also stepping back to see if the overall picture makes sense. Do you have a specific kind of calculation in mind?"
+		},
+		{
+			"id": "N18",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 121,
+				"completion_tokens": 162,
+				"total_tokens": 283,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 121,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 130,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 32
+				}
+			},
+			"usd": 0.0089425,
+			"transcript": "Yes, provided the code presents the right views: a correct step sets up the next correct step."
+		},
+		{
+			"id": "N19",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 115,
+				"completion_tokens": 111,
+				"total_tokens": 226,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 115,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 87,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 24
+				}
+			},
+			"usd": 0.0060955,
+			"transcript": "Lean, a computer proof checker, checks our proof for every length."
+		},
+		{
+			"id": "N20",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 126,
+				"completion_tokens": 242,
+				"total_tokens": 368,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 126,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 201,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 41
+				}
+			},
+			"usd": 0.013589,
+			"transcript": "Written reasoning that rereads earlier steps keeps creating new situations; we also proved that finite testing alone cannot certify all those histories."
+		},
+		{
+			"id": "N21",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 116,
+				"completion_tokens": 145,
+				"total_tokens": 261,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 116,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 118,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 27
+				}
+			},
+			"usd": 0.008112,
+			"transcript": "There's a practical catch: computers round numbers, and different chips round differently."
+		},
+		{
+			"id": "N22",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 116,
+				"completion_tokens": 115,
+				"total_tokens": 231,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 116,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 88,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 27
+				}
+			},
+			"usd": 0.006192,
+			"transcript": "If the right digit wins by a hair, rounding could change the winner."
+		},
+		{
+			"id": "N23",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 127,
+				"completion_tokens": 206,
+				"total_tokens": 333,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 127,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 166,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 40
+				}
+			},
+			"usd": 0.0113415,
+			"transcript": "So we measure its lead over the strongest wrong answer\u2014the margin\u2014and check every view in the browser on a laptop's graphics processor."
+		},
+		{
+			"id": "N24a",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 110,
+				"completion_tokens": 83,
+				"total_tokens": 193,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 110,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 64,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 19
+				}
+			},
+			"usd": 0.004561,
+			"transcript": "The smallest lead was three point zero two."
+		},
+		{
+			"id": "N24b",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 141,
+				"completion_tokens": 294,
+				"total_tokens": 435,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 141,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 236,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 58
+				}
+			},
+			"usd": 0.0160365,
+			"transcript": "Rounding would have to move a score by more than half of that, one point five one, to flip a digit; running views together in batches moved scores by at most one point zero nine."
+		},
+		{
+			"id": "N25",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 114,
+				"completion_tokens": 110,
+				"total_tokens": 224,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 114,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 85,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 25
+				}
+			},
+			"usd": 0.005975,
+			"transcript": "That repeatable record of the checks and margins is the certificate."
+		},
+		{
+			"id": "N26",
+			"attempt": 0,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 106,
+				"completion_tokens": 163,
+				"total_tokens": 269,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 106,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 124,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 39
+				}
+			},
+			"usd": 0.008591,
+			"transcript": "Sure, could you clarify a bit more what you mean by \"whole problems\"? Are you referring to math problems, or something else?"
+		},
+		{
+			"id": "N26",
+			"attempt": 1,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 106,
+				"completion_tokens": 459,
+				"total_tokens": 565,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 106,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 375,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 84
+				}
+			},
+			"usd": 0.025105,
+			"transcript": "Whole problems are typically the ones where you're dealing with entire units, like counting objects or measuring complete quantities, as opposed to fractional or partial amounts. They're often used to teach basic arithmetic and number sense, because you're working with whole, countable items. Does that help clarify what you were wondering about?"
+		},
+		{
+			"id": "N26",
+			"attempt": 2,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 106,
+				"completion_tokens": 197,
+				"total_tokens": 303,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 106,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 151,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 46
+				}
+			},
+			"usd": 0.010389,
+			"transcript": "Sure, I'm here to help. Could you let me know a bit more about the whole problem you're facing, so I can give you the most useful guidance?"
+		},
+		{
+			"id": "N27",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 134,
+				"completion_tokens": 260,
+				"total_tokens": 394,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 134,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 211,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 49
+				}
+			},
+			"usd": 0.014329,
+			"transcript": "On two hundred and twenty sums and products fixed in advance, Sketchpad answered all two hundred and twenty; the strongest of ten other models answered two hundred and seventeen."
+		},
+		{
+			"id": "N28",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 109,
+				"completion_tokens": 82,
+				"total_tokens": 191,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 109,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 64,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 18
+				}
+			},
+			"usd": 0.0045485,
+			"transcript": "Those checked procedures can also work together."
+		},
+		{
+			"id": "N29",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 123,
+				"completion_tokens": 196,
+				"total_tokens": 319,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 123,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 160,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 36
+				}
+			},
+			"usd": 0.0109075,
+			"transcript": "A short program factors this cubic\u2014a polynomial whose highest power is three\u2014with every computed number coming from the model."
+		},
+		{
+			"id": "N30",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 116,
+				"completion_tokens": 140,
+				"total_tokens": 256,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 116,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 113,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 27
+				}
+			},
+			"usd": 0.007792,
+			"transcript": "The ordinary code arranging the steps and moving the view remains outside the proof."
+		},
+		{
+			"id": "N31",
+			"attempt": 0,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 110,
+				"completion_tokens": 318,
+				"total_tokens": 428,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 110,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 252,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 66
+				}
+			},
+			"usd": 0.017063,
+			"transcript": "Absolutely, people are curious and inquisitive by nature. We ask questions to understand the world, to connect with others, and to solve problems. Calculations are just one part of that process. What kind of questions are you thinking about?"
+		},
+		{
+			"id": "N31",
+			"attempt": 1,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 110,
+				"completion_tokens": 342,
+				"total_tokens": 452,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 110,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 274,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 68
+				}
+			},
+			"usd": 0.018491,
+			"transcript": "That's true, people ask questions to understand the world, to solve problems, or even just to satisfy curiosity. Calculations are just one tool among many that help us answer those questions. What kinds of questions have you been thinking about lately?"
+		},
+		{
+			"id": "N31",
+			"attempt": 2,
+			"match": false,
+			"usage": {
+				"prompt_tokens": 110,
+				"completion_tokens": 278,
+				"total_tokens": 388,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 110,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 224,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 54
+				}
+			},
+			"usd": 0.015151,
+			"transcript": "That's true, people do ask questions\u2014often about things that aren't easily reduced to numbers. It's all about curiosity and understanding, right? What kind of questions are you thinking about?"
+		},
+		{
+			"id": "N32",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 115,
+				"completion_tokens": 107,
+				"total_tokens": 222,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 115,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 83,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 24
+				}
+			},
+			"usd": 0.0058395,
+			"transcript": "So we trained a chat version to reach for its sheet by itself."
+		},
+		{
+			"id": "N33",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 126,
+				"completion_tokens": 185,
+				"total_tokens": 311,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 126,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 146,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 39
+				}
+			},
+			"usd": 0.010049,
+			"transcript": "First, the original model coached it on replies it wrote itself; then we rewarded it whenever its sheet gave the right answer."
+		},
+		{
+			"id": "N34",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 131,
+				"completion_tokens": 251,
+				"total_tokens": 382,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 131,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 205,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 46
+				}
+			},
+			"usd": 0.0139075,
+			"transcript": "Because the skill is an add-on, a dial called the gate can switch it off: at zero, the original model returns, bit for bit."
+		},
+		{
+			"id": "N35",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 130,
+				"completion_tokens": 244,
+				"total_tokens": 374,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 130,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 199,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 45
+				}
+			},
+			"usd": 0.013511,
+			"transcript": "Chat keeps that dial on, and there's a cost: on fresh grade-school word problems, it scores five point eight percentage points below the original."
+		},
+		{
+			"id": "N36",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 115,
+				"completion_tokens": 121,
+				"total_tokens": 236,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 115,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 95,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 26
+				}
+			},
+			"usd": 0.0066275,
+			"transcript": "We can also ask where a multiplication digit takes shape inside the model."
+		},
+		{
+			"id": "N37",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 115,
+				"completion_tokens": 127,
+				"total_tokens": 242,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 115,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 101,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 26
+				}
+			},
+			"usd": 0.0070115,
+			"transcript": "At different processing layers, we pushed its internal state toward another digit."
+		},
+		{
+			"id": "N38",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 122,
+				"completion_tokens": 189,
+				"total_tokens": 311,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 122,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 154,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 35
+				}
+			},
+			"usd": 0.010511,
+			"transcript": "Through layer fifteen, no tested answer changed; just after layer twenty, all eighty tested multiplication answers changed."
+		},
+		{
+			"id": "N39",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 112,
+				"completion_tokens": 86,
+				"total_tokens": 198,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 112,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 65,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 21
+				}
+			},
+			"usd": 0.00465,
+			"transcript": "Now give it two long numbers and watch it work."
+		},
+		{
+			"id": "N40",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 122,
+				"completion_tokens": 155,
+				"total_tokens": 277,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 122,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 122,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 33
+				}
+			},
+			"usd": 0.008443,
+			"transcript": "It rechecks its weakest windows on your graphics processor; the full check is available for a new device."
+		},
+		{
+			"id": "N41",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 110,
+				"completion_tokens": 81,
+				"total_tokens": 191,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 110,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 62,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 19
+				}
+			},
+			"usd": 0.004433,
+			"transcript": "The paper, code and model are open."
+		},
+		{
+			"id": "N04",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 136,
+				"completion_tokens": 99,
+				"total_tokens": 235,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 136,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 75,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 24
+				}
+			},
+			"usd": 0.00538,
+			"transcript": "What if we could check every step a small model could ever take?"
+		},
+		{
+			"id": "N17",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 135,
+				"completion_tokens": 105,
+				"total_tokens": 240,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 135,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 82,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 23
+				}
+			},
+			"usd": 0.0058155,
+			"transcript": "But does getting every window right mean getting the whole calculation right?"
+		},
+		{
+			"id": "N26",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 127,
+				"completion_tokens": 45,
+				"total_tokens": 172,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 127,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 34,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 11
+				}
+			},
+			"usd": 0.0026035,
+			"transcript": "And on whole problems?"
+		},
+		{
+			"id": "N31",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 131,
+				"completion_tokens": 98,
+				"total_tokens": 229,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 131,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 79,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 19
+				}
+			},
+			"usd": 0.0055735,
+			"transcript": "But people ask questions, not just calculations."
+		},
+		{
+			"id": "N06b",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 141,
+				"completion_tokens": 139,
+				"total_tokens": 280,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 141,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 108,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 31
+				}
+			},
+			"usd": 0.0075745,
+			"transcript": "None of this calls a calculator or a tool. Every digit is computed by the model itself."
+		},
+		{
+			"id": "N27b",
+			"attempt": 0,
+			"match": true,
+			"usage": {
+				"prompt_tokens": 136,
+				"completion_tokens": 118,
+				"total_tokens": 254,
+				"prompt_tokens_details": {
+					"cached_tokens": 0,
+					"audio_tokens": 0,
+					"text_tokens": 136,
+					"image_tokens": 0
+				},
+				"completion_tokens_details": {
+					"reasoning_tokens": 0,
+					"audio_tokens": 91,
+					"accepted_prediction_tokens": 0,
+					"rejected_prediction_tokens": 0,
+					"text_tokens": 27
+				}
+			},
+			"usd": 0.006434,
+			"transcript": "Without its sheet and adapter, the same small model answered twenty-three."
+		}
+	],
+	"total_usd": 0.585699
+}

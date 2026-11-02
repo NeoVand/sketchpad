@@ -1,0 +1,18 @@
+{
+	"v1_source_commit": "b796bf3",
+	"approval": "/Users/neo/repos/polyformer/research/cursor_logs/video_v3_brief.md",
+	"files": {
+		"video/SCRIPT_V3.md": "95cebbbc3dd56a8612eceac2c8e15260156696cacb6ae209701b868191842403",
+		"paper/paper.md": "5d2c66cad591390923f4833f62442c85504883d8f5a62a42829ac3b8a7e4d01c",
+		"paper/numbers.md": "64adbde8fbabd509067881567c22cd70cbed7641b4b6e836a664de4d1cc10107",
+		"paper/baselines/results.json": "6db302b179e743c4d50c26f30f059938e10d899265be6ad0c04be2bb7c7d0c46",
+		"paper/figures/data/certificate_e7.json": "73fbcf44344657194e45e02a5fc1432be44c63f46a1ecea61a23dd8253412d8c",
+		"paper/figures/data/batch_check_m4.json": "1e76dcea0a8c3f586e2ba83a8320bfdcb68289790520562551f7e036df5281cc",
+		"paper/figures/data/steer_e7_sweep.json": "2b1db7a90bb07ba4f52db00d200c88edb4c19ed77450889a66976bd42d6e9141",
+		"video/film/data/film.json": "11ba46e44bbb3204a2a07028bce57bfca2ef7952b8c6b0d8d806410eab788ad9",
+		"static/recordings/machine.json": "f50b0e71cdf2ceeeb7753ee729023729e6c39b6fae0da9e0a2bf2c9eee2d8bc0",
+		"static/recordings/calc.json": "f73c81d6a986b30716ca69c479fcff925b08f35e0e57067514dd4267716a56fa",
+		"static/recordings/algebra.json": "7c2080467d171e301ac3005ace79b5942531fda746dfa4b7249972d69db785f3",
+		"static/recordings/chat.json": "70fe3f9899fb8861aa3d4d971c5a7545c764e5b8da396648520286c60e53920d"
+	}
+}

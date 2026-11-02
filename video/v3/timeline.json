@@ -1,0 +1,393 @@
+{
+	"fps": 60,
+	"width": 1920,
+	"height": 1080,
+	"duration": 289.26666666666665,
+	"scenes": [
+		{
+			"id": "silent",
+			"start": 0,
+			"end": 20.8
+		},
+		{
+			"id": "title",
+			"start": 20.8,
+			"end": 22.9
+		},
+		{
+			"id": "montage",
+			"start": 22.9,
+			"end": 46.893833
+		},
+		{
+			"id": "idea",
+			"start": 46.893833,
+			"end": 79.959292
+		},
+		{
+			"id": "grid",
+			"start": 79.959292,
+			"end": 96.738625
+		},
+		{
+			"id": "proof",
+			"start": 96.738625,
+			"end": 113.401583
+		},
+		{
+			"id": "history",
+			"start": 113.401583,
+			"end": 125.32125
+		},
+		{
+			"id": "margin",
+			"start": 125.32125,
+			"end": 145.828833
+		},
+		{
+			"id": "record",
+			"start": 145.828833,
+			"end": 168.243958
+		},
+		{
+			"id": "comparison",
+			"start": 168.243958,
+			"end": 188.298083
+		},
+		{
+			"id": "algebra",
+			"start": 188.298083,
+			"end": 208.123917
+		},
+		{
+			"id": "chat",
+			"start": 208.123917,
+			"end": 224.917458
+		},
+		{
+			"id": "gate",
+			"start": 224.917458,
+			"end": 247.29575
+		},
+		{
+			"id": "inside",
+			"start": 247.29575,
+			"end": 268.1775
+		},
+		{
+			"id": "close",
+			"start": 268.1775,
+			"end": 289.266667
+		}
+	],
+	"narration": [
+		{
+			"id": "N01",
+			"at": 1.0,
+			"duration": 5.642083,
+			"text": "Ask a leading language model to add two three-hundred-digit numbers, and it's usually right.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N02",
+			"at": 7.442083,
+			"duration": 3.6835,
+			"text": "Here, one digit is wrong, and the answer gives no warning.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N03",
+			"at": 11.925583,
+			"duration": 3.594375,
+			"text": "Passing yesterday's tests doesn't guarantee tomorrow's answer.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N04",
+			"at": 16.319958,
+			"duration": 3.299667,
+			"text": "What if we could check every step a small model could ever take?",
+			"pauseAfter": 2
+		},
+		{
+			"id": "N05",
+			"at": 23.6,
+			"duration": 8.949292,
+			"text": "This is Sketchpad: a model that reads pictures and text, with about eight hundred million learned numbers, or weights, running in your browser.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N06",
+			"at": 33.349292,
+			"duration": 6.275292,
+			"text": "Watch it multiply, divide, factor a polynomial, and open a sheet inside a chat reply.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N06b",
+			"at": 40.424583,
+			"duration": 5.16925,
+			"text": "None of this calls a calculator or a tool. Every digit is computed by the model itself.",
+			"pauseAfter": 2
+		},
+		{
+			"id": "N07",
+			"at": 47.593833,
+			"duration": 0.951667,
+			"text": "How does it do that?",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N08",
+			"at": 49.3455,
+			"duration": 4.055417,
+			"text": "Like school arithmetic, it works on a sheet, one column at a time.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N09",
+			"at": 54.200917,
+			"duration": 6.236958,
+			"text": "Each step sees only three printed cells and an instruction, never the whole problem or earlier steps.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N10",
+			"at": 61.237875,
+			"duration": 5.208,
+			"text": "From that tiny image come a digit, a carry for the next column, and the next step.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N11",
+			"at": 67.245875,
+			"duration": 3.590458,
+			"text": "Simple code writes those outputs and moves the window.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N12",
+			"at": 71.636333,
+			"duration": 7.022958,
+			"text": "We trained about ten million extra weights\u2014a small add-on called LoRA\u2014while keeping the original model fixed.",
+			"pauseAfter": 2
+		},
+		{
+			"id": "N13",
+			"at": 80.659292,
+			"duration": 1.409292,
+			"text": "Why show it so little?",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N14",
+			"at": 82.868583,
+			"duration": 3.793583,
+			"text": "Longer numbers need more steps, but no new kinds of window.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N15",
+			"at": 87.462167,
+			"duration": 5.595667,
+			"text": "There are only two thousand, four hundred and forty-six possible views, counting the instructions.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N16",
+			"at": 93.857833,
+			"duration": 1.580792,
+			"text": "We can check every one.",
+			"pauseAfter": 2
+		},
+		{
+			"id": "N17",
+			"at": 97.438625,
+			"duration": 3.849417,
+			"text": "But does getting every window right mean getting the whole calculation right?",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N18",
+			"at": 102.088042,
+			"duration": 6.5,
+			"text": "Yes, provided the code presents the right views: a correct step sets up the next correct step.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N19",
+			"at": 109.388042,
+			"duration": 3.913542,
+			"text": "Lean, a computer proof checker, checks our proof for every length.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N20",
+			"at": 114.101583,
+			"duration": 9.919667,
+			"text": "Written reasoning that rereads earlier steps keeps creating new situations; we also proved that finite testing alone cannot certify all those histories.",
+			"pauseAfter": 2
+		},
+		{
+			"id": "N21",
+			"at": 126.02125,
+			"duration": 5.721042,
+			"text": "There's a practical catch: computers round numbers, and different chips round differently.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N22",
+			"at": 132.542292,
+			"duration": 4.129958,
+			"text": "If the right digit wins by a hair, rounding could change the winner.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N23",
+			"at": 137.47225,
+			"duration": 8.256583,
+			"text": "So we measure its lead over the strongest wrong answer\u2014the margin\u2014and check every view in the browser on a laptop's graphics processor.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N24a",
+			"at": 146.528833,
+			"duration": 3.041458,
+			"text": "The smallest lead was three point zero two.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N24b",
+			"at": 150.370292,
+			"duration": 11.61225,
+			"text": "Rounding would have to move a score by more than half of that, one point five one, to flip a digit; running views together in batches moved scores by at most one point zero nine.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N25",
+			"at": 162.782542,
+			"duration": 4.161417,
+			"text": "That repeatable record of the checks and margins is the certificate.",
+			"pauseAfter": 2
+		},
+		{
+			"id": "N26",
+			"at": 168.943958,
+			"duration": 1.533208,
+			"text": "And on whole problems?",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N27",
+			"at": 171.277167,
+			"duration": 10.373375,
+			"text": "On two hundred and twenty sums and products fixed in advance, Sketchpad answered all two hundred and twenty; the strongest of ten other models answered two hundred and seventeen.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N27b",
+			"at": 182.450542,
+			"duration": 4.547542,
+			"text": "Without its sheet and adapter, the same small model answered twenty-three.",
+			"pauseAfter": 2
+		},
+		{
+			"id": "N28",
+			"at": 188.998083,
+			"duration": 2.997792,
+			"text": "Those checked procedures can also work together.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N29",
+			"at": 192.795875,
+			"duration": 7.857167,
+			"text": "A short program factors this cubic\u2014a polynomial whose highest power is three\u2014with every computed number coming from the model.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N30",
+			"at": 201.453042,
+			"duration": 5.370875,
+			"text": "The ordinary code arranging the steps and moving the view remains outside the proof.",
+			"pauseAfter": 2
+		},
+		{
+			"id": "N31",
+			"at": 208.823917,
+			"duration": 3.74,
+			"text": "But people ask questions, not just calculations.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N32",
+			"at": 213.363917,
+			"duration": 3.414083,
+			"text": "So we trained a chat version to reach for its sheet by itself.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N33",
+			"at": 217.578,
+			"duration": 7.239458,
+			"text": "First, the original model coached it on replies it wrote itself; then we rewarded it whenever its sheet gave the right answer.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N34",
+			"at": 225.617458,
+			"duration": 9.953708,
+			"text": "Because the skill is an add-on, a dial called the gate can switch it off: at zero, the original model returns, bit for bit.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N35",
+			"at": 236.371167,
+			"duration": 9.624583,
+			"text": "Chat keeps that dial on, and there's a cost: on fresh grade-school word problems, it scores five point eight percentage points below the original.",
+			"pauseAfter": 2
+		},
+		{
+			"id": "N36",
+			"at": 247.99575,
+			"duration": 4.5585,
+			"text": "We can also ask where a multiplication digit takes shape inside the model.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N37",
+			"at": 253.35425,
+			"duration": 5.032125,
+			"text": "At different processing layers, we pushed its internal state toward another digit.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N38",
+			"at": 259.186375,
+			"duration": 7.691125,
+			"text": "Through layer fifteen, no tested answer changed; just after layer twenty, all eighty tested multiplication answers changed.",
+			"pauseAfter": 2
+		},
+		{
+			"id": "N39",
+			"at": 268.8775,
+			"duration": 3.024417,
+			"text": "Now give it two long numbers and watch it work.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N40",
+			"at": 272.701917,
+			"duration": 6.093417,
+			"text": "It rechecks its weakest windows on your graphics processor; the full check is available for a new device.",
+			"pauseAfter": 0.8
+		},
+		{
+			"id": "N41",
+			"at": 279.595333,
+			"duration": 2.864542,
+			"text": "The paper, code and model are open.",
+			"pauseAfter": 0.8
+		}
+	]
+}
