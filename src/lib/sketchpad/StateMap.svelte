@@ -127,15 +127,19 @@
 
 		// the table at layer 24, nearer views darker (a white-ended ramp); the views that share this tick's answer in rose
 		const here = live ? wrote : null;
-		for (let i = 0; i < f.cloud.length; i++) {
-			const [x, y, z] = f.cloud[i];
-			const q = proj(x, y, z);
-			const same = here !== null && f.cloudLabels[i] === here;
-			ctx.globalAlpha = Math.max(0.3, Math.min(0.85, 0.55 + q.z * 0.3));
-			ctx.fillStyle = same ? t.hot : t.cloud;
-			ctx.beginPath();
-			ctx.arc(q.x, q.y, (same ? 2.2 : 1.8) * q.p, 0, Math.PI * 2);
-			ctx.fill();
+		// two passes, so the rose views are drawn over the grey ones and never hidden behind them
+		for (const pass of [false, true]) {
+			for (let i = 0; i < f.cloud.length; i++) {
+				const same = here !== null && f.cloudLabels[i] === here;
+				if (same !== pass) continue;
+				const [x, y, z] = f.cloud[i];
+				const q = proj(x, y, z);
+				ctx.globalAlpha = same ? 1 : Math.max(0.45, Math.min(0.95, 0.7 + q.z * 0.3));
+				ctx.fillStyle = same ? t.hot : t.cloud;
+				ctx.beginPath();
+				ctx.arc(q.x, q.y, (same ? 3.2 : 2.1) * q.p, 0, Math.PI * 2);
+				ctx.fill();
+			}
 		}
 		ctx.globalAlpha = 1;
 		// earlier landings in this run
@@ -349,7 +353,7 @@
 		transition: opacity var(--move) var(--ease);
 	}
 	.box.dim {
-		opacity: 0.55;
+		opacity: 0.85;
 	}
 	canvas {
 		position: absolute;

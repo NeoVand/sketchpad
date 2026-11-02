@@ -22,6 +22,16 @@
 	let { seen, kind, ready, slow, unseen = false }: Props = $props();
 
 	/**
+	 * The last view that came back with its states, kept until another arrives, so the panel never goes blank
+	 * between runs or while a new run starts (a change of operation drops it, since its columns differ).
+	 */
+	let held = $state.raw<{ kind: 'add' | 'mul'; tick: InsideTick } | null>(null);
+	$effect(() => {
+		if (seen) held = { kind, tick: seen };
+	});
+	const view = $derived(seen ?? (held?.kind === kind ? held.tick : null));
+
+	/**
 	 * The figure in the box's own pixels: as wide as the box (up to a reading width) and a row per layer as tall as the
 	 * box allows, so text keeps its size whatever room the panel has.
 	 */
@@ -65,7 +75,7 @@
 	const LAYERS = Array.from({ length: DEPTH }, (_, l) => l);
 
 	const reads = $derived(
-		COLS.map((c) => seen?.lens.find((r) => r.group.token === c.token) ?? null)
+		COLS.map((c) => view?.lens.find((r) => r.group.token === c.token) ?? null)
 	);
 	const show = (r: LensRead, k: number) => {
 		const c = r.group.alphabet[k];
@@ -78,7 +88,7 @@
 		return a;
 	};
 	const sure = (r: LensRead, l: number) => r.probs[l * r.group.alphabet.length + r.top];
-	const decided = $derived(seen?.lens[0]?.decided ?? null);
+	const decided = $derived(view?.lens[0]?.decided ?? null);
 </script>
 
 <figure class="sp-panel lens">
@@ -86,8 +96,8 @@
 		<span class="sp-title">Layer by layer</span>
 		<span class="sp-sub">how sure each of the 24 layers is of the answer</span>
 	</figcaption>
-	<div class="sp-body" class:sp-fig={ready && !!seen} {@attach measure}>
-		{#if ready && seen}
+	<div class="sp-body" class:sp-fig={ready && !!view} {@attach measure}>
+		{#if ready && view}
 			<svg
 				viewBox="0 0 {W} {HEAD + H + 4}"
 				role="img"
@@ -152,7 +162,7 @@
 	</div>
 	<p class="sp-foot">
 		{#if decided !== null}The answer leads for good from layer {decided} (dashed).{:else}&nbsp;{/if}
-		{#if ready && seen}<span class="sp-dim key"
+		{#if ready && view}<span class="sp-dim key"
 				>Bar: the layer’s confidence in the final answer; glyph: its own best guess. <i></i>after a
 				full-attention layer.</span
 			>{/if}

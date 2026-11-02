@@ -49,6 +49,8 @@
 		{ id: 'chat', n: 4, label: 'Chat', short: 'Chat', icon: I.Chat }
 	];
 	let part = $state<Part>('machine');
+	/** Run was pressed before the model was loaded: say what to do, beside the button */
+	let needModel = $state(false);
 	/** the sheet machine's operation, kept while another part is shown */
 	let machineOp = $state<'add' | 'mul'>('add');
 	/** Calculate and Algebra read the calculator's tables, which only some programs have learned (models.ts) */
@@ -496,6 +498,21 @@
 		<button class="primary ic" onclick={() => pad.stop()}
 			><Icon icon={I.Stop} size={16} />Stop</button
 		>
+	{:else if !pad.ready}
+		<!-- before the model is loaded, Run looks disabled but answers a click with what to do -->
+		<button
+			class="primary ic"
+			aria-disabled="true"
+			title="Load the model first"
+			onclick={() => (needModel = true)}><Icon icon={I.Play} size={16} />Run</button
+		>
+		{#if needModel || pad.loading}<span class="need ic"
+				>{#if pad.loading}The model is loading…{:else}Load the model first{/if}{#if !pad.loading}<button
+						class="primary ic load"
+						onclick={load}
+						disabled={pad.gpuOk === null}><Icon icon={I.Download} size={15} />Load the model</button
+					>{/if}</span
+			>{/if}
 	{:else if calcPart}
 		<button
 			class="primary ic"
@@ -794,10 +811,8 @@
 				<!-- before a load: the recorded runs play, and one quiet line says where they were made -->
 				{@render shownSwitch()}
 				<p class="note num">
-					{#if lastRecording}Recorded on {recordedOn(lastRecording, true)} ·&nbsp;{/if}<button
-						class="link ic"
-						onclick={load}
-						disabled={pad.gpuOk === null}><Icon icon={I.Download} size={15} />Load the model</button
+					<button class="primary ic load" onclick={load} disabled={pad.gpuOk === null}
+						><Icon icon={I.Download} size={15} />Load the model</button
 					>
 					to run it on your GPU ({cost === null
 						? '1.9 GB'
@@ -805,6 +820,9 @@
 							? 'from this browser’s cache'
 							: bytes(cost)}).
 				</p>
+				{#if lastRecording}<p class="note num">
+						The runs shown were recorded on {recordedOn(lastRecording, true)}.
+					</p>{/if}
 			{:else}
 				{@render shownSwitch()}
 				<p class="note num">{loadNote}</p>
@@ -1227,21 +1245,6 @@
 		color: var(--color-ink);
 	}
 	/* the load, as a word in the line that says what is shown */
-	.model .link {
-		padding: 0;
-		border: 0;
-		background: none;
-		color: var(--color-ink);
-		font: inherit;
-		font-weight: 500;
-		text-decoration: underline;
-		text-underline-offset: 3px;
-		cursor: pointer;
-	}
-	.model .link:disabled {
-		color: var(--color-ink-soft);
-		cursor: default;
-	}
 	.model .opts {
 		font-size: var(--text-xs);
 	}
@@ -1404,9 +1407,29 @@
 		font-size: var(--text-xs);
 	}
 	/* a named choice: its name, then the options */
+	/* the model's load button: the one action the page needs first, in rose */
+	.load {
+		height: 28px;
+		padding: 0 12px;
+		background: var(--color-rose);
+		font-size: var(--text-xs);
+	}
+	.load:hover:not(:disabled) {
+		background: #b8285a;
+	}
+	.primary[aria-disabled='true'] {
+		background: var(--color-lift);
+		color: var(--color-blue-grey);
+		cursor: not-allowed;
+	}
+	.need {
+		gap: 10px;
+		font-size: var(--text-xs);
+		color: var(--color-rose);
+	}
 	.opts {
 		display: inline-flex;
-		align-items: baseline;
+		align-items: center;
 		gap: 10px;
 	}
 	.toggles .plain {
